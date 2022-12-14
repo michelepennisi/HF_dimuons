@@ -116,7 +116,7 @@ void HistMCDimuonHF_lite(
     const char *RunMode = "HF",
     Int_t RunNumber = 294009,
     TString prefix_dir_filename = "30_09_2022",
-    TString dir_fileout = "/home/michele_pennisi/dimuon_HF_pp/MC_Analysis/hist_mc_aod/test",
+    TString dir_fileout = "/home/michele_pennisi/cernbox/output_HF_dimuons/mc_analysis_output/root_files/test",
     TString prefix_filename = "MCDimuHFTree")
 {
   Double_t Mass_cut = 0;
