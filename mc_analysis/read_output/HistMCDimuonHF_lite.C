@@ -511,236 +511,235 @@ void HistMCDimuonHF_lite(
   */
     //----------------------Start Generated Dimuon---------------------------------//
 
-    // for (Int_t i = 0; i < NDimu_gen; i++)
-    // {
+    for (Int_t i = 0; i < NDimu_gen; i++)
+    {
 
-    //   Double_t Pt_DiMu = DimuPt_gen[i];      // gen dimuon pT
-    //   Double_t Px_DiMu = DimuPx_gen[i];      // gen dimuon px
-    //   Double_t Py_DiMu = DimuPy_gen[i];      // gen dimuon py
-    //   Double_t Pz_DiMu = DimuPz_gen[i];      // gen dimuon pz
-    //   Double_t Y_DiMu = DimuY_gen[i];        // gen dimuon y
-    //   Double_t M_DiMu = DimuMass_gen[i];     // gen dimuon invariant mass
-    //   Int_t Charge_DiMu = DimuCharge_gen[i]; // gen dimuon charge
+      Double_t Pt_DiMu = DimuPt_gen[i];      // gen dimuon pT
+      Double_t Px_DiMu = DimuPx_gen[i];      // gen dimuon px
+      Double_t Py_DiMu = DimuPy_gen[i];      // gen dimuon py
+      Double_t Pz_DiMu = DimuPz_gen[i];      // gen dimuon pz
+      Double_t Y_DiMu = DimuY_gen[i];        // gen dimuon y
+      Double_t M_DiMu = DimuMass_gen[i];     // gen dimuon invariant mass
+      Int_t Charge_DiMu = DimuCharge_gen[i]; // gen dimuon charge
 
-    //   Double_t Pt_Mu0 = Pt_gen[DimuMu_gen[i][0]];
-    //   Double_t Y_Mu0 = Y_gen[DimuMu_gen[i][0]];
-    //   Double_t Eta_Mu0 = Eta_gen[DimuMu_gen[i][0]];
+      Double_t Pt_Mu0 = Pt_gen[DimuMu_gen[i][0]];
+      Double_t Y_Mu0 = Y_gen[DimuMu_gen[i][0]];
+      Double_t Eta_Mu0 = Eta_gen[DimuMu_gen[i][0]];
 
-    //   Double_t Pt_Mu1 = Pt_gen[DimuMu_gen[i][1]];
-    //   Double_t Y_Mu1 = Y_gen[DimuMu_gen[i][1]];
-    //   Double_t Eta_Mu1 = Eta_gen[DimuMu_gen[i][1]];
+      Double_t Pt_Mu1 = Pt_gen[DimuMu_gen[i][1]];
+      Double_t Y_Mu1 = Y_gen[DimuMu_gen[i][1]];
+      Double_t Eta_Mu1 = Eta_gen[DimuMu_gen[i][1]];
 
-    //   Int_t PDG_Mu0 = PDGmum_gen[DimuMu_gen[i][0]];
-    //   Int_t PDG_Mu1 = PDGmum_gen[DimuMu_gen[i][1]];
+      Int_t PDG_Mu0 = PDGmum_gen[DimuMu_gen[i][0]];
+      Int_t PDG_Mu1 = PDGmum_gen[DimuMu_gen[i][1]];
 
-    //   Bool_t Mass_DiMu_gen[n_Mass_Cut] = {kFALSE};
-    //   /*
-    //   0 For no cut on Dimu Mass
-    //   1 For M>4 GeV/c^2
-    //   */
-    //   Bool_t Kin_DiMu_gen[n_DiMuCut] = {kFALSE};
-    //   /*
-    //   0 For Generated
-    //   1 For Generated -4.0<Y<-2.5
-    //   2 For Generated in ALICEacc
-    //   4 For Reconstructed
-    //   5 For Reconstructed with all cut applied
-    //   */
-    //   Bool_t Charge_DiMu_gen[n_DiMu_Charge] = {kFALSE};
-    //   /*
-    //   0 for ULS,
-    //   1 for LS++,
-    //   2 for LS--,
-    //   3 LS total
-    //   */
+      Bool_t Mass_DiMu_gen[n_Mass_Cut] = {kFALSE};
+      /*
+      0 For no cut on Dimu Mass
+      1 For M>4 GeV/c^2
+      */
+      Bool_t Kin_DiMu_gen[n_DiMuCut] = {kFALSE};
+      /*
+      0 For Generated
+      1 For Generated -4.0<Y<-2.5
+      2 For Generated in ALICEacc
+      4 For Reconstructed
+      5 For Reconstructed with all cut applied
+      */
+      Bool_t Charge_DiMu_gen[n_DiMu_Charge] = {kFALSE};
+      /*
+      0 for ULS,
+      1 for LS++,
+      2 for LS--,
+      3 LS total
+      */
 
-    //   Bool_t Selection_DiMu_gen[n_DiMuSelection] = {kFALSE};
-    //   /*
-    //   0 For All
-    //   1 For HF
-    //   2 For Charm
-    //   3 For Beauty
-    //   4 For HF Mixed (one muon from Charm, one muon from Beauty)
-    //   5 For LF (two muons from LF)
-    //   6 For LF Mixed (one muon from LH, one muon from HF)
-    //   7 Others
-    //   */
+      Bool_t Selection_DiMu_gen[n_DiMuSelection] = {kFALSE};
+      /*
+      0 For All
+      1 For HF
+      2 For Charm
+      3 For Beauty
+      4 For HF Mixed (one muon from Charm, one muon from Beauty)
+      5 For LF (two muons from LF)
+      6 For LF Mixed (one muon from LH, one muon from HF)
+      7 Others
+      */
 
-    //   Selection_DiMu_gen[0] = kTRUE;
-    //   Kin_DiMu_gen[0] = kTRUE;
-    //   if (M_DiMu > 0.0)
-    //     Mass_DiMu_gen[0] = kTRUE;
+      Selection_DiMu_gen[0] = kTRUE;
+      Kin_DiMu_gen[0] = kTRUE;
+      if (M_DiMu > 0.0)
+        Mass_DiMu_gen[0] = kTRUE;
 
-    //   Bool_t Charm_mu0 = kFALSE;
-    //   Bool_t Charm_mu1 = kFALSE;
-    //   Bool_t Beauty_mu0 = kFALSE;
-    //   Bool_t Beauty_mu1 = kFALSE;
-    //   Bool_t HF_mu0 = kFALSE;
-    //   Bool_t HF_mu1 = kFALSE;
-    //   Bool_t LF_mu0 = kFALSE;
-    //   Bool_t LF_mu1 = kFALSE;
+      Bool_t Charm_mu0 = kFALSE;
+      Bool_t Charm_mu1 = kFALSE;
+      Bool_t Beauty_mu0 = kFALSE;
+      Bool_t Beauty_mu1 = kFALSE;
+      Bool_t HF_mu0 = kFALSE;
+      Bool_t HF_mu1 = kFALSE;
+      Bool_t LF_mu0 = kFALSE;
+      Bool_t LF_mu1 = kFALSE;
 
-    //   if (M_DiMu > 4.0 && M_DiMu <= 30.0)
-    //     Mass_DiMu_gen[1] = kTRUE;
+      if (M_DiMu > 4.0 && M_DiMu <= 30.0)
+        Mass_DiMu_gen[1] = kTRUE;
 
-    //   if (M_DiMu > 4.0 && M_DiMu <= 9.0)
-    //   {
-    //     Mass_DiMu_gen[2] = kTRUE;
-    //     Mass_DiMu_gen[6] = kTRUE;
-    //     if (Pt_DiMu<=10)
-    //     {
-    //       Mass_DiMu_gen[8] = kTRUE;
-    //     }
+      if (M_DiMu > 4.0 && M_DiMu <= 9.0)
+      {
+        Mass_DiMu_gen[2] = kTRUE;
+        Mass_DiMu_gen[6] = kTRUE;
+        if (Pt_DiMu <= 10)
+        {
+          Mass_DiMu_gen[8] = kTRUE;
+        }
+      }
+      else if (M_DiMu > 9.0 && M_DiMu <= 11.0)
+      {
+        Mass_DiMu_gen[3] = kTRUE;
+      }
+      else if (M_DiMu > 11.0 && M_DiMu <= 15.0)
+      {
+        Mass_DiMu_gen[4] = kTRUE;
+        Mass_DiMu_gen[6] = kTRUE;
+        Mass_DiMu_gen[7] = kTRUE;
+      }
+      else if (M_DiMu > 15.0 && M_DiMu <= 30.0)
+      {
+        Mass_DiMu_gen[5] = kTRUE;
+        Mass_DiMu_gen[6] = kTRUE;
+        Mass_DiMu_gen[7] = kTRUE;
+      }
 
-    //   }
-    //   else if (M_DiMu > 9.0 && M_DiMu <= 11.0)
-    //   {
-    //     Mass_DiMu_gen[3] = kTRUE;
-    //   }
-    //   else if (M_DiMu > 11.0 && M_DiMu <= 15.0)
-    //   {
-    //     Mass_DiMu_gen[4] = kTRUE;
-    //     Mass_DiMu_gen[6] = kTRUE;
-    //     Mass_DiMu_gen[7] = kTRUE;
-    //   }
-    //   else if (M_DiMu > 15.0 && M_DiMu <= 30.0)
-    //   {
-    //     Mass_DiMu_gen[5] = kTRUE;
-    //     Mass_DiMu_gen[6] = kTRUE;
-    //     Mass_DiMu_gen[7] = kTRUE;
-    //   }
+      if ((TMath::Abs(PDG_Mu0) == 4) || (TMath::Abs(PDG_Mu0) > 400 && TMath::Abs(PDG_Mu0) < 500) || (TMath::Abs(PDG_Mu0) > 4000 && TMath::Abs(PDG_Mu0) < 5000))
+      {
+        HF_mu0 = kTRUE;
+        Charm_mu0 = kTRUE;
+      }
+      else if ((TMath::Abs(PDG_Mu0) == 5) || (TMath::Abs(PDG_Mu0) > 500 && TMath::Abs(PDG_Mu0) < 600) || (TMath::Abs(PDG_Mu0) > 5000 && TMath::Abs(PDG_Mu0) < 6000))
+      {
+        HF_mu0 = kTRUE;
+        Beauty_mu0 = kTRUE;
+      }
+      else if ((TMath::Abs(PDG_Mu0) > 0 && TMath::Abs(PDG_Mu0) < 4) || (TMath::Abs(PDG_Mu0) > 100 && TMath::Abs(PDG_Mu0) < 400) || (TMath::Abs(PDG_Mu0) > 1000 && TMath::Abs(PDG_Mu0) < 4000))
+      {
+        LF_mu0 = kTRUE;
+        Charm_mu0 = kFALSE;
+        Beauty_mu0 = kFALSE;
+        HF_mu0 = kFALSE;
+      }
+      else
+      {
+        LF_mu0 = kFALSE;
+        Charm_mu0 = kFALSE;
+        Beauty_mu0 = kFALSE;
+        HF_mu0 = kFALSE;
+      }
 
-    //   if ((TMath::Abs(PDG_Mu0) == 4) || (TMath::Abs(PDG_Mu0) > 400 && TMath::Abs(PDG_Mu0) < 500) || (TMath::Abs(PDG_Mu0) > 4000 && TMath::Abs(PDG_Mu0) < 5000))
-    //   {
-    //     HF_mu0 = kTRUE;
-    //     Charm_mu0 = kTRUE;
-    //   }
-    //   else if ((TMath::Abs(PDG_Mu0) == 5) || (TMath::Abs(PDG_Mu0) > 500 && TMath::Abs(PDG_Mu0) < 600) || (TMath::Abs(PDG_Mu0) > 5000 && TMath::Abs(PDG_Mu0) < 6000))
-    //   {
-    //     HF_mu0 = kTRUE;
-    //     Beauty_mu0 = kTRUE;
-    //   }
-    //   else if ((TMath::Abs(PDG_Mu0) > 0 && TMath::Abs(PDG_Mu0) < 4) || (TMath::Abs(PDG_Mu0) > 100 && TMath::Abs(PDG_Mu0) < 400) || (TMath::Abs(PDG_Mu0) > 1000 && TMath::Abs(PDG_Mu0) < 4000))
-    //   {
-    //     LF_mu0 = kTRUE;
-    //     Charm_mu0 = kFALSE;
-    //     Beauty_mu0 = kFALSE;
-    //     HF_mu0 = kFALSE;
-    //   }
-    //   else
-    //   {
-    //     LF_mu0 = kFALSE;
-    //     Charm_mu0 = kFALSE;
-    //     Beauty_mu0 = kFALSE;
-    //     HF_mu0 = kFALSE;
-    //   }
+      if ((TMath::Abs(PDG_Mu1) == 4) || (TMath::Abs(PDG_Mu1) > 400 && TMath::Abs(PDG_Mu1) < 500) || (TMath::Abs(PDG_Mu1) > 4000 && TMath::Abs(PDG_Mu1) < 5000))
+      {
+        HF_mu1 = kTRUE;
+        Charm_mu1 = kTRUE;
+      }
+      else if ((TMath::Abs(PDG_Mu1) == 5) || (TMath::Abs(PDG_Mu1) > 500 && TMath::Abs(PDG_Mu1) < 600) || (TMath::Abs(PDG_Mu1) > 5000 && TMath::Abs(PDG_Mu1) < 6000))
+      {
+        HF_mu1 = kTRUE;
+        Beauty_mu1 = kTRUE;
+      }
+      else if ((TMath::Abs(PDG_Mu1) > 0 && TMath::Abs(PDG_Mu1) < 4) || (TMath::Abs(PDG_Mu1) > 100 && TMath::Abs(PDG_Mu1) < 400) || (TMath::Abs(PDG_Mu1) > 1000 && TMath::Abs(PDG_Mu1) < 4000))
+      {
+        LF_mu1 = kTRUE;
+        Charm_mu1 = kFALSE;
+        Beauty_mu1 = kFALSE;
+        HF_mu1 = kFALSE;
+      }
+      else
+      {
+        LF_mu1 = kFALSE;
+        Charm_mu1 = kFALSE;
+        Beauty_mu1 = kFALSE;
+        HF_mu1 = kFALSE;
+      }
 
-    //   if ((TMath::Abs(PDG_Mu1) == 4) || (TMath::Abs(PDG_Mu1) > 400 && TMath::Abs(PDG_Mu1) < 500) || (TMath::Abs(PDG_Mu1) > 4000 && TMath::Abs(PDG_Mu1) < 5000))
-    //   {
-    //     HF_mu1 = kTRUE;
-    //     Charm_mu1 = kTRUE;
-    //   }
-    //   else if ((TMath::Abs(PDG_Mu1) == 5) || (TMath::Abs(PDG_Mu1) > 500 && TMath::Abs(PDG_Mu1) < 600) || (TMath::Abs(PDG_Mu1) > 5000 && TMath::Abs(PDG_Mu1) < 6000))
-    //   {
-    //     HF_mu1 = kTRUE;
-    //     Beauty_mu1 = kTRUE;
-    //   }
-    //   else if ((TMath::Abs(PDG_Mu1) > 0 && TMath::Abs(PDG_Mu1) < 4) || (TMath::Abs(PDG_Mu1) > 100 && TMath::Abs(PDG_Mu1) < 400) || (TMath::Abs(PDG_Mu1) > 1000 && TMath::Abs(PDG_Mu1) < 4000))
-    //   {
-    //     LF_mu1 = kTRUE;
-    //     Charm_mu1 = kFALSE;
-    //     Beauty_mu1 = kFALSE;
-    //     HF_mu1 = kFALSE;
-    //   }
-    //   else
-    //   {
-    //     LF_mu1 = kFALSE;
-    //     Charm_mu1 = kFALSE;
-    //     Beauty_mu1 = kFALSE;
-    //     HF_mu1 = kFALSE;
-    //   }
+      if (HF_mu0 && HF_mu1)
+      {
+        Selection_DiMu_gen[1] = kTRUE;
+        if (Charm_mu0 && Charm_mu1)
+          Selection_DiMu_gen[2] = kTRUE;
+        else if (Beauty_mu0 && Beauty_mu1)
+          Selection_DiMu_gen[3] = kTRUE;
+        else if ((Charm_mu0 && Beauty_mu1) || (Beauty_mu0 && Charm_mu1))
+          Selection_DiMu_gen[4] = kTRUE;
+      }
+      else if (LF_mu0 && LF_mu1)
+        Selection_DiMu_gen[5] = kTRUE;
+      else if ((LF_mu0 && HF_mu1) || (HF_mu0 && LF_mu1))
+        Selection_DiMu_gen[6] = kTRUE;
+      else
+        Selection_DiMu_gen[7] = kTRUE;
 
-    //   if (HF_mu0 && HF_mu1)
-    //   {
-    //     Selection_DiMu_gen[1] = kTRUE;
-    //     if (Charm_mu0 && Charm_mu1)
-    //       Selection_DiMu_gen[2] = kTRUE;
-    //     else if (Beauty_mu0 && Beauty_mu1)
-    //       Selection_DiMu_gen[3] = kTRUE;
-    //     else if ((Charm_mu0 && Beauty_mu1) || (Beauty_mu0 && Charm_mu1))
-    //       Selection_DiMu_gen[4] = kTRUE;
-    //   }
-    //   else if (LF_mu0 && LF_mu1)
-    //     Selection_DiMu_gen[5] = kTRUE;
-    //   else if ((LF_mu0 && HF_mu1) || (HF_mu0 && LF_mu1))
-    //     Selection_DiMu_gen[6] = kTRUE;
-    //   else
-    //     Selection_DiMu_gen[7] = kTRUE;
+      if ((Y_Mu0 > -4.0 && Y_Mu0 < -2.5) && (Y_Mu1 > -4.0 && Y_Mu1 < -2.5))
+      {
+        Kin_DiMu_gen[1] = kTRUE;
 
-    //   if ((Y_Mu0 > -4.0 && Y_Mu0 < -2.5) && (Y_Mu1 > -4.0 && Y_Mu1 < -2.5))
-    //   {
-    //     Kin_DiMu_gen[1] = kTRUE;
+        if ((Pt_Mu0 > 0.5) && (Pt_Mu1 > 0.5))
+          Kin_DiMu_gen[2] = kTRUE;
+      }
 
-    //     if ((Pt_Mu0 > 0.5) && (Pt_Mu1 > 0.5))
-    //       Kin_DiMu_gen[2] = kTRUE;
-    //   }
+      if ((Y_DiMu > -4.0 && Y_DiMu < -2.5) && (Eta_Mu0 > -4.0 && Eta_Mu0 < -2.5) && (Eta_Mu1 > -4.0 && Eta_Mu1 < -2.5))
+      {
+        Kin_DiMu_gen[3] = kTRUE;
+      }
 
-    //   if ((Eta_Mu0 > -4.0 && Eta_Mu0 < -2.5) && (Eta_Mu1 > -4.0 && Eta_Mu1 < -2.5))
-    //   {
-    //     Kin_DiMu_gen[3] = kTRUE;
-    //   }
+      if (Charge_DiMu == 0)
+      {
+        Charge_DiMu_gen[0] = kTRUE;
+        Charge_DiMu_gen[1] = kFALSE;
+        Charge_DiMu_gen[2] = kFALSE;
+        Charge_DiMu_gen[3] = kFALSE;
+      }
+      else if (Charge_DiMu == 2)
+      {
+        Charge_DiMu_gen[0] = kFALSE;
+        Charge_DiMu_gen[1] = kTRUE;
+        Charge_DiMu_gen[2] = kFALSE;
+        Charge_DiMu_gen[3] = kTRUE;
+      }
+      else if (Charge_DiMu == -2)
+      {
+        Charge_DiMu_gen[0] = kFALSE;
+        Charge_DiMu_gen[1] = kFALSE;
+        Charge_DiMu_gen[2] = kTRUE;
+        Charge_DiMu_gen[3] = kTRUE;
+      }
 
-    //   if (Charge_DiMu == 0)
-    //   {
-    //     Charge_DiMu_gen[0] = kTRUE;
-    //     Charge_DiMu_gen[1] = kFALSE;
-    //     Charge_DiMu_gen[2] = kFALSE;
-    //     Charge_DiMu_gen[3] = kFALSE;
-    //   }
-    //   else if (Charge_DiMu == 2)
-    //   {
-    //     Charge_DiMu_gen[0] = kFALSE;
-    //     Charge_DiMu_gen[1] = kTRUE;
-    //     Charge_DiMu_gen[2] = kFALSE;
-    //     Charge_DiMu_gen[3] = kTRUE;
-    //   }
-    //   else if (Charge_DiMu == -2)
-    //   {
-    //     Charge_DiMu_gen[0] = kFALSE;
-    //     Charge_DiMu_gen[1] = kFALSE;
-    //     Charge_DiMu_gen[2] = kTRUE;
-    //     Charge_DiMu_gen[3] = kTRUE;
-    //   }
+      for (Int_t DiMu_a = 0; DiMu_a < n_Mass_Cut; DiMu_a++)
+      {
+        for (Int_t DiMu_b = 0; DiMu_b < n_DiMuCut - n_DiMuCut_rec; DiMu_b++)
+        {
+          for (Int_t DiMu_c = 0; DiMu_c < n_DiMu_Charge; DiMu_c++)
+          {
+            for (Int_t DiMu_d = 0; DiMu_d < n_DiMuSelection; DiMu_d++)
+            {
 
-    //   for (Int_t DiMu_a = 0; DiMu_a < n_Mass_Cut; DiMu_a++)
-    //   {
-    //     for (Int_t DiMu_b = 0; DiMu_b < n_DiMuCut - n_DiMuCut_rec; DiMu_b++)
-    //     {
-    //       for (Int_t DiMu_c = 0; DiMu_c < n_DiMu_Charge; DiMu_c++)
-    //       {
-    //         for (Int_t DiMu_d = 0; DiMu_d < n_DiMuSelection; DiMu_d++)
-    //         {
+              if (Mass_DiMu_gen[DiMu_a] && Kin_DiMu_gen[DiMu_b] && Charge_DiMu_gen[DiMu_c] && Selection_DiMu_gen[DiMu_d])
+              {
+                // printf("Filling %s with Charge %d\n",name_DiMu_Charge[DiMu_c].Data(),Charge_DiMu);
+                h_PtYDiMu[DiMu_a][DiMu_b][DiMu_c][DiMu_d]->Fill(Pt_DiMu, Y_DiMu);
+                h_PtMDiMu[DiMu_a][DiMu_b][DiMu_c][DiMu_d]->Fill(Pt_DiMu, M_DiMu);
+                h_MDiMu[DiMu_a][DiMu_b][DiMu_c][DiMu_d]->Fill(M_DiMu);
+                h_pdgDimuMu[DiMu_a][DiMu_b][DiMu_c][DiMu_d]->Fill(PDG_Mu0);
+                h_pdgDimuMu[DiMu_a][DiMu_b][DiMu_c][DiMu_d]->Fill(PDG_Mu1);
+                nDiMu_xevent[DiMu_a][DiMu_b][DiMu_c][DiMu_d]++;
+              }
 
-    //           if (Mass_DiMu_gen[DiMu_a] && Kin_DiMu_gen[DiMu_b] && Charge_DiMu_gen[DiMu_c] && Selection_DiMu_gen[DiMu_d])
-    //           {
-    //             // printf("Filling %s with Charge %d\n",name_DiMu_Charge[DiMu_c].Data(),Charge_DiMu);
-    //             h_PtYDiMu[DiMu_a][DiMu_b][DiMu_c][DiMu_d]->Fill(Pt_DiMu, Y_DiMu);
-    //             h_PtMDiMu[DiMu_a][DiMu_b][DiMu_c][DiMu_d]->Fill(Pt_DiMu, M_DiMu);
-    //             h_MDiMu[DiMu_a][DiMu_b][DiMu_c][DiMu_d]->Fill(M_DiMu);
-    //             h_pdgDimuMu[DiMu_a][DiMu_b][DiMu_c][DiMu_d]->Fill(PDG_Mu0);
-    //             h_pdgDimuMu[DiMu_a][DiMu_b][DiMu_c][DiMu_d]->Fill(PDG_Mu1);
-    //             nDiMu_xevent[DiMu_a][DiMu_b][DiMu_c][DiMu_d]++;
-    //           }
+            } // End definition over DiMu selection
 
-    //         } // End definition over DiMu selection
+          } // End definition over DiMu charge cut
 
-    //       } // End definition over DiMu charge cut
+        } // End definition over DiMu cut
 
-    //     } // End definition over DiMu cut
+      } // End loop over M_DiMu cut
 
-    //   } // End loop over M_DiMu cut
-
-    // } // End loop on generated Dimuons
+    } // End loop on generated Dimuons
 
     //----------------------Start Reconstructed Dimuon---------------------------------//
 
@@ -1235,34 +1234,37 @@ void HistMCDimuonHF_lite(
 
     outFile->cd("DiMuon");
 
-    for (Int_t DiMu_b = n_DiMuCut - 1; DiMu_b < n_DiMuCut; DiMu_b++)
+    for (Int_t DiMu_b = 0; DiMu_b < n_DiMuCut; DiMu_b++)
     {
-      for (Int_t DiMu_c = 0; DiMu_c < n_DiMu_Charge; DiMu_c++)
+      if (DiMu_b == 3 || DiMu_b == 8)
       {
-        name_dir.Form("DiMuon/%s/%s/%s", name_Mass_Cut[a].Data(), name_DiMuCut[DiMu_b].Data(), name_DiMu_Charge[DiMu_c].Data());
-        dir = outFile->GetDirectory(name_dir.Data());
-
-        if (!dir)
-          dir = outFile->mkdir(name_dir.Data());
-        else
-          printf("%s already exists \n", name_dir.Data());
-        outFile->cd(name_dir.Data());
-        for (Int_t DiMu_d = 0; DiMu_d < n_DiMuSelection; DiMu_d++)
+        for (Int_t DiMu_c = 0; DiMu_c < n_DiMu_Charge; DiMu_c++)
         {
+          name_dir.Form("DiMuon/%s/%s/%s", name_Mass_Cut[a].Data(), name_DiMuCut[DiMu_b].Data(), name_DiMu_Charge[DiMu_c].Data());
+          dir = outFile->GetDirectory(name_dir.Data());
 
-          h_PtYDiMu[a][DiMu_b][DiMu_c][DiMu_d]->Write(0, 2, 0);
+          if (!dir)
+            dir = outFile->mkdir(name_dir.Data());
+          else
+            printf("%s already exists \n", name_dir.Data());
+          outFile->cd(name_dir.Data());
+          for (Int_t DiMu_d = 0; DiMu_d < n_DiMuSelection; DiMu_d++)
+          {
 
-          h_PtMDiMu[a][DiMu_b][DiMu_c][DiMu_d]->Write(0, 2, 0);
+            h_PtYDiMu[a][DiMu_b][DiMu_c][DiMu_d]->Write(0, 2, 0);
 
-          h_MDiMu[a][DiMu_b][DiMu_c][DiMu_d]->Write(0, 2, 0);
+            h_PtMDiMu[a][DiMu_b][DiMu_c][DiMu_d]->Write(0, 2, 0);
 
-          h_pdgDimuMu[a][DiMu_b][DiMu_c][DiMu_d]->Write(0, 2, 0);
+            h_MDiMu[a][DiMu_b][DiMu_c][DiMu_d]->Write(0, 2, 0);
 
-          h_nDiMu_xevent[a][DiMu_b][DiMu_c][DiMu_d]->Write(0, 2, 0);
+            h_pdgDimuMu[a][DiMu_b][DiMu_c][DiMu_d]->Write(0, 2, 0);
 
-        } // End definition over DiMu selection
+            h_nDiMu_xevent[a][DiMu_b][DiMu_c][DiMu_d]->Write(0, 2, 0);
 
-      } // End definition over DiMu cut
+          } // End definition over DiMu selection
+
+        } // End definition over DiMu cut
+      }
     }
   }
   printf("Finish Filling\n");
