@@ -156,16 +156,16 @@ TH1D *h_pt_charm_quark = new TH1D("h_pt_charm_quark", "h_pt_charm_quark", 300, -
 TH1D *h_pt_beauty_quark = new TH1D("h_pt_beauty_quark", "h_pt_beauty_quark", 300, -0.5, 299.5);
 
 TH1D *h_Nbeauty_quark = new TH1D("h_Nbeauty_quark", "h_Nbeauty_quark", 60, -0.5, 60.5);
-TH1D *h_y_charm_quark = new TH1D("h_y_charm_quark", "h_y_charm_quark", 300, -0.5, 299.5);
-TH1D *h_y_beauty_quark = new TH1D("h_y_beauty_quark", "h_y_beauty_quark", 250, -4.5, -2.0);
+TH1D *h_y_charm_quark = new TH1D("h_y_charm_quark", "h_y_charm_quark", 200, -10.0, 10.0);
+TH1D *h_y_beauty_quark = new TH1D("h_y_beauty_quark", "h_y_beauty_quark", 200, -10.0, 10.0);
 
 TH1D *h_Ncharm_antiquark = new TH1D("h_Ncharm_antiquark", "h_Ncharm_antiquark", 60, -0.5, 60.5);
 TH1D *h_pt_charm_antiquark = new TH1D("h_pt_charm_antiquark", "h_pt_charm_antiquark", 300, -0.5, 299.5);
 TH1D *h_pt_beauty_antiquark = new TH1D("h_pt_beauty_antiquark", "h_pt_beauty_antiquark", 300, -0.5, 299.5);
 
 TH1D *h_Nbeauty_antiquark = new TH1D("h_Nbeauty_antiquark", "h_Nbeauty_antiquark", 300, -0.5, 60.5);
-TH1D *h_y_charm_antiquark = new TH1D("h_y_charm_antiquark", "h_y_charm_antiquark", 300, -0.5, 299.5);
-TH1D *h_y_beauty_antiquark = new TH1D("h_y_beauty_antiquark", "h_y_beauty_antiquark", 250, -4.5, -2.0);
+TH1D *h_y_charm_antiquark = new TH1D("h_y_charm_antiquark", "h_y_charm_antiquark", 200, -10.0, 10.0);
+TH1D *h_y_beauty_antiquark = new TH1D("h_y_beauty_antiquark", "h_y_beauty_antiquark", 200, -10.0, 10.0);
 
 TH1D *h_Nbeauty_pairs = new TH1D("h_Nbeauty_pairs", "h_Nbeauty_pairs", 60, -0.5, 60.5);
 TH1D *h_ptbeauty_pairs = new TH1D("h_ptbeauty_pairs", "h_ptbeauty_pairs", 300, 0, 300);
@@ -287,7 +287,7 @@ void SetHist()
         for (Int_t DiMu_d = 0; DiMu_d < n_DiMuSelection; DiMu_d++)
         {
 
-          h_PtYDiMu[a][DiMu_b][DiMu_c][DiMu_d] = new TH2D(Form("h_PtYDiMu_%s_%s_%s_%s", name_Mass_Cut[a].Data(), name_DiMuCut[DiMu_b].Data(), name_DiMu_Charge[DiMu_c].Data(), name_DiMuSelection[DiMu_d].Data()), Form("h_PtYDiMu_%s_%s_%s_%s", name_Mass_Cut[a].Data(), name_DiMuCut[DiMu_b].Data(), name_DiMu_Charge[DiMu_c].Data(), name_DiMuSelection[DiMu_d].Data()), 300, 0.0, 30.0, 200, -10.0, 10.0);
+          h_PtYDiMu[a][DiMu_b][DiMu_c][DiMu_d] = new TH2D(Form("h_PtYDiMu_%s_%s_%s_%s", name_Mass_Cut[a].Data(), name_DiMuCut[DiMu_b].Data(), name_DiMu_Charge[DiMu_c].Data(), name_DiMuSelection[DiMu_d].Data()), Form("h_PtYDiMu_%s_%s_%s_%s", name_Mass_Cut[a].Data(), name_DiMuCut[DiMu_b].Data(), name_DiMu_Charge[DiMu_c].Data(), name_DiMuSelection[DiMu_d].Data()), 300, 0.0, 30.0, 150, -4.0, -2.5);
           h_PtYDiMu[a][DiMu_b][DiMu_c][DiMu_d]->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
           h_PtYDiMu[a][DiMu_b][DiMu_c][DiMu_d]->GetYaxis()->SetTitle("Y");
 
