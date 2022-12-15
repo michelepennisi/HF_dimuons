@@ -1,10 +1,13 @@
 double FuncPtMass(double *x, double *par);
 double total(double *x, double *par);
 
-TPad *divide2(TH1D *h_data, TF1 *model);
+TPad *divide2(TH1D *h_data, TF1 *model,int min);
 
-void test_root_fit()
-{
+void test_root_fit(Int_t N_rebin = 2)
+{   
+    Double_t Binning_m=260./N_rebin;
+    Double_t Binning_pt=300./N_rebin;
+
     gROOT->ProcessLineSync(".x /home/michele_pennisi/high_mass_dimuons/fit_library/PtMassExpPdf.cxx+");
     gROOT->ProcessLineSync(".x /home/michele_pennisi/high_mass_dimuons/fit_library/PtMassPol1ExpPdf.cxx+");
 
@@ -68,7 +71,7 @@ void test_root_fit()
 
     histDimuMass->GetXaxis()->SetTitle("#it{m}_{#mu#mu} (GeV/#it{c}^{2})");
     histDimuMass->GetYaxis()->SetTitle("d#it{N}/d#it{m}_{#mu#mu} (GeV/#it{c}^{2})");
-    histDimuMass->Rebin(5);
+    histDimuMass->Rebin(N_rebin);
     histDimuMass->Scale(1., "width");
 
     histDimuMass->SetMarkerStyle(20);
@@ -96,7 +99,7 @@ void test_root_fit()
     mass_pdf_total->SetParameter(10, 200000);
     mass_pdf_total->FixParameter(11, 225000);
 
-    histDimuMass->Fit(mass_pdf_total, "R0");
+    histDimuMass->Fit(mass_pdf_total, "LR0");
     auto mass_pdf_Charm = new TF1("mass_pdf_Charm", FuncPtMass, 4, 30, 4);
     mass_pdf_Charm->SetParameter(3, mass_pdf_total->GetParameter(9));
     mass_pdf_Charm->FixParameter(0, B_DimuMassFromCharm->getVal());
@@ -139,7 +142,7 @@ void test_root_fit()
     c_mass->cd();
     histDimuMass->SetMaximum(1.8e+05);
     histDimuMass->SetMinimum(1.8e-02);
-    TPad *pads = divide2(histDimuMass, mass_pdf_total);
+    TPad *pads = divide2(histDimuMass, mass_pdf_total,4);
 
     pads[0].cd();
     TLegend *legend = new TLegend(0.175, 0.15, 0.35, 0.4);
@@ -156,13 +159,24 @@ void test_root_fit()
     legend->AddEntry(mass_pdf_Beauty, "#mu#mu #leftarrow b#bar{b}");
     legend->AddEntry(mass_pdf_Mixed, "#mu#mu #leftarrow c,b");
 
+    TLatex *letexTitle = new TLatex();
+    letexTitle->SetNDC();
+    letexTitle->SetTextFont(42);
+    letexTitle->SetTextSize(0.055);
+    letexTitle->DrawLatex(0.625, 0.825, Form("#it{N}^{Output}_{#mu^{#plus}#mu^{#minus} #leftarrow c} = %0.3f", mass_pdf_Charm->Integral(4, 30)));
+    letexTitle->DrawLatex(0.625, 0.725, Form("#it{N}^{Output}_{#mu^{#plus}#mu^{#minus} #leftarrow b} = %0.3f", mass_pdf_Beauty->Integral(4, 30)));
+    // letexTitle->DrawLatex(0.675, 0.725, Form("#it{f}^{Output}_{#mu^{#plus}#mu^{#minus} #leftarrow c,b} = %0.2e #pm %0.2e", fit_output[2]->getVal(), fit_output[2]->getError()));
+    letexTitle->DrawLatex(0.625, 0.625, Form("#it{N}^{fixed}_{#mu^{#plus}#mu^{#minus} #leftarrow c,b} = %0.3f ", mass_pdf_Mixed->Integral(4, 30)));
+
     mass_pdf_Charm->Draw("SAME");
     mass_pdf_Beauty->Draw("SAME");
     mass_pdf_Mixed->Draw("SAME");
     legend->Draw();
+    c_mass->SaveAs(Form("/home/michele_pennisi/cernbox/output_HF_dimuons/fit_data_output/plot/mass_root_test_%0.0fmbin.pdf",Binning_m));
+    //----------------------------------------------------------------------//
     histDimuPt->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
     histDimuPt->GetYaxis()->SetTitle("d#it{N}/d#it{p}_{T} (GeV/#it{c})");
-    histDimuPt->Rebin(5);
+    histDimuPt->Rebin(N_rebin);
     histDimuPt->Scale(1., "width");
 
     histDimuPt->SetMarkerStyle(20);
@@ -190,7 +204,7 @@ void test_root_fit()
     Pt_pdf_total->SetParameter(10, 200000);
     Pt_pdf_total->FixParameter(11, 500);
 
-    histDimuPt->Fit(Pt_pdf_total, "R0");
+    histDimuPt->Fit(Pt_pdf_total, "LR0I");
     auto Pt_pdf_Charm = new TF1("Pt_pdf_Charm", FuncPtMass, 0, 30, 4);
     Pt_pdf_Charm->SetParameter(3, Pt_pdf_total->GetParameter(9));
     Pt_pdf_Charm->FixParameter(0, B_DimuPtFromCharm->getVal());
@@ -233,7 +247,7 @@ void test_root_fit()
     c_Pt->cd();
     histDimuPt->SetMaximum(1.8e+05);
     histDimuPt->SetMinimum(1.8e-02);
-    TPad *Pt_pads = divide2(histDimuPt, Pt_pdf_total);
+    TPad *Pt_pads = divide2(histDimuPt, Pt_pdf_total,0);
 
     Pt_pads[0].cd();
     TLegend *legend1 = new TLegend(0.175, 0.15, 0.35, 0.4);
@@ -250,10 +264,17 @@ void test_root_fit()
     legend1->AddEntry(Pt_pdf_Beauty, "#mu#mu #leftarrow b#bar{b}");
     legend1->AddEntry(Pt_pdf_Mixed, "#mu#mu #leftarrow c,b");
 
+    letexTitle->SetTextSize(0.055);
+    letexTitle->DrawLatex(0.625, 0.825, Form("#it{N}^{Output}_{#mu^{#plus}#mu^{#minus} #leftarrow c} = %0.3f", Pt_pdf_Charm->Integral(0, 30)));
+    letexTitle->DrawLatex(0.625, 0.725, Form("#it{N}^{Output}_{#mu^{#plus}#mu^{#minus} #leftarrow b} = %0.3f", Pt_pdf_Beauty->Integral(0, 30)));
+    // letexTitle->DrawLatex(0.675, 0.725, Form("#it{f}^{Output}_{#mu^{#plus}#mu^{#minus} #leftarrow c,b} = %0.2e #pm %0.2e", fit_output[2]->getVal(), fit_output[2]->getError()));
+    letexTitle->DrawLatex(0.625, 0.625, Form("#it{N}^{fixed}_{#mu^{#plus}#mu^{#minus} #leftarrow c,b} = %0.3f ", Pt_pdf_Mixed->Integral(0, 30)));
+
     Pt_pdf_Charm->Draw("SAME");
     Pt_pdf_Beauty->Draw("SAME");
     Pt_pdf_Mixed->Draw("SAME");
     legend1->Draw();
+    c_Pt->SaveAs(Form("/home/michele_pennisi/cernbox/output_HF_dimuons/fit_data_output/plot/pt_root_test_%0.0fptbin.pdf",Binning_pt));
 }
 
 double FuncPtMass(double *x, double *par)
@@ -266,7 +287,7 @@ double total(double *x, double *par)
     return par[9] * (x[0] / TMath::Power(1 + TMath::Power(x[0] / par[0], par[1]), par[2])) + par[10] * (x[0] / TMath::Power(1 + TMath::Power(x[0] / par[3], par[4]), par[5])) + par[11] * (x[0] / TMath::Power(1 + TMath::Power(x[0] / par[6], par[7]), par[8]));
 }
 
-TPad *divide2(TH1D *h_data, TF1 *model)
+TPad *divide2(TH1D *h_data, TF1 *model,int min)
 {
     TH1D *draw_h_data = (TH1D *)h_data->Clone("draw_h_datav2");
     draw_h_data->SetTitle(" ");
@@ -349,7 +370,7 @@ TPad *divide2(TH1D *h_data, TF1 *model)
     clone_h_data->SetTitle(" ");
     clone_h_data->Draw("EP");
 
-    TLine *l = new TLine(4, 1.0, 30.0, 1.0);
+    TLine *l = new TLine(min, 1.0, 30.0, 1.0);
     l->SetLineWidth(3);
     l->SetLineStyle(2);
     l->SetLineColor(kRed);
