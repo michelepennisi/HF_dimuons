@@ -1,14 +1,70 @@
+void roofit_chisquare_scan_simultaneus();
+
 void chisquare_data_scan()
 {
+    Double_t bin_size_ROOFIT[1] = {0.0};
+
+    Double_t PT_charm_number_ROOFIT[1] = {40704.6};
+    Double_t PT_beauty_number_ROOFIT[1] = {33193.0};
+
+    Double_t PT_charm_number_ROOFIT_norm[1];
+    Double_t PT_beauty_number_ROOFIT_norm[1];
+    
+    PT_charm_number_ROOFIT_norm[0] = PT_charm_number_ROOFIT[0] / 77094.;
+    PT_beauty_number_ROOFIT_norm[0] = PT_beauty_number_ROOFIT[0] / 77094.;
+
+    Double_t Mass_charm_number_ROOFIT[1] = {46839.8};
+    Double_t Mass_beauty_number_ROOFIT[1] = {27098.0};
+
+    Double_t Mass_charm_number_ROOFIT_norm[1];
+    Double_t Mass_beauty_number_ROOFIT_norm[1];
+
+    Mass_charm_number_ROOFIT_norm[0] = Mass_charm_number_ROOFIT[0] / 77094.;
+    Mass_beauty_number_ROOFIT_norm[0] = Mass_beauty_number_ROOFIT[0] / 77094.;
+
+    TGraph *pt_charm_output_ROOFIT = new TGraph(1, bin_size_ROOFIT, PT_charm_number_ROOFIT_norm);
+    pt_charm_output_ROOFIT->SetName("pt_charm_output_ROOFIT");
+    pt_charm_output_ROOFIT->SetTitle(" ");
+
+    pt_charm_output_ROOFIT->SetMinimum(0.36);
+    pt_charm_output_ROOFIT->SetMarkerStyle(47);
+    pt_charm_output_ROOFIT->SetMarkerSize(1.5);
+    pt_charm_output_ROOFIT->SetMarkerColor(kMagenta - 2);
+    pt_charm_output_ROOFIT->SetLineColor(kMagenta - 2);
+
+    TGraph *pt_beauty_output_ROOFIT = new TGraph(1, bin_size_ROOFIT, PT_beauty_number_ROOFIT_norm);
+    pt_beauty_output_ROOFIT->SetName("pt_beauty_output_ROOFIT");
+    pt_beauty_output_ROOFIT->SetTitle(" ");
+
+    pt_beauty_output_ROOFIT->SetMinimum(0.36);
+    pt_beauty_output_ROOFIT->SetMarkerStyle(47);
+    pt_beauty_output_ROOFIT->SetMarkerSize(1.5);
+    pt_beauty_output_ROOFIT->SetMarkerColor(kSpring - 6);
+    pt_beauty_output_ROOFIT->SetLineColor(kSpring - 6);
+
+    TGraph *Mass_charm_output_ROOFIT = new TGraph(1, bin_size_ROOFIT, Mass_charm_number_ROOFIT_norm);
+    Mass_charm_output_ROOFIT->SetName("Mass_charm_output_ROOFIT");
+    Mass_charm_output_ROOFIT->SetTitle(" ");
+
+    Mass_charm_output_ROOFIT->SetMinimum(0.36);
+    Mass_charm_output_ROOFIT->SetMarkerStyle(47);
+    Mass_charm_output_ROOFIT->SetMarkerSize(1.5);
+    Mass_charm_output_ROOFIT->SetMarkerColor(kMagenta - 2);
+    Mass_charm_output_ROOFIT->SetLineColor(kMagenta - 2);
+
+    TGraph *Mass_beauty_output_ROOFIT = new TGraph(1, bin_size_ROOFIT, Mass_beauty_number_ROOFIT_norm);
+    Mass_beauty_output_ROOFIT->SetName("Mass_beauty_output_ROOFIT");
+    Mass_beauty_output_ROOFIT->SetTitle(" ");
+
+    Mass_beauty_output_ROOFIT->SetMinimum(0.36);
+    Mass_beauty_output_ROOFIT->SetMarkerStyle(47);
+    Mass_beauty_output_ROOFIT->SetMarkerSize(1.5);
+    Mass_beauty_output_ROOFIT->SetMarkerColor(kSpring - 6);
+    Mass_beauty_output_ROOFIT->SetLineColor(kSpring - 6);
+
     const Int_t n_scan = 5;
 
     Double_t bin_size[n_scan] = {0.1, 0.2, 0.5, 1, 1.5};
-
-    Double_t charm_number_ROOFIT[n_scan] = {44066, 43819, 42260, 36256, 24154};
-    Double_t beauty_number_ROOFIT[n_scan] = {29854, 30102, 31662, 37673, 49788};
-
-    Double_t charm_number_ROOFIT_norm[n_scan];
-    Double_t beauty_number_ROOFIT_norm[n_scan];
 
     Double_t PT_charm_number_ROOT_TEST[n_scan] = {40599., 40494., 39753., 37332., 32969.};
     Double_t PT_beauty_number_ROOT_TEST[n_scan] = {33360., 33447., 34066., 36050., 39680.};
@@ -36,9 +92,6 @@ void chisquare_data_scan()
 
     for (Int_t i = 0; i < n_scan; i++)
     {
-        charm_number_ROOFIT_norm[i] = charm_number_ROOFIT[i] / 77094;
-        beauty_number_ROOFIT_norm[i] = beauty_number_ROOFIT[i] / 77094;
-
         PT_charm_number_ROOT_TEST_norm[i] = PT_charm_number_ROOT_TEST[i] / 77094;
         PT_beauty_number_ROOT_TEST_norm[i] = PT_beauty_number_ROOT_TEST[i] / 77094;
 
@@ -64,26 +117,7 @@ void chisquare_data_scan()
     gPad->SetBottomMargin(0.14);
     gStyle->SetOptStat(0);
 
-    TGraph *charm_output_ROOFIT = new TGraph(n_scan, bin_size, charm_number_ROOFIT_norm);
-    charm_output_ROOFIT->SetName("charm_output_ROOFIT");
-    charm_output_ROOFIT->SetTitle(" ");
-
-    charm_output_ROOFIT->SetMinimum(0.36);
-    charm_output_ROOFIT->SetMarkerStyle(24);
-    charm_output_ROOFIT->SetMarkerSize(1.5);
-    charm_output_ROOFIT->SetMarkerColor(kMagenta - 2);
-    charm_output_ROOFIT->SetLineColor(kMagenta - 2);
-
-    TGraph *beauty_output_ROOFIT = new TGraph(n_scan, bin_size, beauty_number_ROOFIT_norm);
-    beauty_output_ROOFIT->SetName("beauty_output_ROOFIT");
-    beauty_output_ROOFIT->SetTitle(" ");
-
-    beauty_output_ROOFIT->SetMarkerStyle(24);
-    beauty_output_ROOFIT->SetMarkerSize(1.5);
-    beauty_output_ROOFIT->SetMarkerColor(kSpring - 6);
-    beauty_output_ROOFIT->SetLineColor(kSpring - 6);
-
-    TH2D *PT_h_grid = new TH2D("PT_h_grid", " ", 5, 0.05, 1.55, 100, 0.231, 0.67);
+    TH2D *PT_h_grid = new TH2D("PT_h_grid", " ", 6, -0.05, 1.55, 100, 0.231, 0.67);
 
     PT_h_grid->GetXaxis()->SetTitle("#it{p}_{T} bin size (GeV/#it{c})");
     PT_h_grid->GetYaxis()->SetTitle("Fit output");
@@ -114,13 +148,13 @@ void chisquare_data_scan()
 
     pt_charm_output_ROOT_TEST_IOPTION->SetMinimum(0.36);
     pt_charm_output_ROOT_TEST_IOPTION->SetMarkerStyle(24);
-    pt_charm_output_ROOT_TEST_IOPTION->SetMarkerSize(2.5);
+    pt_charm_output_ROOT_TEST_IOPTION->SetMarkerSize(1.5);
     pt_charm_output_ROOT_TEST_IOPTION->SetMarkerColor(kMagenta - 2);
     pt_charm_output_ROOT_TEST_IOPTION->SetLineColor(kMagenta - 2);
 
+    pt_charm_output_ROOFIT->Draw("LPSAME");
     pt_charm_output_ROOT_TEST->Draw("LPSAME");
     pt_charm_output_ROOT_TEST_IOPTION->Draw("LPSAME");
-    // charm_output_ROOFIT->Draw("LPSAME");
 
     TGraph *pt_beauty_output_ROOT_TEST = new TGraph(n_scan, bin_size, PT_beauty_number_ROOT_TEST_norm);
     pt_beauty_output_ROOT_TEST->SetName("pt_beauty_output_ROOT_TEST");
@@ -142,6 +176,7 @@ void chisquare_data_scan()
     pt_beauty_output_ROOT_TEST_IOPTION->SetMarkerColor(kSpring - 6);
     pt_beauty_output_ROOT_TEST_IOPTION->SetLineColor(kSpring - 6);
 
+    pt_beauty_output_ROOFIT->Draw("LPSAME");
     pt_beauty_output_ROOT_TEST->Draw("LPSAME");
     pt_beauty_output_ROOT_TEST_IOPTION->Draw("LPSAME");
     // beauty_output_ROOFIT->Draw("LPSAME");
@@ -153,10 +188,6 @@ void chisquare_data_scan()
     legend2->SetLineColor(kWhite);
     legend2->SetBorderSize(0);
     legend2->SetTextSize(0.0425);
-    // legend2->SetHeader("Toy MC");
-    // legend2->SetTextAlign(11);
-    // legend2->AddEntry("charm_output_ROOFIT", "charm fraction from ROOFIT", "LP");
-    // legend2->AddEntry("beauty_output_ROOFIT", "beauty fraction from ROOFIT", "LP");
 
     legend2->AddEntry("pt_charm_output_ROOT_TEST", "charm fraction from ROOT Fit", "LP");
     legend2->AddEntry("pt_beauty_output_ROOT_TEST", "beauty fraction from ROOT Fit", "LP");
@@ -202,13 +233,12 @@ void chisquare_data_scan()
 
     MASS_charm_output_ROOT_TEST_IOPTION->SetMinimum(0.36);
     MASS_charm_output_ROOT_TEST_IOPTION->SetMarkerStyle(24);
-    MASS_charm_output_ROOT_TEST_IOPTION->SetMarkerSize(2.5);
+    MASS_charm_output_ROOT_TEST_IOPTION->SetMarkerSize(1.5);
     MASS_charm_output_ROOT_TEST_IOPTION->SetMarkerColor(kMagenta - 2);
     MASS_charm_output_ROOT_TEST_IOPTION->SetLineColor(kMagenta - 2);
-
+    Mass_charm_output_ROOFIT->Draw("LPSAME");
     MASS_charm_output_ROOT_TEST->Draw("LPSAME");
     MASS_charm_output_ROOT_TEST_IOPTION->Draw("LPSAME");
-    // charm_output_ROOFIT->Draw("LPSAME");
 
     TGraph *MASS_beauty_output_ROOT_TEST = new TGraph(n_scan, bin_size, MASS_beauty_number_ROOT_TEST_norm);
     MASS_beauty_output_ROOT_TEST->SetName("MASS_beauty_output_ROOT_TEST");
@@ -226,14 +256,12 @@ void chisquare_data_scan()
 
     MASS_beauty_output_ROOT_TEST_IOPTION->SetMinimum(0.36);
     MASS_beauty_output_ROOT_TEST_IOPTION->SetMarkerStyle(24);
-    MASS_beauty_output_ROOT_TEST_IOPTION->SetMarkerSize(2.5);
+    MASS_beauty_output_ROOT_TEST_IOPTION->SetMarkerSize(1.5);
     MASS_beauty_output_ROOT_TEST_IOPTION->SetMarkerColor(kSpring - 6);
     MASS_beauty_output_ROOT_TEST_IOPTION->SetLineColor(kSpring - 6);
-
+    Mass_beauty_output_ROOFIT->Draw("LPSAME");
     MASS_beauty_output_ROOT_TEST->Draw("LPSAME");
     MASS_beauty_output_ROOT_TEST_IOPTION->Draw("LPSAME");
-
-    // beauty_output_ROOFIT->Draw("LPSAME");
 
     TLegend *legend3 = new TLegend(0.23, 0.15, 0.5, 0.35);
     // legend->SetNColumns(2);
@@ -242,10 +270,6 @@ void chisquare_data_scan()
     legend3->SetLineColor(kWhite);
     legend3->SetBorderSize(0);
     legend3->SetTextSize(0.0425);
-    // legend3->SetHeader("Toy MC");
-    // legend3->SetTextAlign(11);
-    // legend3->AddEntry("charm_output_ROOFIT", "charm fraction from ROOFIT", "LP");
-    // legend3->AddEntry("beauty_output_ROOFIT", "beauty fraction from ROOFIT", "LP");
 
     legend3->AddEntry("MASS_charm_output_ROOT_TEST", "charm fraction from ROOT Fit", "LP");
     legend3->AddEntry("MASS_beauty_output_ROOT_TEST", "beauty fraction from ROOT Fit", "LP");
@@ -257,4 +281,55 @@ void chisquare_data_scan()
 
     c2->SaveAs(Form("/home/michele_pennisi/cernbox/output_HF_dimuons/fit_data_output/plot/mass_bin_size_test.pdf"));
     c2->SaveAs(Form("/home/michele_pennisi/cernbox/output_HF_dimuons/fit_data_output/plot/mass_bin_size_test.png"));
+}
+
+void roofit_chisquare_scan_simultaneus()
+{
+
+    const Int_t n_scan = 5;
+
+    Double_t bin_size[n_scan] = {0.1, 0.2, 0.5, 1, 1.5};
+
+    Double_t charm_number_ROOFIT[n_scan] = {44066, 43819, 42260, 36256, 24154};
+    Double_t beauty_number_ROOFIT[n_scan] = {29854, 30102, 31662, 37673, 49788};
+
+    Double_t charm_number_ROOFIT_norm[n_scan];
+    Double_t beauty_number_ROOFIT_norm[n_scan];
+
+    for (Int_t i = 0; i < n_scan; i++)
+    {
+        charm_number_ROOFIT_norm[i] = charm_number_ROOFIT[i] / 77094;
+        beauty_number_ROOFIT_norm[i] = beauty_number_ROOFIT[i] / 77094;
+    }
+
+    TCanvas *c1 = new TCanvas("c1", " ", 1000, 800);
+    c1->cd();
+    // c->Divide(2, 1);
+    c1->cd();
+    gPad->SetGridx();
+    gPad->SetGridy();
+    gPad->SetTopMargin(0.05);
+    gPad->SetRightMargin(0.03);
+    gPad->SetLeftMargin(0.14);
+    gPad->SetBottomMargin(0.14);
+    gStyle->SetOptStat(0);
+
+    TGraph *charm_output_ROOFIT = new TGraph(n_scan, bin_size, charm_number_ROOFIT_norm);
+    charm_output_ROOFIT->SetName("charm_output_ROOFIT");
+    charm_output_ROOFIT->SetTitle(" ");
+
+    charm_output_ROOFIT->SetMinimum(0.36);
+    charm_output_ROOFIT->SetMarkerStyle(24);
+    charm_output_ROOFIT->SetMarkerSize(1.5);
+    charm_output_ROOFIT->SetMarkerColor(kMagenta - 2);
+    charm_output_ROOFIT->SetLineColor(kMagenta - 2);
+
+    TGraph *beauty_output_ROOFIT = new TGraph(n_scan, bin_size, beauty_number_ROOFIT_norm);
+    beauty_output_ROOFIT->SetName("beauty_output_ROOFIT");
+    beauty_output_ROOFIT->SetTitle(" ");
+
+    beauty_output_ROOFIT->SetMarkerStyle(24);
+    beauty_output_ROOFIT->SetMarkerSize(1.5);
+    beauty_output_ROOFIT->SetMarkerColor(kSpring - 6);
+    beauty_output_ROOFIT->SetLineColor(kSpring - 6);
 }
