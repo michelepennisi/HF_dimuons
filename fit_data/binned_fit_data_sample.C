@@ -32,7 +32,7 @@ Int_t n_beauty_input = 84000;
 TCanvas *printRooPlot_residual(RooPlot *frame, RooPlot *frame2, TString roohist_name[5]);
 TCanvas *printRooPlot_ratio(RooPlot *frame, RooRealVar *fit_output[3], TString roohist_name[5], TF1 *pdf, TH1 *data, Double_t minx, Double_t max_x);
 
-void binned_fit_data_sample(Int_t choice = 0, Double_t Low_Mass = 4.0, Double_t High_Mass = 30.0, Int_t N_rebin_m = 26, Int_t N_rebin_pt = 30)
+void binned_fit_data_sample(Int_t choice = 0, Double_t Low_Mass = 4.0, Double_t High_Mass = 30.0, Int_t N_rebin_m = 5, Int_t N_rebin_pt = 5)
 {
   gROOT->ProcessLineSync(".x /home/michele_pennisi/high_mass_dimuons/fit_library/PtMassExpPdf.cxx+");
   gROOT->ProcessLineSync(".x /home/michele_pennisi/high_mass_dimuons/fit_library/PtMassPol1ExpPdf.cxx+");
@@ -326,6 +326,7 @@ void binned_fit_data_sample(Int_t choice = 0, Double_t Low_Mass = 4.0, Double_t 
   pt_canvas->SetName(Form("pt_canvas_opt%d_%s_%0.0fptbin_%0.0fmbin", choice, mass_range.Data(),Binning_pt,Binning_m));
   pt_canvas->SetTitle(Form("pt_canvas_opt%d_%s_%0.0fptbin_%0.0fmbin", choice, mass_range.Data(),Binning_pt,Binning_m));
   pt_canvas->SaveAs(Form("/home/michele_pennisi/cernbox/output_HF_dimuons/fit_data_output/plot/%s_unbinned.pdf", pt_canvas->GetName()));
+  pt_canvas->SaveAs(Form("/home/michele_pennisi/cernbox/output_HF_dimuons/fit_data_output/plot/%s_unbinned.png", pt_canvas->GetName()));
   // m_frame->SetMaximum(hDimuM_data->GetMaximum() * 1000);
   // m_frame->SetMinimum(2e-14);
   // TH1 *hDimuM_data = M_Dimu_data->createHistogram("h_mdata", *m, Binning(Binning_m, Low_Mass, High_Mass));
@@ -338,6 +339,7 @@ void binned_fit_data_sample(Int_t choice = 0, Double_t Low_Mass = 4.0, Double_t 
   m_canvas->SetName(Form("m_canvas_opt%d%s_%0.0fptbin_%0.0fmbin", choice, mass_range.Data(),Binning_pt,Binning_m));
   m_canvas->SetTitle(Form("m_canvas_opt%d%s_%0.0fptbin_%0.0fmbin", choice, mass_range.Data(),Binning_pt,Binning_m));
   m_canvas->SaveAs(Form("/home/michele_pennisi/cernbox/output_HF_dimuons/fit_data_output/plot/%s_unbinned.pdf", m_canvas->GetName()));
+  m_canvas->SaveAs(Form("/home/michele_pennisi/cernbox/output_HF_dimuons/fit_data_output/plot/%s_unbinned.png", m_canvas->GetName()));
 
   // printf("fraction c %0.3f error fr c %0.10f",fit_output[1]->getVal(), (RooRealVar *)r->floatParsFinal().find("fr_beauty_output").getError());
   // for (auto &p : r->floatParsFinal())

@@ -3,7 +3,7 @@ double total(double *x, double *par);
 
 TPad *divide2(TH1D *h_data, TF1 *model,int min);
 
-void test_root_fit(Int_t N_rebin = 2)
+void test_root_fit(Int_t N_rebin = 10,TString opt="LR0I")
 {   
     Double_t Binning_m=260./N_rebin;
     Double_t Binning_pt=300./N_rebin;
@@ -61,13 +61,26 @@ void test_root_fit(Int_t N_rebin = 2)
 
     TFile *fIn_data = new TFile("/home/michele_pennisi/dimuon_HF_pp/data/LHC18p/Hist_AOD/3_11_2022/HistResults_merged.root", "READ");
 
-    TH2D *histDimuPtM_fromdata = (TH2D *)fIn_data->Get(Form("Dimuon/CMUL7/DQ_cut_match_LT_ULS/h_PtMdiMu_CMUL7_DQ_cut_match_LT_ULS"));
+    TH2D *histDimuPtM_fromdata = (TH2D *)fIn_data->Get(Form("Dimuon/CMUL7/DQ_cut_match_LT_Ycut_ULS/h_PtMdiMu_CMUL7_DQ_cut_match_LT_Ycut_ULS"));
     histDimuPtM_fromdata->SetName("histDimuPtM_fromdata");
 
     TH1D *histDimuPt = (TH1D *)histDimuPtM_fromdata->ProjectionX();
     histDimuPt->Sumw2();
     TH1D *histDimuMass = (TH1D *)histDimuPtM_fromdata->ProjectionY();
     histDimuMass->Sumw2();
+
+    for (Int_t i = 0; i < histDimuMass->GetNbinsX(); i++)
+    {
+        if (histDimuMass->GetBinLowEdge(i)>9.0 && histDimuMass->GetBinLowEdge(i)<11.0)
+        {
+            printf("Edge %0.5f\n",histDimuMass->GetBinLowEdge(i));
+            printf("Error %0.5f\n",histDimuMass->GetBinError(i));
+            histDimuMass->SetBinContent(i,0);
+            histDimuMass->SetBinError(i,0);
+        }
+        
+    }
+    
 
     histDimuMass->GetXaxis()->SetTitle("#it{m}_{#mu#mu} (GeV/#it{c}^{2})");
     histDimuMass->GetYaxis()->SetTitle("d#it{N}/d#it{m}_{#mu#mu} (GeV/#it{c}^{2})");
@@ -99,7 +112,7 @@ void test_root_fit(Int_t N_rebin = 2)
     mass_pdf_total->SetParameter(10, 200000);
     mass_pdf_total->FixParameter(11, 225000);
 
-    histDimuMass->Fit(mass_pdf_total, "LR0");
+    histDimuMass->Fit(mass_pdf_total, opt.Data());
     auto mass_pdf_Charm = new TF1("mass_pdf_Charm", FuncPtMass, 4, 30, 4);
     mass_pdf_Charm->SetParameter(3, mass_pdf_total->GetParameter(9));
     mass_pdf_Charm->FixParameter(0, B_DimuMassFromCharm->getVal());
@@ -172,7 +185,8 @@ void test_root_fit(Int_t N_rebin = 2)
     mass_pdf_Beauty->Draw("SAME");
     mass_pdf_Mixed->Draw("SAME");
     legend->Draw();
-    c_mass->SaveAs(Form("/home/michele_pennisi/cernbox/output_HF_dimuons/fit_data_output/plot/mass_root_test_%0.0fmbin.pdf",Binning_m));
+    c_mass->SaveAs(Form("/home/michele_pennisi/cernbox/output_HF_dimuons/fit_data_output/plot/mass_root_test_%0.0fmbin_%s_Opt.pdf",Binning_m,opt.Data()));
+    c_mass->SaveAs(Form("/home/michele_pennisi/cernbox/output_HF_dimuons/fit_data_output/plot/mass_root_test_%0.0fmbin_%s_Opt.png",Binning_m,opt.Data()));
     //----------------------------------------------------------------------//
     histDimuPt->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
     histDimuPt->GetYaxis()->SetTitle("d#it{N}/d#it{p}_{T} (GeV/#it{c})");
@@ -204,7 +218,7 @@ void test_root_fit(Int_t N_rebin = 2)
     Pt_pdf_total->SetParameter(10, 200000);
     Pt_pdf_total->FixParameter(11, 500);
 
-    histDimuPt->Fit(Pt_pdf_total, "LR0I");
+    histDimuPt->Fit(Pt_pdf_total, opt.Data());
     auto Pt_pdf_Charm = new TF1("Pt_pdf_Charm", FuncPtMass, 0, 30, 4);
     Pt_pdf_Charm->SetParameter(3, Pt_pdf_total->GetParameter(9));
     Pt_pdf_Charm->FixParameter(0, B_DimuPtFromCharm->getVal());
@@ -274,7 +288,8 @@ void test_root_fit(Int_t N_rebin = 2)
     Pt_pdf_Beauty->Draw("SAME");
     Pt_pdf_Mixed->Draw("SAME");
     legend1->Draw();
-    c_Pt->SaveAs(Form("/home/michele_pennisi/cernbox/output_HF_dimuons/fit_data_output/plot/pt_root_test_%0.0fptbin.pdf",Binning_pt));
+    c_Pt->SaveAs(Form("/home/michele_pennisi/cernbox/output_HF_dimuons/fit_data_output/plot/pt_root_test_%0.0fptbin_%s_Opt.pdf",Binning_pt,opt.Data()));
+    c_Pt->SaveAs(Form("/home/michele_pennisi/cernbox/output_HF_dimuons/fit_data_output/plot/pt_root_test_%0.0fptbin_%s_Opt.png",Binning_pt,opt.Data()));
 }
 
 double FuncPtMass(double *x, double *par)
