@@ -141,9 +141,9 @@ void single_unbinned_fit_data_sample(Int_t choice = 0, Double_t Low_Mass = 4.0, 
   RooRealVar *Pt_normForMixed = new RooRealVar("Pt_n_mixed_output", "number dimuon from b,c", 3160);
   Pt_normForMixed->setConstant(kTRUE);
 
-  RooAddPdf *m_model = new RooAddPdf("m_model", "n_charm_output*dimuMassFromC + n_beauty_output*dimuMassFromB + n_mixed_output*dimuMassFromMixed", RooArgList(*pdfDimuMassFromBeauty, *pdfDimuMassFromCharm, *pdfDimuMassFromMixed), RooArgList(*Mass_normForC, *Mass_normForB, *Mass_normForMixed));
+  RooAddPdf *m_model = new RooAddPdf("m_model", "n_charm_output*dimuMassFromC + n_beauty_output*dimuMassFromB + n_mixed_output*dimuMassFromMixed", RooArgList(*pdfDimuMassFromCharm, *pdfDimuMassFromBeauty, *pdfDimuMassFromMixed), RooArgList(*Mass_normForC, *Mass_normForB, *Mass_normForMixed));
 
-  RooAddPdf *pt_model = new RooAddPdf("pt_model", "n_charm_output*dimuPtFromC + n_beauty_output*dimuPtFromB + n_mixed_output*dimuPtFromMixed", RooArgList(*pdfDimuPtFromBeauty, *pdfDimuPtFromCharm, *pdfDimuPtFromMixed), RooArgList(*Pt_normForC, *Pt_normForB, *Pt_normForMixed));
+  RooAddPdf *pt_model = new RooAddPdf("pt_model", "n_charm_output*dimuPtFromC + n_beauty_output*dimuPtFromB + n_mixed_output*dimuPtFromMixed", RooArgList(*pdfDimuPtFromCharm, *pdfDimuPtFromBeauty, *pdfDimuPtFromMixed), RooArgList(*Pt_normForC, *Pt_normForB, *Pt_normForMixed));
 
   // m->setRange("mregion1", 4, 9);
   // m->setRange("mregion2", 11, 30);
