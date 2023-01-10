@@ -80,8 +80,8 @@ void extract_pdf(Int_t Low_Mass = 4, Int_t High_Mass = 30, Int_t Low_Pt = 0, Int
   {
     mass_range.Form("");
     //  mass_range.Form("_withcut");
-    Binning_m = 13;
-    Binning_pt = 15;
+    Binning_m = 26;
+    Binning_pt = 30;
   }
 
   TTree *pt_tree_MC[n_DiMuSelection];
@@ -191,16 +191,16 @@ void extract_pdf(Int_t Low_Mass = 4, Int_t High_Mass = 30, Int_t Low_Pt = 0, Int
     m_Func[i] = m_modelcopied.asTF(*m_modelobs, *m_modelPars, *m);
 
     m_canvas[i] = printMC_ratio(frameDimuMass[i], m_histo[i], m_Func[i], color[i], Low_Mass, High_Mass);
-    m_canvas[i]->SetTitle(Form("plot/m_canvas_%s_unbinned", name_DiMuSelection[i].Data()));
-    m_canvas[i]->SetName(Form("plot/m_canvas_%s_unbinned", name_DiMuSelection[i].Data()));
-    m_canvas[i]->SaveAs(Form("plot/m_canvas_%s_unbinned%s.pdf", name_DiMuSelection[i].Data(), mass_range.Data()));
+    m_canvas[i]->SetTitle(Form("m_canvas_%s_unbinned", name_DiMuSelection[i].Data()));
+    m_canvas[i]->SetName(Form("m_canvas_%s_unbinned", name_DiMuSelection[i].Data()));
+    m_canvas[i]->SaveAs(Form("/home/michele_pennisi/cernbox/output_HF_dimuons/fit_data_output/plot/m_canvas_%s_unbinned%s.pdf", name_DiMuSelection[i].Data(), mass_range.Data()));
 
     pt_canvas[i] = printMC_ratio(frameDimuPt[i], pt_histo[i], pt_Func[i], color[i], Low_Pt, High_Pt);
-    pt_canvas[i]->SetTitle(Form("plot/pt_canvas_%s_unbinned", name_DiMuSelection[i].Data()));
-    pt_canvas[i]->SetName(Form("plot/pt_canvas_%s_unbinned", name_DiMuSelection[i].Data()));
-    pt_canvas[i]->SaveAs(Form("plot/pt_canvas_%s_unbinned%s.pdf", name_DiMuSelection[i].Data(), mass_range.Data()));
+    pt_canvas[i]->SetTitle(Form("pt_canvas_%s_unbinned", name_DiMuSelection[i].Data()));
+    pt_canvas[i]->SetName(Form("pt_canvas_%s_unbinned", name_DiMuSelection[i].Data()));
+    pt_canvas[i]->SaveAs(Form("/home/michele_pennisi/cernbox/output_HF_dimuons/fit_data_output/plot/pt_canvas_%s_unbinned%s.pdf", name_DiMuSelection[i].Data(), mass_range.Data()));
   }
-  w->writeToFile(Form("root_files/pdfMC_unbinned%s.root", mass_range.Data()));
+  w->writeToFile(Form("/home/michele_pennisi/cernbox/output_HF_dimuons/fit_data_output/root_files/pdfMC_unbinned%s.root", mass_range.Data()));
 
   w->Print();
   gDirectory->Add(w);
