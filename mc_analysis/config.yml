@@ -1,11 +1,12 @@
 input:
-  run_list_file: /home/michele_pennisi/dimuon_HF_pp/MC_Analysis/Grid/general_run_information/LHC18p/run_list_part.txt
-  alien_input_path: /alice/sim/2022/LHC22c1
+  run_list_file: /home/michele_pennisi/cernbox/HF_dimuons/mc_analysis/grid_task/general_run_information/LHC18p/remaning.txt
+  dir_macro: /home/michele_pennisi/cernbox/HF_dimuons/mc_analysis/grid_task/trigger_response
+  macro_to_run: ReadMCTriggerEff.C+
 
 output:
-  output_dir: /home/michele_pennisi/dimuon_HF_pp/MC_Analysis/Grid/task_list/30_09_2022
-  submitted_output_file: submitted
-  terminated_output_file: terminated
+  output_dir: /home/michele_pennisi/cernbox/HF_dimuons/mc_analysis/grid_task/task_list/trigger_response/15_01_2023
+  submitted_output_file: submitted_remaining
+  terminated_output_file: terminated_remaining
   alien_output_path: .
 
 data:
@@ -20,15 +21,15 @@ MC:
   macro_dir: /home/michele_pennisi/cernbox/HF_dimuons/mc_analysis/read_output
   macro_to_run: HistMCDimuonHF_lite.C
   input_dir: "30_09_2022"
-  output_dir: /home/michele_pennisi/dimuon_HF_pp/data/LHC18p/Hist_MC/14_12_22
+  output_dir: /home/michele_pennisi/dimuon_HF_pp/data/LHC18p/Hist_MC/19_12_22
   prefix_filename: "MCDimuHFTree" 
 
 copy:
-  alien_output_path: /alice/cern.ch/user/m/mpennisi/HF_DimuAnalysis
-  file_name: HF_MCDimuHFTree
-  task_dir: /home/michele_pennisi/dimuon_HF_pp/MC_Analysis/Grid/task_list/30_09_2022
-  terminated_output_file: terminated_HF_jobs.txt
-  output_dir: /home/michele_pennisi/dimuon_HF_pp/Grid_Sim/HF/RunMCDimuHF/30_09_2022
+  alien_output_path: /alice/cern.ch/user/m/mpennisi/LHC22b3_MC_TriggerResponse
+  file_name: HF_TriggeResponse
+  task_dir: /home/michele_pennisi/cernbox/HF_dimuons/mc_analysis/grid_task/task_list/trigger_response/15_01_2023
+  terminated_output_file: remaning.txt
+  output_dir: /home/michele_pennisi/cernbox/HF_dimuons/mc_analysis/grid_sim/HF/Trigger_response/15_01_2023
 
 merging_data:
   input_path: /home/michele_pennisi/dimuon_HF_pp/data/LHC18p/Hist_AOD/3_11_2022
@@ -37,9 +38,9 @@ merging_data:
   output_file_prefix: TreeResults_merged
 
 merging_MC:
-  input_file: HistLite_HF_MCDimuHFTree
-  output_path: /home/michele_pennisi/dimuon_HF_pp/data/LHC18p/Hist_MC/14_12_22
-  output_file_prefix: HistLite_HF_MCDimuHFTree
+  input_file: Tree_HF_MCDimuHFTree
+  output_path: /home/michele_pennisi/dimuon_HF_pp/data/LHC18p/Hist_MC/19_12_22
+  output_file_prefix: Tree_HF_MCDimuHFTree
 
 # merging_MC:
 #   input_file: HF_HFmixedAnalysis

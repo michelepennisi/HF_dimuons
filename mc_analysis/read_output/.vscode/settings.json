@@ -1,0 +1,18 @@
+{
+    "files.associations": {
+        "HistMCDimuonHF.C": "cpp",
+        "fast_test.C": "cpp",
+        "test_MC_matching_MB.C": "cpp",
+        "mixedHF.C": "cpp",
+        "HF_mixed.C": "cpp",
+        "toy_mixed.C": "cpp",
+        "cs.C": "cpp",
+        "HistMCDimuonHF_light.C": "cpp",
+        "HistMCDimuonHF_lite.C": "cpp",
+        "dimuon_acc.C": "cpp",
+        "th2polyBoxes.C": "cpp",
+        "th2polyEurope.C": "cpp",
+        "th2polyUSA.C": "cpp",
+        "th2polyHoneycomb.C": "cpp"
+    }
+}

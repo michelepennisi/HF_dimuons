@@ -27,9 +27,9 @@ def run_on_grid(inputCfg, mode, MC_type):
         fOut = open("%s/%s_%s_jobs.txt" % (inputCfg["output"]["output_dir"], inputCfg["output"]["terminated_output_file"],MC_type), "w")
 
     for run in fIn:
-        print(fr"aliroot -b -q /home/michele_pennisi/dimuon_HF_pp/MC_Analysis/Grid/ReadMCDimuonHF_Grid.C\(\"%s\",%i,\"%s\"\)" % (mode, int(run),MC_type))
-        os.chdir('/home/michele_pennisi/dimuon_HF_pp/MC_Analysis/Grid/')
-        os.system(fr"aliroot -b -q ReadMCDimuonHF_Grid.C\(\"%s\",%i\,\"%s\"\)" % (mode, int(run),MC_type))
+        print("aliroot -b -q %s/%s\(\"%s\",%i,\"%s\"\)" % (inputCfg["input"]["dir_macro"],inputCfg["input"]["macro_to_run"],mode, int(run),MC_type))
+        os.chdir("%s" % (inputCfg["input"]["dir_macro"]))
+        os.system(fr"aliroot -b -q %s\(\"%s\",%i\,\"%s\"\)" % (inputCfg["input"]["macro_to_run"],mode, int(run),MC_type))
         fOut.write(run)
 
 def data(inputCfg):
@@ -57,6 +57,10 @@ def MC(inputCfg,runmode):
         os.system(fr"root -b -q %s/%s\(\"%s\",%i,\"%s\",\"%s\",\"%s\"\)" % (inputCfg["MC"]["macro_dir"],inputCfg["MC"]["macro_to_run"],runmode,int(run),inputCfg["MC"]["input_dir"],inputCfg["MC"]["output_dir"],inputCfg["MC"]["prefix_filename"]))
 
 def copy_from_grid(inputCfg):
+
+    if not os.path.isdir(inputCfg["copy"]["output_dir"]) :
+        print("the directory does not exist, creating %s" % (inputCfg["output"]["output_dir"]))
+        os.system("mkdir -p %s" % (inputCfg["copy"]["output_dir"]))
     '''
     function for downloading files from alien grid
     '''
@@ -65,8 +69,8 @@ def copy_from_grid(inputCfg):
         return
     fIn  = open("%s/%s" % (inputCfg["copy"]["task_dir"], inputCfg["copy"]["terminated_output_file"]), "r")
     for run in fIn:
-        print("alien_cp alien:%s/%i/OutputTree/000/%s_%i.root file:%s/%s_%i.root" % (inputCfg["copy"]["alien_output_path"], int(run),inputCfg["copy"]["file_name"],int(run),inputCfg["copy"]["output_dir"],inputCfg["copy"]["file_name"],int(run)))
-        os.system("alien_cp alien:%s/%i/OutputTree/000/%s_%i.root file:%s/%s_%i.root" % (inputCfg["copy"]["alien_output_path"], int(run),inputCfg["copy"]["file_name"],int(run),inputCfg["copy"]["output_dir"],inputCfg["copy"]["file_name"],int(run))) # enable if you want to run on grid
+        print("alien_cp alien:%s/%i/000/%s_%i.root file:%s/%s_%i.root" % (inputCfg["copy"]["alien_output_path"], int(run),inputCfg["copy"]["file_name"],int(run),inputCfg["copy"]["output_dir"],inputCfg["copy"]["file_name"],int(run)))
+        os.system("alien_cp alien:%s/%i/000/%s_%i.root file:%s/%s_%i.root" % (inputCfg["copy"]["alien_output_path"], int(run),inputCfg["copy"]["file_name"],int(run),inputCfg["copy"]["output_dir"],inputCfg["copy"]["file_name"],int(run))) # enable if you want to run on grid
 
 def merge_files(inputCfg,input_type,MC_type):
     '''

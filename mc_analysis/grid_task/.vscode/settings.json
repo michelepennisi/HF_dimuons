@@ -1,0 +1,10 @@
+{
+    "files.associations": {
+        "ReadMCDimuonHF_Grid.C": "cpp",
+        "AddTaskDimuonHF.C": "cpp",
+        "AddTaskHistDimuonHF.C": "cpp",
+        "CreateAlienHandler_Grid.C": "cpp",
+        "ReadMCTriggerEff.C": "cpp",
+        "rapid_macro.C": "cpp"
+    }
+}

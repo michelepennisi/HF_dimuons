@@ -1,0 +1,19 @@
+{
+    "files.associations": {
+        "test_root_fit.C": "cpp",
+        "generate_toy_sample_pdf_unbinned.C": "cpp",
+        "unbinned_fit_data_sample.C": "cpp",
+        "unbinned_test_toy_upsilon.C": "cpp",
+        "cs.C": "cpp",
+        "chisquare_data_scan.C": "cpp",
+        "binned_fit_data_sample.C": "cpp",
+        "single_unbinned_fit_data_sample.C": "cpp",
+        "single_binned_fit_data_sample.C": "cpp",
+        "extract_pdf.C": "cpp",
+        "unbinned_closure_test_pdf.C": "cpp",
+        "binned_extraction.C": "cpp",
+        "systematic_pdf.C": "cpp",
+        "unbinned_fit_data_sample_SYSTEMATIC.C": "cpp",
+        "cs_systematic_signal.C": "cpp"
+    }
+}

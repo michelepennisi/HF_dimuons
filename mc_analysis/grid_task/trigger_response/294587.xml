@@ -1,0 +1,105 @@
+<?xml version="1.0"?>
+<alien>
+  <collection name="find  -l 15000  -o 0 /alice/sim/2022/LHC22b3/294587 /AOD/*/AliAOD.root">
+    <event name="1">
+      <file name="AliAOD.root" lfn="/alice/sim/2022/LHC22b3/294587/AOD/001/AliAOD.root" turl="alien:///alice/sim/2022/LHC22b3/294587/AOD/001/AliAOD.root" />
+    </event>
+    <event name="2">
+      <file name="AliAOD.root" lfn="/alice/sim/2022/LHC22b3/294587/AOD/002/AliAOD.root" turl="alien:///alice/sim/2022/LHC22b3/294587/AOD/002/AliAOD.root" />
+    </event>
+    <event name="3">
+      <file name="AliAOD.root" lfn="/alice/sim/2022/LHC22b3/294587/AOD/003/AliAOD.root" turl="alien:///alice/sim/2022/LHC22b3/294587/AOD/003/AliAOD.root" />
+    </event>
+    <event name="4">
+      <file name="AliAOD.root" lfn="/alice/sim/2022/LHC22b3/294587/AOD/004/AliAOD.root" turl="alien:///alice/sim/2022/LHC22b3/294587/AOD/004/AliAOD.root" />
+    </event>
+    <event name="5">
+      <file name="AliAOD.root" lfn="/alice/sim/2022/LHC22b3/294587/AOD/005/AliAOD.root" turl="alien:///alice/sim/2022/LHC22b3/294587/AOD/005/AliAOD.root" />
+    </event>
+    <event name="6">
+      <file name="AliAOD.root" lfn="/alice/sim/2022/LHC22b3/294587/AOD/006/AliAOD.root" turl="alien:///alice/sim/2022/LHC22b3/294587/AOD/006/AliAOD.root" />
+    </event>
+    <event name="7">
+      <file name="AliAOD.root" lfn="/alice/sim/2022/LHC22b3/294587/AOD/007/AliAOD.root" turl="alien:///alice/sim/2022/LHC22b3/294587/AOD/007/AliAOD.root" />
+    </event>
+    <event name="8">
+      <file name="AliAOD.root" lfn="/alice/sim/2022/LHC22b3/294587/AOD/008/AliAOD.root" turl="alien:///alice/sim/2022/LHC22b3/294587/AOD/008/AliAOD.root" />
+    </event>
+    <event name="9">
+      <file name="AliAOD.root" lfn="/alice/sim/2022/LHC22b3/294587/AOD/009/AliAOD.root" turl="alien:///alice/sim/2022/LHC22b3/294587/AOD/009/AliAOD.root" />
+    </event>
+    <event name="10">
+      <file name="AliAOD.root" lfn="/alice/sim/2022/LHC22b3/294587/AOD/010/AliAOD.root" turl="alien:///alice/sim/2022/LHC22b3/294587/AOD/010/AliAOD.root" />
+    </event>
+    <event name="11">
+      <file name="AliAOD.root" lfn="/alice/sim/2022/LHC22b3/294587/AOD/011/AliAOD.root" turl="alien:///alice/sim/2022/LHC22b3/294587/AOD/011/AliAOD.root" />
+    </event>
+    <event name="12">
+      <file name="AliAOD.root" lfn="/alice/sim/2022/LHC22b3/294587/AOD/012/AliAOD.root" turl="alien:///alice/sim/2022/LHC22b3/294587/AOD/012/AliAOD.root" />
+    </event>
+    <event name="13">
+      <file name="AliAOD.root" lfn="/alice/sim/2022/LHC22b3/294587/AOD/013/AliAOD.root" turl="alien:///alice/sim/2022/LHC22b3/294587/AOD/013/AliAOD.root" />
+    </event>
+    <event name="14">
+      <file name="AliAOD.root" lfn="/alice/sim/2022/LHC22b3/294587/AOD/014/AliAOD.root" turl="alien:///alice/sim/2022/LHC22b3/294587/AOD/014/AliAOD.root" />
+    </event>
+    <event name="15">
+      <file name="AliAOD.root" lfn="/alice/sim/2022/LHC22b3/294587/AOD/015/AliAOD.root" turl="alien:///alice/sim/2022/LHC22b3/294587/AOD/015/AliAOD.root" />
+    </event>
+    <event name="16">
+      <file name="AliAOD.root" lfn="/alice/sim/2022/LHC22b3/294587/AOD/016/AliAOD.root" turl="alien:///alice/sim/2022/LHC22b3/294587/AOD/016/AliAOD.root" />
+    </event>
+    <event name="17">
+      <file name="AliAOD.root" lfn="/alice/sim/2022/LHC22b3/294587/AOD/017/AliAOD.root" turl="alien:///alice/sim/2022/LHC22b3/294587/AOD/017/AliAOD.root" />
+    </event>
+    <event name="18">
+      <file name="AliAOD.root" lfn="/alice/sim/2022/LHC22b3/294587/AOD/018/AliAOD.root" turl="alien:///alice/sim/2022/LHC22b3/294587/AOD/018/AliAOD.root" />
+    </event>
+    <event name="19">
+      <file name="AliAOD.root" lfn="/alice/sim/2022/LHC22b3/294587/AOD/019/AliAOD.root" turl="alien:///alice/sim/2022/LHC22b3/294587/AOD/019/AliAOD.root" />
+    </event>
+    <event name="20">
+      <file name="AliAOD.root" lfn="/alice/sim/2022/LHC22b3/294587/AOD/020/AliAOD.root" turl="alien:///alice/sim/2022/LHC22b3/294587/AOD/020/AliAOD.root" />
+    </event>
+    <event name="21">
+      <file name="AliAOD.root" lfn="/alice/sim/2022/LHC22b3/294587/AOD/021/AliAOD.root" turl="alien:///alice/sim/2022/LHC22b3/294587/AOD/021/AliAOD.root" />
+    </event>
+    <event name="22">
+      <file name="AliAOD.root" lfn="/alice/sim/2022/LHC22b3/294587/AOD/022/AliAOD.root" turl="alien:///alice/sim/2022/LHC22b3/294587/AOD/022/AliAOD.root" />
+    </event>
+    <event name="23">
+      <file name="AliAOD.root" lfn="/alice/sim/2022/LHC22b3/294587/AOD/023/AliAOD.root" turl="alien:///alice/sim/2022/LHC22b3/294587/AOD/023/AliAOD.root" />
+    </event>
+    <event name="24">
+      <file name="AliAOD.root" lfn="/alice/sim/2022/LHC22b3/294587/AOD/024/AliAOD.root" turl="alien:///alice/sim/2022/LHC22b3/294587/AOD/024/AliAOD.root" />
+    </event>
+    <event name="25">
+      <file name="AliAOD.root" lfn="/alice/sim/2022/LHC22b3/294587/AOD/025/AliAOD.root" turl="alien:///alice/sim/2022/LHC22b3/294587/AOD/025/AliAOD.root" />
+    </event>
+    <event name="26">
+      <file name="AliAOD.root" lfn="/alice/sim/2022/LHC22b3/294587/AOD/026/AliAOD.root" turl="alien:///alice/sim/2022/LHC22b3/294587/AOD/026/AliAOD.root" />
+    </event>
+    <event name="27">
+      <file name="AliAOD.root" lfn="/alice/sim/2022/LHC22b3/294587/AOD/027/AliAOD.root" turl="alien:///alice/sim/2022/LHC22b3/294587/AOD/027/AliAOD.root" />
+    </event>
+    <event name="28">
+      <file name="AliAOD.root" lfn="/alice/sim/2022/LHC22b3/294587/AOD/028/AliAOD.root" turl="alien:///alice/sim/2022/LHC22b3/294587/AOD/028/AliAOD.root" />
+    </event>
+    <event name="29">
+      <file name="AliAOD.root" lfn="/alice/sim/2022/LHC22b3/294587/AOD/029/AliAOD.root" turl="alien:///alice/sim/2022/LHC22b3/294587/AOD/029/AliAOD.root" />
+    </event>
+    <event name="30">
+      <file name="AliAOD.root" lfn="/alice/sim/2022/LHC22b3/294587/AOD/030/AliAOD.root" turl="alien:///alice/sim/2022/LHC22b3/294587/AOD/030/AliAOD.root" />
+    </event>
+    <event name="31">
+      <file name="AliAOD.root" lfn="/alice/sim/2022/LHC22b3/294587/AOD/031/AliAOD.root" turl="alien:///alice/sim/2022/LHC22b3/294587/AOD/031/AliAOD.root" />
+    </event>
+    <event name="32">
+      <file name="AliAOD.root" lfn="/alice/sim/2022/LHC22b3/294587/AOD/032/AliAOD.root" turl="alien:///alice/sim/2022/LHC22b3/294587/AOD/032/AliAOD.root" />
+    </event>
+    <event name="33">
+      <file name="AliAOD.root" lfn="/alice/sim/2022/LHC22b3/294587/AOD/033/AliAOD.root" turl="alien:///alice/sim/2022/LHC22b3/294587/AOD/033/AliAOD.root" />
+    </event>
+    <info comment="Exported XML" />
+</collection>
+</alien>

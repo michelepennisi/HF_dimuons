@@ -143,6 +143,12 @@ void HistMCDimuonHF_lite(
   TChain *input_tree = Getting_Tree(dir_filename, filename, false);
 
   TFile fr(fileout_tree.Data(), "recreate");
+  TTree *gen_tree_muHF = new TTree("gen_tree_muhf", "Tree pt dimuon from hf with 4<M<30");
+  TTree *gen_tree_mucharm = new TTree("gen_tree_mucharm", "Tree pt dimuon charm with 4<M<30");
+  TTree *gen_tree_mubeauty = new TTree("gen_tree_mubeauty", "Tree pt dimuon beauty with 4<M<30");
+  TTree *gen_tree_mumixed = new TTree("gen_tree_mumixed", "Tree pt dimuon mixed with 4<M<30");
+
+  TTree *rec_tree_muhf = new TTree("rec_tree_muhf", "Tree pt dimuon charm with 4<M<30");
   TTree *rec_tree_mucharm = new TTree("rec_tree_mucharm", "Tree pt dimuon charm with 4<M<30");
   TTree *rec_tree_mubeauty = new TTree("rec_tree_mubeauty", "Tree pt dimuon beauty with 4<M<30");
   TTree *rec_tree_mumixed = new TTree("rec_tree_mumixed", "Tree pt dimuon mixed with 4<M<30");
@@ -163,6 +169,23 @@ void HistMCDimuonHF_lite(
   TTree *rec_tree_mubeauty_lowmass_lowpt = new TTree("rec_tree_mubeauty_LowMass_LowPt", "Tree m dimuon beauty with 4<M<9 && pt<10");
   TTree *rec_tree_mumixed_lowmass_lowpt = new TTree("rec_tree_mumixed_LowMass_LowPt", "Tree m dimuon mixed with 4<M<9 && pt<10");
 
+  //--------------------------------------------------------------//
+
+  // Define varible for tree with gen dimuon
+
+  Double_t *gen_pt_dimu_HF = new Double_t;
+  Double_t *gen_pt_dimu_charm = new Double_t;
+  Double_t *gen_pt_dimu_beauty = new Double_t;
+  Double_t *gen_pt_dimu_mixed = new Double_t;
+
+  Double_t *gen_m_dimu_HF = new Double_t;
+  Double_t *gen_m_dimu_charm = new Double_t;
+  Double_t *gen_m_dimu_beauty = new Double_t;
+  Double_t *gen_m_dimu_mixed = new Double_t;
+
+  //--------------------------------------------------------------//
+
+  Double_t *pt_dimu_HF = new Double_t;
   Double_t *pt_dimu_charm = new Double_t;
   Double_t *pt_dimu_beauty = new Double_t;
   Double_t *pt_dimu_mixed = new Double_t;
@@ -183,6 +206,7 @@ void HistMCDimuonHF_lite(
   Double_t *pt_dimu_beauty_lowmass_lowpt = new Double_t;
   Double_t *pt_dimu_mixed_lowmass_lowpt = new Double_t;
 
+  Double_t *m_dimu_HF = new Double_t;
   Double_t *m_dimu_charm = new Double_t;
   Double_t *m_dimu_beauty = new Double_t;
   Double_t *m_dimu_mixed = new Double_t;
@@ -202,6 +226,27 @@ void HistMCDimuonHF_lite(
   Double_t *m_dimu_charm_lowmass_lowpt = new Double_t;
   Double_t *m_dimu_beauty_lowmass_lowpt = new Double_t;
   Double_t *m_dimu_mixed_lowmass_lowpt = new Double_t;
+
+  //--------------------------------------------------------//
+
+  // Link gen dimuon variable to gen tree
+
+  gen_tree_muHF->Branch("pt", gen_pt_dimu_HF, "pt/D");
+  gen_tree_muHF->Branch("m", gen_m_dimu_HF, "m/D");
+
+  gen_tree_mucharm->Branch("pt", gen_pt_dimu_charm, "pt/D");
+  gen_tree_mucharm->Branch("m", gen_m_dimu_charm, "m/D");
+
+  gen_tree_mubeauty->Branch("pt", gen_pt_dimu_beauty, "pt/D");
+  gen_tree_mubeauty->Branch("m", gen_m_dimu_beauty, "m/D");
+
+  gen_tree_mumixed->Branch("pt", gen_pt_dimu_mixed, "pt/D");
+  gen_tree_mumixed->Branch("m", gen_m_dimu_mixed, "m/D");
+
+  //--------------------------------------------------------//
+
+  rec_tree_muhf->Branch("pt", pt_dimu_HF, "pt/D");
+  rec_tree_muhf->Branch("m", m_dimu_HF, "m/D");
 
   rec_tree_mucharm->Branch("pt", pt_dimu_charm, "pt/D");
   rec_tree_mucharm->Branch("m", m_dimu_charm, "m/D");
@@ -683,7 +728,7 @@ void HistMCDimuonHF_lite(
         if ((Pt_Mu0 > 0.5) && (Pt_Mu1 > 0.5))
           Kin_DiMu_gen[2] = kTRUE;
       }
-
+      // Gen dimuon DQ cuts
       if ((Y_DiMu > -4.0 && Y_DiMu < -2.5) && (Eta_Mu0 > -4.0 && Eta_Mu0 < -2.5) && (Eta_Mu1 > -4.0 && Eta_Mu1 < -2.5))
       {
         Kin_DiMu_gen[3] = kTRUE;
@@ -738,6 +783,41 @@ void HistMCDimuonHF_lite(
         } // End definition over DiMu cut
 
       } // End loop over M_DiMu cut
+
+      if (Kin_DiMu_gen[3] && Mass_DiMu_gen[1] && Charge_DiMu_gen[0])
+      {
+        /*
+        1 For HF
+        2 For Charm
+        3 For Beauty
+        4 For HF Mixed (one muon from Charm, one muon from Beauty)
+        */
+        if (Selection_DiMu_gen[1])
+        {
+          *gen_pt_dimu_HF = Pt_DiMu;
+          *gen_m_dimu_HF = M_DiMu;
+          gen_tree_muHF->Fill();
+          if (Selection_DiMu_gen[2])
+          {
+
+            *gen_pt_dimu_charm = Pt_DiMu;
+            *gen_m_dimu_charm = M_DiMu;
+            gen_tree_mucharm->Fill();
+          }
+          else if (Selection_DiMu_gen[3])
+          {
+            *gen_pt_dimu_beauty = Pt_DiMu;
+            *gen_m_dimu_beauty = M_DiMu;
+            gen_tree_mubeauty->Fill();
+          }
+          else if (Selection_DiMu_gen[4])
+          {
+            *gen_pt_dimu_mixed = Pt_DiMu;
+            *gen_m_dimu_mixed = M_DiMu;
+            gen_tree_mumixed->Fill();
+          }
+        }
+      }
 
     } // End loop on generated Dimuons
 
@@ -997,6 +1077,12 @@ void HistMCDimuonHF_lite(
 
       if (Kin_DiMu_rec[8] && Charge_DiMu_rec[0])
       {
+        if (Selection_DiMu_rec[1] && Mass_DiMu_rec[1])
+        {
+          *pt_dimu_HF = Pt_DiMu;
+          *m_dimu_HF = M_DiMu;
+          rec_tree_muhf->Fill();
+        }
         /*
         2 For Charm
         3 For Beauty
@@ -1149,7 +1235,25 @@ void HistMCDimuonHF_lite(
 
   h_Ncharm_pairs->Write(0, 2, 0);
   h_Nbeauty_pairs->Write(0, 2, 0);
+  TDirectory *dir_fr = fr.GetDirectory("Gen");
+  if (!dir_fr)
+    dir_fr = fr.mkdir("Gen");
+  else
+    printf("%s already exists \n", "Gen");
+  fr.cd("Gen");
+  gen_tree_muHF->Write(0, 2, 0);
+  gen_tree_mucharm->Write(0, 2, 0);
+  gen_tree_mubeauty->Write(0, 2, 0);
+  gen_tree_mumixed->Write(0, 2, 0);
 
+  dir_fr = fr.GetDirectory("Rec");
+  if (!dir_fr)
+    dir_fr = fr.mkdir("Rec");
+  else
+    printf("%s already exists \n", "Rec");
+  fr.cd("Rec");
+
+  rec_tree_muhf->Write(0, 2, 0);
   rec_tree_mucharm->Write(0, 2, 0);
   rec_tree_mubeauty->Write(0, 2, 0);
   rec_tree_mumixed->Write(0, 2, 0);
