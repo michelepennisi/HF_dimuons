@@ -1,0 +1,11 @@
+trigger systematic uncertainty using the code from Diego Stocco
+	
+1) Lanciare AliAnalysisTaskMTRResponse sul tuo MC.
+2) Dare l'output del punto 1) piu' gli output che ti ho inviato (che sono il risultato di AliAnalysisTaskMTRResponse lanciati sui dati PbPb 
+   e sul MC associato) a AliMTRParameterizedResponse che calcola la differenza relativa in PbPb e la applica alla risposta Apt/All_muons stimata sul tuo MC
+3) Passi l'AliMTRParameterizedResponse cosi' ottenuta ad AliAnalysisTaskWeightMTRResponse che lanci di nuovo sul MC: 
+   la classe ripesera' ogni muone con la funzione di risposta MC e "dati" (che in questo caso e' i tuo MC modificato nel punto 2). Dall'output ti puoi ricavare l'AccxEff nei due casi.
+
+Ovviamente devi modificare AliMTRParameterizedResponse affinche' selezioni solo i di-muoni che consideri come il tuo segnale
+(la classe e' super generica e ti costruisce vari tipi di "segnali", siano essi single muons o di-muon per dverse risonanze, 
+forse anche per dei "correlated dimuons" ma bisogna verificare che siano i di-muoni che tu consideri il tuo segnale)
