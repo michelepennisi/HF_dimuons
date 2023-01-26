@@ -598,8 +598,6 @@ void AliAnalysisTaskDimuonHF::UserExec(Option_t *)
         if (mu0->GetLabel() == -1)
             continue;
         AliAODMCParticle *mctrack0 = (AliAODMCParticle *)mcarray->At(mu0->GetLabel());
-        if (mu0->GetLabel() != mctrack0->GetLabel())
-            continue;
         Int_t PDG_mctrack0 = mctrack0->GetPdgCode();
         // if (TMath::Abs(PDG_mctrack0) == 4 || TMath::Abs(PDG_mctrack0) == 5)
         // {
@@ -670,8 +668,6 @@ void AliAnalysisTaskDimuonHF::UserExec(Option_t *)
             if (mu1->GetLabel() == -1)
                 continue;
             AliAODMCParticle *mctrack1 = (AliAODMCParticle *)mcarray->At(mu1->GetLabel());
-            if (mu1->GetLabel() != mctrack1->GetLabel())
-                continue;
             Int_t PDG_mctrack1 = mctrack1->GetPdgCode();
             if (TMath::Abs(PDG_mctrack1) != 13)
                 continue;
