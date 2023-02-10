@@ -1,7 +1,3 @@
-
-/// \author Luca Micheletti <luca.micheletti@to.infn.it>, INFN
-/// \author Michele Pennisi <michele.pennisi@cern.ch>, INFN
-
 #include "RooRealVar.h"
 #include "RooDataSet.h"
 #include "RooGaussian.h"
@@ -50,6 +46,11 @@ void extract_pdf(Int_t Low_Mass = 4, Int_t High_Mass = 30, Int_t Low_Pt = 0, Int
   name_DiMuSelection[1].Form("beauty");
   name_DiMuSelection[2].Form("mixed");
 
+  TString name_2DiMuSelection[n_DiMuSelection];
+  name_2DiMuSelection[0].Form("Charm");
+  name_2DiMuSelection[1].Form("Beauty");
+  name_2DiMuSelection[2].Form("Mixed");
+
   TString mass_range;
   Double_t Binning_m;
   Double_t Binning_pt;
@@ -95,6 +96,16 @@ void extract_pdf(Int_t Low_Mass = 4, Int_t High_Mass = 30, Int_t Low_Pt = 0, Int
 
   RooPlot *frameDimuMass[n_DiMuSelection];
   RooPlot *frameDimuPt[n_DiMuSelection];
+
+    RooRealVar *B_DimuMass[n_DiMuSelection];
+    RooRealVar *n1_DimuMass[n_DiMuSelection];
+    RooRealVar *n2_DimuMass[n_DiMuSelection];
+    RooRealVar *B_DimuPt[n_DiMuSelection];
+    RooRealVar *n1_DimuPt[n_DiMuSelection];
+    RooRealVar *n2_DimuPt[n_DiMuSelection];
+
+  TH1D *Param_Pt_unbinned[n_DiMuSelection];
+  TH1D *Param_M_unbinned[n_DiMuSelection];
 
   RooRealVar *m = new RooRealVar("m", "#it{m}_{#mu^{#plus}#mu^{#minus}} (GeV/#it{c}^{2})", Low_Mass, High_Mass);
   // m->setRange("region1", 4, 9);
@@ -177,6 +188,42 @@ void extract_pdf(Int_t Low_Mass = 4, Int_t High_Mass = 30, Int_t Low_Pt = 0, Int
 
     M_Dimu[i]->plotOn(frameDimuMass[i], Name(Form("M_%s", name_DiMuSelection[i].Data())), MarkerSize(1.75), MarkerStyle(24), MarkerColor(color[i]), LineColor(color[i]), LineWidth(2), DrawOption("PEZ"));
     pdfDimuM[i]->plotOn(frameDimuMass[i], Name(Form("pdfDimuMFrom%s", name_DiMuSelection[i].Data())), LineStyle(kSolid), LineColor(color[i]));
+    // printf("%s\n",Form("B_DimuMassfrom%s", name_2DiMuSelection[i].Data()));
+    B_DimuMass[i] = w->var(Form("B_DimuMassFrom%s", name_2DiMuSelection[i].Data()));
+    B_DimuMass[i]->setConstant(kTRUE);
+    n1_DimuMass[i] = w->var(Form("n1_DimuMassFrom%s", name_2DiMuSelection[i].Data()));
+    n1_DimuMass[i]->setConstant(kTRUE);
+    n2_DimuMass[i] = w->var(Form("n2_DimuMassFrom%s", name_2DiMuSelection[i].Data()));
+    n2_DimuMass[i]->setConstant(kTRUE);
+
+    B_DimuPt[i] = w->var(Form("B_DimuPtFrom%s", name_2DiMuSelection[i].Data()));
+    B_DimuPt[i]->setConstant(kTRUE);
+    n1_DimuPt[i] = w->var(Form("n1_DimuPtFrom%s", name_2DiMuSelection[i].Data()));
+    n1_DimuPt[i]->setConstant(kTRUE);
+    n2_DimuPt[i] = w->var(Form("n2_DimuPtFrom%s", name_2DiMuSelection[i].Data()));
+    n2_DimuPt[i]->setConstant(kTRUE);
+
+    Param_Pt_unbinned[i] = new TH1D(Form("Param_Pt_unbinned_from%s", name_2DiMuSelection[i].Data()), Form("Param_Pt_unbinned_from%s", name_2DiMuSelection[i].Data()), 4, 0, 4);
+    Param_Pt_unbinned[i]->SetBinContent(1, B_DimuPt[i]->getVal());
+    Param_Pt_unbinned[i]->SetBinContent(2, n1_DimuPt[i]->getVal());
+    Param_Pt_unbinned[i]->SetBinContent(3, n2_DimuPt[i]->getVal());
+    Param_Pt_unbinned[i]->SetBinContent(4, 1);
+
+    Param_Pt_unbinned[i]->SetBinError(1, B_DimuPt[i]->getError());
+    Param_Pt_unbinned[i]->SetBinError(2, n1_DimuPt[i]->getError());
+    Param_Pt_unbinned[i]->SetBinError(3, n2_DimuPt[i]->getError());
+    Param_Pt_unbinned[i]->SetBinError(4, 1);
+
+    Param_M_unbinned[i] = new TH1D(Form("Param_M_unbinned_from%s", name_2DiMuSelection[i].Data()), Form("Param_M_unbinned_from%s", name_2DiMuSelection[i].Data()), 4, 0, 4);
+    Param_M_unbinned[i]->SetBinContent(1, B_DimuMass[i]->getVal());
+    Param_M_unbinned[i]->SetBinContent(2, n1_DimuMass[i]->getVal());
+    Param_M_unbinned[i]->SetBinContent(3, n2_DimuMass[i]->getVal());
+    Param_M_unbinned[i]->SetBinContent(4, 1);
+
+    Param_M_unbinned[i]->SetBinError(1, B_DimuMass[i]->getError());
+    Param_M_unbinned[i]->SetBinError(2, n1_DimuMass[i]->getError());
+    Param_M_unbinned[i]->SetBinError(3, n2_DimuMass[i]->getError());
+    Param_M_unbinned[i]->SetBinError(4, 1);
 
     RooArgSet *pt_model = static_cast<RooArgSet *>(RooArgSet(*pdfDimuPt[i]).snapshot(true));                             // True means copy the PDF and everything it depends on
     auto &pt_modelcopied = static_cast<RooAbsPdf &>((*pt_model)[Form("pdfDimuPtFrom%s", name_DiMuSelection[i].Data())]); // Get back the copied pdf. It lives in the RooArgSet "copyOfEverything"
@@ -205,7 +252,15 @@ void extract_pdf(Int_t Low_Mass = 4, Int_t High_Mass = 30, Int_t Low_Pt = 0, Int
   w->Print();
   gDirectory->Add(w);
 
+  TFile *fOut_param = new TFile("signal_extraction_systematic_pdf.root", "UPDATE");
+  fOut_param->cd();
 
+  for (Int_t i = 0; i < n_DiMuSelection; i++)
+  {
+    Param_Pt_unbinned[i]->Write(0, 2, 0);
+    Param_M_unbinned[i]->Write(0, 2, 0);
+  }
+  fOut_param->Close();
 }
 //---------------------------------------------------------------------------------------//
 

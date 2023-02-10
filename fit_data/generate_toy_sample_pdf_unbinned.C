@@ -80,8 +80,8 @@ void generate_toy_sample_pdf_unbinned(Int_t Low_Mass = 4, Int_t High_Mass = 30, 
   {
     mass_range.Form("");
     //  mass_range.Form("_withcut");
-    Binning_m = 13;
-    Binning_pt = 15;
+    Binning_m = 26;
+    Binning_pt = 30;
   }
 
   TTree *pt_tree_MC[n_DiMuSelection];

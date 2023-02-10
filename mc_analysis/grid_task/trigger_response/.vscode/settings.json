@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "CreateAlienHandler_Grid.C": "cpp",
+        "ReadMCTriggerEff.C": "cpp",
+        "AddTaskDimuonHF.C": "cpp"
+    }
+}

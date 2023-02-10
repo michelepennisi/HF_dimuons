@@ -1,0 +1,148 @@
+// Do NOT change. Changes will be lost next time file is generated
+
+#define R__DICTIONARY_FILENAME dIhomedImichele_pennisidIcernboxdIHF_dimuonsdImc_analysisdIgrid_taskdItrigger_responsedIAliAnalysisTaskTriggerEff_cxx_ACLiC_dict
+#define R__NO_DEPRECATION
+
+/*******************************************************************/
+#include <stddef.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <assert.h>
+#define G__DICTIONARY
+#include "RConfig.h"
+#include "TClass.h"
+#include "TDictAttributeMap.h"
+#include "TInterpreter.h"
+#include "TROOT.h"
+#include "TBuffer.h"
+#include "TMemberInspector.h"
+#include "TInterpreter.h"
+#include "TVirtualMutex.h"
+#include "TError.h"
+
+#ifndef G__ROOT
+#define G__ROOT
+#endif
+
+#include "RtypesImp.h"
+#include "TIsAProxy.h"
+#include "TFileMergeInfo.h"
+#include <algorithm>
+#include "TCollectionProxyInfo.h"
+/*******************************************************************/
+
+#include "TDataMember.h"
+
+// The generated code does not explicitly qualify STL entities
+namespace std {} using namespace std;
+
+// Header files passed as explicit arguments
+#include "/home/michele_pennisi/cernbox/HF_dimuons/mc_analysis/grid_task/trigger_response/./AliAnalysisTaskTriggerEff.cxx"
+
+// Header files passed via #pragma extra_include
+
+   namespace ROOTDict {
+      inline ::ROOT::TGenericClassInfo *GenerateInitInstance();
+      static TClass *ROOT_Dictionary();
+
+      // Function generating the singleton type initializer
+      inline ::ROOT::TGenericClassInfo *GenerateInitInstance()
+      {
+         static ::ROOT::TGenericClassInfo 
+            instance("ROOT", 0 /*version*/, "Rtypes.h", 105,
+                     ::ROOT::Internal::DefineBehavior((void*)0,(void*)0),
+                     &ROOT_Dictionary, 0);
+         return &instance;
+      }
+      // Insure that the inline function is _not_ optimized away by the compiler
+      ::ROOT::TGenericClassInfo *(*_R__UNIQUE_DICT_(InitFunctionKeeper))() = &GenerateInitInstance;  
+      // Static variable to force the class initialization
+      static ::ROOT::TGenericClassInfo *_R__UNIQUE_DICT_(Init) = GenerateInitInstance(); R__UseDummy(_R__UNIQUE_DICT_(Init));
+
+      // Dictionary for non-ClassDef classes
+      static TClass *ROOT_Dictionary() {
+         return GenerateInitInstance()->GetClass();
+      }
+
+   }
+
+namespace ROOT {
+   static void *new_AliAnalysisTaskTriggerEff(void *p = 0);
+   static void *newArray_AliAnalysisTaskTriggerEff(Long_t size, void *p);
+   static void delete_AliAnalysisTaskTriggerEff(void *p);
+   static void deleteArray_AliAnalysisTaskTriggerEff(void *p);
+   static void destruct_AliAnalysisTaskTriggerEff(void *p);
+
+   // Function generating the singleton type initializer
+   static TGenericClassInfo *GenerateInitInstanceLocal(const ::AliAnalysisTaskTriggerEff*)
+   {
+      ::AliAnalysisTaskTriggerEff *ptr = 0;
+      static ::TVirtualIsAProxy* isa_proxy = new ::TInstrumentedIsAProxy< ::AliAnalysisTaskTriggerEff >(0);
+      static ::ROOT::TGenericClassInfo 
+         instance("AliAnalysisTaskTriggerEff", ::AliAnalysisTaskTriggerEff::Class_Version(), "AliAnalysisTaskTriggerEff.h", 15,
+                  typeid(::AliAnalysisTaskTriggerEff), ::ROOT::Internal::DefineBehavior(ptr, ptr),
+                  &::AliAnalysisTaskTriggerEff::Dictionary, isa_proxy, 4,
+                  sizeof(::AliAnalysisTaskTriggerEff) );
+      instance.SetNew(&new_AliAnalysisTaskTriggerEff);
+      instance.SetNewArray(&newArray_AliAnalysisTaskTriggerEff);
+      instance.SetDelete(&delete_AliAnalysisTaskTriggerEff);
+      instance.SetDeleteArray(&deleteArray_AliAnalysisTaskTriggerEff);
+      instance.SetDestructor(&destruct_AliAnalysisTaskTriggerEff);
+      return &instance;
+   }
+   TGenericClassInfo *GenerateInitInstance(const ::AliAnalysisTaskTriggerEff*)
+   {
+      return GenerateInitInstanceLocal((::AliAnalysisTaskTriggerEff*)0);
+   }
+   // Static variable to force the class initialization
+   static ::ROOT::TGenericClassInfo *_R__UNIQUE_DICT_(Init) = GenerateInitInstanceLocal((const ::AliAnalysisTaskTriggerEff*)0x0); R__UseDummy(_R__UNIQUE_DICT_(Init));
+} // end of namespace ROOT
+
+//______________________________________________________________________________
+atomic_TClass_ptr AliAnalysisTaskTriggerEff::fgIsA(0);  // static to hold class pointer
+
+//______________________________________________________________________________
+const char *AliAnalysisTaskTriggerEff::Class_Name()
+{
+   return "AliAnalysisTaskTriggerEff";
+}
+
+//______________________________________________________________________________
+const char *AliAnalysisTaskTriggerEff::ImplFileName()
+{
+   return ::ROOT::GenerateInitInstanceLocal((const ::AliAnalysisTaskTriggerEff*)0x0)->GetImplFileName();
+}
+
+//______________________________________________________________________________
+int AliAnalysisTaskTriggerEff::ImplFileLine()
+{
+   return ::ROOT::GenerateInitInstanceLocal((const ::AliAnalysisTaskTriggerEff*)0x0)->GetImplFileLine();
+}
+
+//______________________________________________________________________________
+TClass *AliAnalysisTaskTriggerEff::Dictionary()
+{
+   fgIsA = ::ROOT::GenerateInitInstanceLocal((const ::AliAnalysisTaskTriggerEff*)0x0)->GetClass();
+   return fgIsA;
+}
+
+//______________________________________________________________________________
+TClass *AliAnalysisTaskTriggerEff::Class()
+{
+   if (!fgIsA.load()) { R__LOCKGUARD(gInterpreterMutex); fgIsA = ::ROOT::GenerateInitInstanceLocal((const ::AliAnalysisTaskTriggerEff*)0x0)->GetClass(); }
+   return fgIsA;
+}
+
+//______________________________________________________________________________
+void AliAnalysisTaskTriggerEff::Streamer(TBuffer &R__b)
+{
+   // Stream an object of class AliAnalysisTaskTriggerEff.
+
+   if (R__b.IsReading()) {
+      R__b.ReadClassBuffer(AliAnalysisTaskTriggerEff::Class(),this);
+   } else {
+      R__b.WriteClassBuffer(AliAnalysisTaskTriggerEff::Class(),this);
+   }
+}
+

@@ -38,6 +38,7 @@ TCanvas *printRooPlot_ratio(RooPlot *frame, Bool_t norm, RooRealVar *fit_output[
 
 void unbinned_fit_data_sample(Int_t choice = 0, Double_t Low_Mass = 4.0, Double_t High_Mass = 30.0, Double_t Low_Pt = 0.0, Double_t High_Pt = 30.0, Int_t Binning_m = 26, Int_t Binning_pt = 30)
 {
+
   gROOT->ProcessLineSync(".x /home/michele_pennisi/high_mass_dimuons/fit_library/PtMassExpPdf.cxx+");
   gROOT->ProcessLineSync(".x /home/michele_pennisi/high_mass_dimuons/fit_library/PtMassPol1ExpPdf.cxx+");
 
@@ -69,7 +70,6 @@ void unbinned_fit_data_sample(Int_t choice = 0, Double_t Low_Mass = 4.0, Double_
     mass_range_data.Form("_withcut");
     mass_range.Form("");
   }
-
   TFile *fIn = new TFile(Form("/home/michele_pennisi/cernbox/output_HF_dimuons/fit_data_output/root_files/pdfMC_unbinned%s.root", mass_range.Data()));
 
   RooWorkspace *w = (RooWorkspace *)fIn->Get("w");
@@ -146,8 +146,6 @@ void unbinned_fit_data_sample(Int_t choice = 0, Double_t Low_Mass = 4.0, Double_
   // RooRealVar *n3_DimuPtFromMixed = w->var("n3_DimuPtFromMixed");
   // n3_DimuPtFromMixed->setConstant(kTRUE);
 
-  
-
   TString pdfMass_name[3];
   TString pdfPt_name[3];
   pdfMass_name[0].Form("pdfDimuMassFromcharm");
@@ -167,15 +165,13 @@ void unbinned_fit_data_sample(Int_t choice = 0, Double_t Low_Mass = 4.0, Double_
   RooAbsPdf *pdfDimuMassFromMixed = w->pdf("pdfDimuMassFrommixed");
   RooAbsPdf *pdfDimuPtFromMixed = w->pdf("pdfDimuPtFrommixed");
 
-  RooPlot *frame = m->frame(Title("Imported TH1 with Poisson error bars"));
-  pdfDimuMassFromCharm->plotOn(frame, LineColor(kMagenta + 2));
-  pdfDimuMassFromBeauty->plotOn(frame, LineColor(kSpring - 6));
-  pdfDimuMassFromMixed->plotOn(frame, LineColor(kAzure + 9));
+  RooPlot *frame = pt->frame(Title("Imported TH1 with Poisson error bars"));
+  pdfDimuPtFromCharm->plotOn(frame, LineColor(kMagenta + 2));
+  pdfDimuPtFromBeauty->plotOn(frame, LineColor(kSpring - 6));
+  pdfDimuPtFromMixed->plotOn(frame, LineColor(kAzure + 9));
   TCanvas *c2 = new TCanvas();
   c2->cd();
   frame->Draw();
-
-
 
   RooAddPdf *m_model;
   RooAddPdf *pt_model;
@@ -345,6 +341,39 @@ void unbinned_fit_data_sample(Int_t choice = 0, Double_t Low_Mass = 4.0, Double_
   m_canvas->SaveAs(Form("plot/%s.pdf", m_canvas->GetName()));
 
   r->floatParsFinal().Print("s");
+  const Int_t n_DiMuSelection = 3;
+  TString name_DiMuSelection[n_DiMuSelection];
+  name_DiMuSelection[0].Form("Charm");
+  name_DiMuSelection[1].Form("Beauty");
+  name_DiMuSelection[2].Form("Mixed");
+  RooRealVar *B_DimuMass[n_DiMuSelection];
+  RooRealVar *n1_DimuMass[n_DiMuSelection];
+  RooRealVar *n2_DimuMass[n_DiMuSelection];
+  RooRealVar *B_DimuPt[n_DiMuSelection];
+  RooRealVar *n1_DimuPt[n_DiMuSelection];
+  RooRealVar *n2_DimuPt[n_DiMuSelection];
+
+  for (Int_t i = 0; i < n_DiMuSelection; i++)
+  {
+    B_DimuMass[i] = w->var(Form("B_DimuMassFrom%s", name_DiMuSelection[i].Data()));
+    B_DimuMass[i]->setConstant(kTRUE);
+    n1_DimuMass[i] = w->var(Form("n1_DimuMassFrom%s", name_DiMuSelection[i].Data()));
+    n1_DimuMass[i]->setConstant(kTRUE);
+    n2_DimuMass[i] = w->var(Form("n2_DimuMassFrom%s", name_DiMuSelection[i].Data()));
+    n2_DimuMass[i]->setConstant(kTRUE);
+
+    B_DimuPt[i] = w->var(Form("B_DimuPtFrom%s", name_DiMuSelection[i].Data()));
+    B_DimuPt[i]->setConstant(kTRUE);
+    n1_DimuPt[i] = w->var(Form("n1_DimuPtFrom%s", name_DiMuSelection[i].Data()));
+    n1_DimuPt[i]->setConstant(kTRUE);
+    n2_DimuPt[i] = w->var(Form("n2_DimuPtFrom%s", name_DiMuSelection[i].Data()));
+    n2_DimuPt[i]->setConstant(kTRUE);
+
+    printf("%s\n", name_DiMuSelection[i].Data());
+    printf("B_DimuPt: %0.3f\n n1_DimuPt: %0.3f\n n2_DimuPt: %0.3f\n", B_DimuPt[i]->getError(), n1_DimuPt[i]->getError(), n2_DimuPt[i]->getError());
+
+    printf("B_DimuMass: %0.3f\n n1_DimuMass: %0.3f\n n2_DimuMass: %0.3f\n", B_DimuMass[i]->getError(), n1_DimuMass[i]->getError(), n2_DimuMass[i]->getError());
+  }
 }
 
 TCanvas *printRooPlot_residual(RooPlot *frame, RooPlot *frame2, TString roohist_name[5])
