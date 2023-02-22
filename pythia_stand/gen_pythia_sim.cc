@@ -200,6 +200,7 @@ int main(int argc, char *argv[])
         pythia.readString(" SoftQCD:all = on ");
     else if (chooseprocess == 5)
     {
+        printf("DRELL-YAN");
         pythia.readString("Beams:idA = 2212");   //       ! first beam, p = 2212, pbar = -2212
         pythia.readString("Beams:idB = 2212");   //       ! second beam, p = 2212, pbar = -2212
         pythia.readString("Beams:eCM = 13000."); //       ! CM energy of collision
@@ -218,8 +219,8 @@ int main(int argc, char *argv[])
 
     // const char *path="/Volumes/REPOSITORY/Test/";
 
-    const char *path = "/home/michele_pennisi/cernbox/HF_dimuons/pythia_stand";
-    sprintf(outfilename1, "%s/pythia_sim_%s_%s_%d_%d_%s_HFcount_HFhadron.root", path, selectedprocess[chooseprocess - 1], change[choosechange], nevents, seed, selectedBR[BR]);
+    const char *path = "/home/michele_pennisi/cernbox/HF_dimuons/pythia_stand/sim";
+    sprintf(outfilename1, "%s/pythia_sim_%s_%s_%d_%d_%s.root", path, selectedprocess[chooseprocess - 1], change[choosechange], nevents, seed, selectedBR[BR]);
 
     if (choosechange != 3)
     {
@@ -306,6 +307,7 @@ int main(int argc, char *argv[])
     Double_t fY_HFquark_gen[fMuons_dim];          // single gen c/cbar or b/bbar HFquark y
 
     Int_t fPDGmum_gen[fMuons_dim];    // single gen mu PDG mum
+    Int_t fPDG_gen[fMuons_dim];    // single gen mu PDG mum
     Int_t fPromptmum_gen[fMuons_dim]; // single gen mu PDG mum
     Double_t fPt_gen[fMuons_dim];     // single gen mu pT
     Double_t fE_gen[fMuons_dim];      // single gen mu E
@@ -347,6 +349,7 @@ int main(int argc, char *argv[])
         fY_HFquark_gen[i] = 9999.;
 
         fPDGmum_gen[i] = 9999.;
+        fPDG_gen[i] = 9999.;
         fPromptmum_gen[i] = 9999.;
         fPt_gen[i] = 999.;
         fE_gen[i] = 999.;
@@ -399,6 +402,7 @@ int main(int argc, char *argv[])
     fOutputTree->Branch("NMuons_gen", &fNMuons_gen, "NMuons_gen/I");
     fOutputTree->Branch("PDGmum_gen", fPDGmum_gen, "PDGmum_gen[NMuons_gen]/I");
     fOutputTree->Branch("Promptmum_gen", fPromptmum_gen, "Promptmum_gen[NMuons_gen]/I");
+    fOutputTree->Branch("PDG_gen", fPDG_gen, "PDG_gen[NMuons_gen]/I");
     fOutputTree->Branch("Pt_gen", fPt_gen, "Pt_gen[NMuons_gen]/D");
     fOutputTree->Branch("E_gen", fE_gen, "E_gen[NMuons_gen]/D");
     fOutputTree->Branch("Px_gen", fPx_gen, "Px_gen[NMuons_gen]/D");
@@ -597,6 +601,7 @@ int main(int argc, char *argv[])
 
             if (isMuCharm || isMuBeauty)
             {
+                fPDG_gen[nmu_gen]=pythia.event[i].id();
                 fPt_gen[nmu_gen] = Particle.Pt();
                 fE_gen[nmu_gen] = Particle.E();
                 fPx_gen[nmu_gen] = Particle.Px();
@@ -606,7 +611,7 @@ int main(int argc, char *argv[])
                 fEta_gen[nmu_gen] = Particle.Eta();
                 fPhi_gen[nmu_gen] = Particle.Phi();
                 fTheta_gen[nmu_gen] = Particle.Theta();
-                fCharge_gen[nmu_gen] = -TMath::Sign(1, fPDGmum_gen[nmu_gen]);
+                fCharge_gen[nmu_gen] = -TMath::Sign(1, pythia.event[i].id());
                 nmu_gen++;
             }
         }
