@@ -598,7 +598,7 @@ int main(int argc, char *argv[])
                 fPt_mum_gen[nmu_gen] = Muon_Mum2.Pt();
                 fY_mum_gen[nmu_gen] = Muon_Mum2.Rapidity();
             }
-            else if ((TMath::Abs(PDG_Mu_Mum1) > 500 && TMath::Abs(PDG_Mu_Mum1) < 600) || (TMath::Abs(PDG_Mu_Mum1) > 5000 && TMath::Abs(PDG_Mu_Mum1) < 6000))
+            else if ((TMath::Abs(PDG_Mu_Mum1) > 500 && TMath::Abs(PDG_Mu_Mum1) < 600) ||(TMath::Abs(PDG_Mu_Mum1) > 5000 && TMath::Abs(PDG_Mu_Mum1) < 6000))
             {
 
                 isMuBeauty = true;
@@ -797,7 +797,7 @@ bool isCharm(int i, int iEvent, bool verbose)
                 isPrompt = false;
                 break;
             }
-            else if (TMath::Abs(pythia.event[mothers[momindex]].id()) > 500 && TMath::Abs(pythia.event[mothers[momindex]].id()) < 600 || TMath::Abs(pythia.event[mothers[momindex + 1]].id()) > 500 && TMath::Abs(pythia.event[mothers[momindex + 1]].id()) < 600)
+            else if ((TMath::Abs(pythia.event[mothers[momindex]].id()) > 500 && TMath::Abs(pythia.event[mothers[momindex]].id()) < 600) || (TMath::Abs(pythia.event[mothers[momindex + 1]].id()) > 500 && TMath::Abs(pythia.event[mothers[momindex + 1]].id()) < 600))
             {
                 if (verbose)
                 {
@@ -808,7 +808,7 @@ bool isCharm(int i, int iEvent, bool verbose)
                 isPrompt = false;
                 break;
             }
-            else if (TMath::Abs(pythia.event[mothers[momindex]].id()) > 5000 && TMath::Abs(pythia.event[mothers[momindex]].id()) < 6000 || TMath::Abs(pythia.event[mothers[momindex + 1]].id()) > 5000 && TMath::Abs(pythia.event[mothers[momindex + 1]].id()) < 6000)
+            else if ((TMath::Abs(pythia.event[mothers[momindex]].id()) > 5000 && TMath::Abs(pythia.event[mothers[momindex]].id()) < 6000 )|| (TMath::Abs(pythia.event[mothers[momindex + 1]].id()) > 5000 && TMath::Abs(pythia.event[mothers[momindex + 1]].id()) < 6000))
             {
                 if (verbose)
                 {
