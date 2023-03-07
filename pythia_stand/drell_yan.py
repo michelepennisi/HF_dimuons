@@ -1,5 +1,5 @@
 import ROOT as rt
-def LoadStyle_canvas():
+def LoadStyle():
     rt.gStyle.SetImageScaling(3.)
     font = 42
     rt.gStyle.SetFrameBorderMode(0)
@@ -8,8 +8,8 @@ def LoadStyle_canvas():
     rt.gStyle.SetPadBorderMode(0)
     rt.gStyle.SetPadColor(10)
     rt.gStyle.SetCanvasColor(10)
-    rt.gStyle.SetTitleFillColor(10)
-    rt.gStyle.SetTitleBorderSize(1)
+    # rt.gStyle.SetTitleFillColor(10)
+    # rt.gStyle.SetTitleBorderSize(1)
     rt.gStyle.SetStatColor(10)
     rt.gStyle.SetStatBorderSize(1)
     rt.gStyle.SetLegendBorderSize(1)
@@ -31,11 +31,15 @@ def LoadStyle_canvas():
     rt.gStyle.SetTitleSize(0.04, "xyz")
     rt.gStyle.SetMarkerSize(1.3)
     rt.gStyle.SetOptStat(0)
+    rt.gStyle.SetOptTitle(0)
     rt.gStyle.SetEndErrorSize(0)
     rt.gStyle.SetCanvasPreferGL(rt.kTRUE)
     rt.gStyle.SetHatchesSpacing(0.5)
 
-    canvas = rt.TCanvas("c", "c", 1600, 1200)
+
+
+def canvas_style():
+    canvas = rt.TCanvas("c", "c", 1000, 1100)
     canvas.cd()
     canvas.SetRightMargin(0.05)
     canvas.SetFillColor(0)
@@ -51,60 +55,74 @@ def LoadStyle_canvas():
 
     return canvas
 
-
-def main():
-    fIn_drell=rt.TFile("sim/HFtest_Drell-Yan_2712_DefaultBR.root","READ")   
+def main(var):
+    LoadStyle()
+    fIn_drell=rt.TFile("sim/Zperevent_mgt4.root","READ")   
     fIn_drell.ls()
 
-    h_PtDimu_DY=fIn_drell.Get("h_dimupt_OS_Z")
-    h_PtDimu_DY.Rebin(10)    
-    h_PtDimu_DY.Scale((1./5e+04)*3.506e-02,"width")
-    h_PtDimu_DY.SetMarkerStyle(20)
-    h_PtDimu_DY.SetMarkerColor(rt.kOrange+2)
-    h_PtDimu_DY.SetLineColor(rt.kOrange+2)
-    h_PtDimu_DY.SetLineWidth(3)
+    h_MDimu_DY=fIn_drell.Get("h_dimu%s_OS_Z" % var)
+    # h_PtDimu_DY.Rebin(10) 
+    if(var.find("mass")!=-1):
+        h_MDimu_DY.GetXaxis().SetRangeUser(4,30)
+    
+    # xbins = np.array((0.0,0.5,1.0,1.5,2.0,2.5,3.0,3.5,4.0,4.5,5.0,5.5,6.0,7,8,9,10,11.5,13,15,22.5,30.0))
+    h_MDimu_DY.Rebin(2)
+    h_MDimu_DY.SetMarkerStyle(20)
+    h_MDimu_DY.SetMarkerColor(rt.kOrange+2)
+    h_MDimu_DY.SetLineColor(rt.kOrange+2)
+    h_MDimu_DY.SetLineWidth(3)
+    h_MDimu_DY.Scale(1.,"width")
 
     fIn_HFsim = rt.TFile("~/cernbox/output_HF_dimuons/mc_analysis_output/Hist_fromSim/Version1/HF/HistLite_HF_MCDimuHFTree_merged.root", "READ")
     h_Nevents_HFsim = fIn_HFsim.Get("h_Nevents")
     nEvents_HFsim = h_Nevents_HFsim.GetBinContent(2)
 
-    h_PtM_DimuHF_HFsim = fIn_HFsim.Get("DiMuon/M0/Rec_DQ_cut_match_LT/ULS/h_PtMDiMu_M0_Rec_DQ_cut_match_LT_ULS_fromHF")
-    h_Pt_DimuHF_HFsim = h_PtM_DimuHF_HFsim.ProjectionX()
-    h_Pt_DimuHF_HFsim.SetName("h_Pt_DimuHF_HFsim")
+    h_PtM_DimuHF_HFsim = fIn_HFsim.Get("DiMuon/M4/Gen_DQ_cut/ULS/h_PtMDiMu_M4_Gen_DQ_cut_ULS_fromHF")
+    if(var.find("mass")!=-1):
+        h_M_DimuHF_HFsim = h_PtM_DimuHF_HFsim.ProjectionY()
+        h_M_DimuHF_HFsim.SetName("h_M_DimuHF_HFsim")
+        h_M_DimuHF_HFsim.Rebin(20)
+    elif(var.find("pt")!=-1):
+        h_M_DimuHF_HFsim = h_PtM_DimuHF_HFsim.ProjectionX()
+        h_M_DimuHF_HFsim.SetName("h_Pt_DimuHF_HFsim")
+        h_M_DimuHF_HFsim.Rebin(20)
 
-    h_M_DimuHF_HFsim = h_PtM_DimuHF_HFsim.ProjectionY()
-    h_M_DimuHF_HFsim.SetName("h_M_DimuHF_HFsim")
     print("N dimu from HF %0.2f\n",h_M_DimuHF_HFsim.GetEntries())
-
-    h_Pt_DimuHF_HFsim.Rebin(10)
-    h_Pt_DimuHF_HFsim.Scale(56.42 / (216*nEvents_HFsim), "width")
-    h_Pt_DimuHF_HFsim.SetMarkerStyle(24)
-    h_Pt_DimuHF_HFsim.SetMarkerColor(rt.kBlue+2)
-    h_Pt_DimuHF_HFsim.SetLineColor(rt.kBlue+2)
-    h_Pt_DimuHF_HFsim.SetLineWidth(3)
     
-
-    canvas_comparison=LoadStyle_canvas()
+    h_M_DimuHF_HFsim.Scale(1. / (216*nEvents_HFsim), "width")
+    h_M_DimuHF_HFsim.SetMarkerStyle(24)
+    h_M_DimuHF_HFsim.SetMarkerColor(rt.kBlue+2)
+    h_M_DimuHF_HFsim.SetLineColor(rt.kBlue+2)
+    h_M_DimuHF_HFsim.SetLineWidth(3)
+    # h_Pt_DimuHF_HFsim.SetMinimum(h_PtDimu_DY.GetMinimum()*0.02)
+    
+    canvas_comparison=canvas_style()
     canvas_comparison.cd()
     rt.gStyle.SetOptTitle(0)
     rt.gPad.SetLogy()
-    h_Pt_DimuHF_HFsim.GetXaxis().SetTitle("#it{p}_{T} (GeV/#it{c})")
-    h_Pt_DimuHF_HFsim.GetXaxis().SetTitleOffset(1.6)
-    h_Pt_DimuHF_HFsim.GetXaxis().SetTitleSize(0.03)
-    h_Pt_DimuHF_HFsim.GetXaxis().SetLabelSize(0.03)
-    h_Pt_DimuHF_HFsim.GetYaxis().SetTitle("d#sigma_{#mu^{#plus}#mu^{#minus}}/d#it{p}_{T} (mb GeV^{-1} #it{c})")
-    h_Pt_DimuHF_HFsim.GetYaxis().SetTitleOffset(1.6)
-    h_Pt_DimuHF_HFsim.GetYaxis().SetTitleSize(0.035)
-    h_Pt_DimuHF_HFsim.GetYaxis().SetLabelSize(0.035)
-    h_Pt_DimuHF_HFsim.Draw("PE")
-    h_PtDimu_DY.Draw("PESAME")
+    if(var.find("mass")!=-1):
+        h_M_DimuHF_HFsim.GetXaxis().SetTitle("#it{m}_{#mu#mu} (GeV/#it{c}^{2})")
+        h_M_DimuHF_HFsim.GetYaxis().SetTitle("d#it{N}_{#mu^{#plus}#mu^{#minus}}/d#it{m}_{#mu#mu} (GeV/#it{c}^{2})^{-1}")
+    elif(var.find("pt")!=-1):
+        h_M_DimuHF_HFsim.GetXaxis().SetTitle("#it{p}_{T} (GeV/#it{c})")
+        h_M_DimuHF_HFsim.GetYaxis().SetTitle("d#it{N}_{#mu^{#plus}#mu^{#minus}}/d#it{p}_{T} (GeV/#it{c})^{-1}")
+    
+    h_M_DimuHF_HFsim.GetXaxis().SetTitleOffset(1.6)
+    h_M_DimuHF_HFsim.GetXaxis().SetTitleSize(0.035)
+    h_M_DimuHF_HFsim.GetXaxis().SetLabelSize(0.03)
+    
+    h_M_DimuHF_HFsim.GetYaxis().SetTitleOffset(1.6)
+    h_M_DimuHF_HFsim.GetYaxis().SetTitleSize(0.035)
+    h_M_DimuHF_HFsim.GetYaxis().SetLabelSize(0.035)
+    h_M_DimuHF_HFsim.Draw("PE")
+    h_MDimu_DY.Draw("PESAME")
 
     Leged = rt.TLegend(0.18, 0.18, 0.325, 0.425, " ", "brNDC")
     
 
-    Leged.AddEntry(h_Pt_DimuHF_HFsim, "#mu^{#plus}#mu^{#minus} #leftarrow HF", "EP")
-    Leged.AddEntry(h_PtDimu_DY, "#mu^{#plus}#mu^{#minus} #leftarrow DY #times 10^{3}", "EP")
-
+    Leged.AddEntry(h_M_DimuHF_HFsim, "#mu^{#plus}#mu^{#minus} #leftarrow HF", "EP")
+    Leged.AddEntry(h_MDimu_DY, "#mu^{#plus}#mu^{#minus} #leftarrow DY", "EP")
+    
     Leged.SetBorderSize(0)
     Leged.SetFillColor(10)
     Leged.SetFillStyle(1)
@@ -114,7 +132,8 @@ def main():
     Leged.SetTextSize(0.035)
     Leged.Draw("SAME")
     rt.gPad.Update()
-    canvas_comparison.SaveAs("DY_HF_comp.png")
+    canvas_comparison.SaveAs("DY_HF_comp_%s.png" % var)
     input()
 
-main()
+main("mass")
+main("pt")
