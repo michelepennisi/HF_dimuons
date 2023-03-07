@@ -135,13 +135,94 @@ def ratio(mode2,monash,ratio,string,legend):
     l.Draw("SAME")
     return canvas
 
+def ratio_all_particle(mode2,monash,ratio,string,legend):
+    canvas = rt.TCanvas("canvas", "canvas", 2000, 2200)
+    canvas.SetTicks()
+    canvas.Divide(2,2)
+    pad1=[rt.TPad for i_part in range(3)]
+    pad2=[rt.TPad for i_part in range(3)]
+    for x in range (3):
+        canvas.cd(x+1)
+        pad1[x] =rt.TPad("pad1", "pad1", 0, 0.375, 1.0, 1.0)
+        pad1[x].SetTicks()
+        pad1[x].SetLogy(1)
+        pad1[x].SetTopMargin(0.05)
+        pad1[x].SetRightMargin(0.03)
+        pad1[x].SetLeftMargin(0.14)
+        pad1[x].SetBottomMargin(0.0)
+        pad1[x].Draw()
+
+        pad2[x] = rt.TPad("pad2", "pad2", 0, 0.0, 1, 0.375)
+        pad2[x].SetTicks()
+        pad2[x].SetTopMargin(0.0)
+        pad2[x].SetRightMargin(0.03)
+        pad2[x].SetLeftMargin(0.14)
+        pad2[x].SetBottomMargin(0.25)
+        pad2[x].Draw()
+
+        pad1[x].cd()
+
+        if(x==2):
+            monash[x].GetXaxis().SetRangeUser(0,10)
+            mode2[x].GetXaxis().SetRangeUser(0,10)
+
+        monash[x].Draw("PE")
+        mode2[x].Draw("PEsame")
+
+        canvas.cd(x+1)
+        pad2[x].cd()
+        pad2[x].SetTicks()
+        l = rt.TLine(monash[x].GetXaxis().GetBinLowEdge(1), 1.0, monash[x].GetXaxis().GetBinLowEdge(monash[x].GetXaxis().GetNbins() + 1), 1.0)
+        l.SetLineWidth(3)
+        l.SetLineStyle(2)
+        l.SetLineColor(rt.kRed)
+
+        ratio[x].SetLineColor(rt.kGray+2)
+        ratio[x].SetMarkerColor(rt.kGray+2)
+        ratio[x].GetYaxis().CenterTitle()
+        ratio[x].GetYaxis().SetNdivisions(504)
+        ratio[x].GetYaxis().SetTitleSize(0.075)
+        ratio[x].GetYaxis().SetTitleOffset(0.9)
+        ratio[x].GetYaxis().SetLabelOffset(0.02)
+        ratio[x].GetYaxis().SetLabelSize(0.07)
+    
+        ratio[x].GetXaxis().SetTitleSize(0.075)
+        ratio[x].GetXaxis().SetTitleOffset(1.3)
+        ratio[x].GetXaxis().SetLabelSize(0.07)
+        if(x==2):
+            ratio[x].GetXaxis().SetRangeUser(0,10)
+        ratio[x].Draw("PE")
+        
+        l.Draw("SAME")
+
+    canvas.cd(4)
+    letexTitle = rt.TLatex()
+    letexTitle.SetNDC()
+    letexTitle.SetTextFont(42)
+    letexTitle.SetTextSize(0.0525)
+    # // letexTitle -> DrawLatex(0.405,0.86,"ALICE Simulation, pp #sqrt{#it{s}} = 13 TeV");
+    letexTitle.DrawLatex(0.275, 0.875, "PYTHIA8, pp #sqrt{#it{s}} = 13 TeV")
+    letexTitle.DrawLatex(0.275, 0.805, string)
+
+    legend.SetFillStyle(0)
+    legend.SetLineColor(rt.kWhite)
+    legend.SetBorderSize(0)
+    legend.SetTextSize(0.0475)
+    # // legend->SetHeader("Data");
+    legend.SetTextAlign(12)
+    legend.Draw("SAME")
+    return canvas
+
+fIn_monash=rt.TFile("test/Hist_monash_sim_fixed_10Mev.root")
+fIn_mode2=rt.TFile("test/Hist_mode2_sim_fixed_10Mev.root")
+# fIn_monash=rt.TFile("test/Hist_monash_sim_new_fixed.root")
+# fIn_monash=rt.TFile("test/Hist_monash_100Mev.root")
+# fIn_mode2=rt.TFile("test/Hist_mode2_sim_new_fixed.root")
+# fIn_mode2=rt.TFile("test/Hist_mode2_100Mev.root")
+
 def weight_muons(string):
     LoadStyle()
-    fIn_monash=rt.TFile("test/Hist_monash_sim_fixed_10Mev.root")
-    # fIn_monash=rt.TFile("test/Hist_monash_sim_new_fixed.root")
-    # fIn_monash=rt.TFile("test/Hist_monash_100Mev.root")
     h_PtY_monash=fIn_monash.Get("muon/All/h_PtYMu_from%s_All" % string)
-    
     h_PtY_monash.SetName(("h_pt_y_%s_monash" % string))
     h_Pt_monash=h_PtY_monash.ProjectionX()
     h_Pt_monash.SetName(("h_pt_%s_monash" % string))
@@ -149,11 +230,7 @@ def weight_muons(string):
     h_Y_monash.SetName(("h_y_%s_monash" % string))
 
 
-    fIn_mode2=rt.TFile("test/Hist_mode2_sim_fixed_10Mev.root")
-    # fIn_mode2=rt.TFile("test/Hist_mode2_sim_new_fixed.root")
-    # fIn_mode2=rt.TFile("test/Hist_mode2_100Mev.root")
     h_PtY_mode2=fIn_mode2.Get("muon/All/h_PtYMu_from%s_All" % string)
-    
     h_PtY_mode2.SetName(("h_pt_y_%s_mode2" % string))
     h_Pt_mode2=h_PtY_mode2.ProjectionX()
     h_Pt_mode2.SetName(("h_pt_%s_mode2" % string))
@@ -211,8 +288,6 @@ def weight_muons(string):
     canvas_pt.SaveAs("plot/%s.pdf" % canvas_pt.GetName())
     canvas_pt.SaveAs("plot/%s.png" % canvas_pt.GetName())
 
-    
-
     # canvas_y=rt.TCanvas("canvas_y","canvas_y",1600,1200)
     # canvas_y.cd()
     h_Y_mode2.Rebin(10)
@@ -238,9 +313,17 @@ def weight_muons(string):
     h_Y_weight.SetMinimum(0.25)
 
     if(string.find("Charm")!=-1):
-        info="#mu #leftarrow c"
+        info="#mu #leftarrow c , -4.0 < #it{#eta}_{#mu} < -2.5"
+    elif(string.find("Charm_Mesons")!=-1):
+        info="#mu #leftarrow c mesons , -4.0 < #it{#eta}_{#mu} < -2.5"
+    elif(string.find("Charm_Barions")!=-1):
+        info="#mu #leftarrow c barions , -4.0 < #it{#eta}_{#mu} < -2.5"
     elif(string.find("Beauty")!=-1):
-        info="#mu #leftarrow b"
+        info="#mu #leftarrow b , -4.0 < #it{#eta}_{#mu} < -2.5"
+    elif(string.find("Beauty_Mesons")!=-1):
+        info="#mu #leftarrow b mesons , -4.0 < #it{#eta}_{#mu} < -2.5"
+    elif(string.find("Beauty_Barions")!=-1):
+        info="#mu #leftarrow b narions , -4.0 < #it{#eta}_{#mu} < -2.5"
     
     canvas_y=ratio(h_Y_monash,h_Y_mode2,h_Y_weight,info,legend)
     if(string.find("Charm")!=-1):
@@ -262,10 +345,96 @@ def weight_muons(string):
     # h_Y_weight.Write()
 
     # fOut.Close()
-    
-    
 
-weight_muons("Charm")
-weight_muons("Beauty")
+def print_weight_muons(string):
+    LoadStyle()
+    xbins = np.array((0.0,0.5,1.0,2.0,3.0,5,7,9,12,15,20,30.0))
+    marker_style=np.array((20,21,47))
+    particle =["" ,"_Mesons","_Barions"]
+    h_PtY_monash=[rt.TH1D for i_part in range(3)]
+    h_Pt_monash=[rt.TH1D for i_part in range(3)]
+    h_Pt_monash_rebinned=[rt.TH1D for i_part in range(3)]
+    h_Y_monash=[rt.TH1D for i_part in range(3)]
+    
+    h_PtY_mode2=[rt.TH1D for i_part in range(3)]
+    h_Pt_mode2=[rt.TH1D for i_part in range(3)]
+    h_Pt_mode2_rebinned=[rt.TH1D for i_part in range(3)]
+    h_Y_mode2=[rt.TH1D for i_part in range(3)]
+
+    h_Pt_mode2_over_monash=[rt.TH1D for i_part in range(3)]
+    
+    i=0
+    for x in particle:
+        
+        h_PtY_monash[i]=fIn_monash.Get("muon/All/h_PtYMu_from%s%s_All" % (string,x))
+        h_PtY_monash[i].SetName(("h_pt_y_%s%s_monash" % (string,x)))
+        h_Pt_monash[i]=h_PtY_monash[i].ProjectionX()
+        h_Pt_monash[i].SetName(("h_pt_%s%s_monash" % (string,x)))
+        h_Y_monash[i]=h_PtY_monash[i].ProjectionY()
+        h_Y_monash[i].SetName(("h_y_%s%s_monash" % (string,x)))
+        
+        h_PtY_mode2[i]=fIn_mode2.Get("muon/All/h_PtYMu_from%s%s_All" % (string,x))
+        h_PtY_mode2[i].SetName(("h_pt_y_%s%s_mode2" % (string,x)))
+        h_Pt_mode2[i]=h_PtY_mode2[i].ProjectionX()
+        h_Pt_mode2[i].SetName(("h_pt_%s%s_mode2" % (string,x)))
+        h_Y_mode2[i]=h_PtY_mode2[i].ProjectionY()
+        h_Y_mode2[i].SetName(("h_y_%s%s_mode2" % (string,x)))
+
+        h_Pt_monash_rebinned[i]=h_Pt_monash[i].Rebin(xbins.size - 1 ,("h_Pt_%s%s_monash_rebinned" % (string,x)),xbins)
+        # h_Pt_monash_rebinned=h_Pt_monash.Rebin(10)
+        # h_Pt_monash_rebinned.Scale(1.,"width")
+        
+        h_Pt_monash_rebinned[i].Scale(1./h_Pt_monash[i].Integral(),"width")
+        h_Pt_monash_rebinned[i].Sumw2()
+        h_Pt_monash_rebinned[i].SetMarkerColor(rt.kCyan+2)
+        h_Pt_monash_rebinned[i].SetMarkerSize(1.7)
+        h_Pt_monash_rebinned[i].SetMarkerStyle(int(marker_style[i]))
+        h_Pt_monash_rebinned[i].SetLineWidth(2)
+        h_Pt_monash_rebinned[i].SetLineColor(rt.kCyan+2)
+
+        h_Pt_mode2_rebinned[i]=h_Pt_mode2[i].Rebin(xbins.size - 1 ,("h_Pt_%s%s_mode2_rebinned" % (string,x)),xbins)
+        # h_Pt_mode2_rebinned=h_Pt_mode2.Rebin(10)
+        # h_Pt_mode2_rebinned.Scale(1.,"width")
+
+        h_Pt_mode2_rebinned[i].Scale(1./h_Pt_mode2[i].Integral(),"width")
+        h_Pt_mode2_rebinned[i].Sumw2()
+        h_Pt_mode2_rebinned[i].SetMarkerColor(rt.kRed-7)
+        h_Pt_mode2_rebinned[i].SetMarkerSize(1.5)
+        h_Pt_mode2_rebinned[i].SetMarkerStyle(int(marker_style[i]))
+        h_Pt_mode2_rebinned[i].SetLineWidth(2)
+        h_Pt_mode2_rebinned[i].SetLineColor(rt.kRed-7)
+
+        h_Pt_mode2_over_monash[i]=h_Pt_mode2_rebinned[i].Clone(("h_Pt_%s%s_weight" % (string,x)))
+        h_Pt_mode2_over_monash[i].Divide(h_Pt_monash_rebinned[i])
+        h_Pt_mode2_over_monash[i].GetYaxis().SetTitle("#frac{mode2}{monash}")
+        h_Pt_mode2_over_monash[i].SetMaximum(1.75)
+        h_Pt_mode2_over_monash[i].SetMinimum(-0.25)
+
+        i+=1
+
+    legend=rt.TLegend(0.275, 0.425, 0.575, 0.725)
+    legend.AddEntry(h_Pt_mode2_rebinned[0],"CR mode2 Tune (#mu #leftarrow Mesons+Barions)","LP")
+    legend.AddEntry(h_Pt_monash_rebinned[0],"monash Tune (#mu #leftarrow Mesons+Barions)","LP")
+    legend.AddEntry(h_Pt_mode2_rebinned[1],"CR Mode2 Tune (#mu #leftarrow Mesons)","LP")
+    legend.AddEntry(h_Pt_monash_rebinned[1],"Monash Tune (#mu #leftarrow Mesons)","LP")
+    legend.AddEntry(h_Pt_mode2_rebinned[2],"CR Mode2 Tune (#mu #leftarrow Barions)","LP")
+    legend.AddEntry(h_Pt_monash_rebinned[2],"Monash Tune (#mu #leftarrow Barions)","LP")
+
+    if(string.find("Charm")!=-1):
+        info="#mu #leftarrow c"
+    elif(string.find("Beauty")!=-1):
+        info="#mu #leftarrow b"
+
+    canvas=ratio_all_particle(h_Pt_mode2_rebinned,h_Pt_monash_rebinned,h_Pt_mode2_over_monash,info,legend)
+    input()
+        
+print_weight_muons("Charm")
+print_weight_muons("Beauty")
+# weight_muons("Charm")    
+# weight_muons("Charm_Mesons")
+# weight_muons("Charm_Barions")
+# weight_muons("Beauty")
+# weight_muons("Beauty_Mesons")
+# weight_muons("Beauty_Barions")
 
 
