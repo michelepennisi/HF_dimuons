@@ -114,30 +114,54 @@ TH1D *Get1Dhist(const char *filename, const char *hist_name, bool norm)
 
 void HistMCDimuonHF_lite(
     const char *RunMode = "HF",
-    Int_t RunNumber = 294009,
-    TString prefix_dir_filename = "30_09_2022",
-    TString dir_fileout = "/home/michele_pennisi/cernbox/output_HF_dimuons/mc_analysis_output/root_files/test",
+    Int_t RunNumber = 294710,
+    TString prefix_dir_filename = "Version1",
+    // TString dir_fileout = "/home/michele_pennisi/cernbox/output_HF_dimuons/mc_analysis_output/root_files/test",
+    TString dir_fileout = "/home/michele_pennisi/cernbox/output_HF_dimuons/mc_analysis_output/Hist_fromSim",
     TString prefix_filename = "MCDimuHFTree")
 {
+  TFile f("/home/michele_pennisi/cernbox/output_HF_dimuons/mc_analysis_output/root_files/trigger_efficiency_weight.root");
+
+  TH1D *weight_shifted_eta[eta_bins];
+  for (size_t z = 0; z < eta_bins; z++)
+  {
+    weight_shifted_eta[z] = (TH1D *)f.Get(Form("weight_shifted_eta%zu", z));
+    weight_shifted_eta[z]->SetDirectory(0); // to decouple it from the open file directory
+  }
+
+  f.Close();
+
+  TFile f_tune("/home/michele_pennisi/cernbox/HF_dimuons/pythia_stand/weight_tf1.root");
+
+  TF1 *Pt_weight_PYTHIA_ratio_Charm_before_five = (TF1 *)f_tune.Get("tf1_function_Charm_before_five");
+  TF1 *Pt_weight_PYTHIA_ratio_Charm_after_five = (TF1 *)f_tune.Get("tf1_function_Charm_after_five");
+
+  TF1 *Pt_weight_PYTHIA_ratio_Beauty_before_five = (TF1 *)f_tune.Get("tf1_function_Beauty_before_five");
+  TF1 *Pt_weight_PYTHIA_ratio_Beauty_after_five = (TF1 *)f_tune.Get("tf1_function_Beauty_after_five");
+
+  f_tune.Close();
+
   Double_t Mass_cut = 0;
   SetHist();
   TString dir_filename;
   // dir_filename.Form("/home/michele_pennisi/dimuon_HF_pp/Grid_Sim/%s/RunMCDimuHF/%s", RunMode, prefix_dir_filename.Data());//Local test
-  dir_filename.Form("/media/michele_pennisi/DataBoi/Grid_Sim/%s/RunMCDimuHF/%s", RunMode, prefix_dir_filename.Data()); // official
-  printf("%s", dir_filename.Data());
+  // dir_filename.Form("/media/michele_pennisi/DataBoi/Grid_Sim/%s/RunMCDimuHF/%s", RunMode, prefix_dir_filename.Data()); // official with files saved in databoy
+  dir_filename.Form("/home/michele_pennisi/cernbox/output_HF_dimuons/mc_analysis_output/%s/%s", prefix_dir_filename.Data(), RunMode); // official with files saved locally
 
+  printf("%s", dir_filename.Data());
+  // return;
   TString filename;
   filename.Form("%s_MCDimuHFTree_%d.root", RunMode, RunNumber);
 
   printf("Creating hist for %s/%s, with Mass Cut = %0.1f\n", dir_filename.Data(), filename.Data(), Mass_cut);
   TString fileout;
   fileout.Form("%s/%s/HistLite_%s", dir_fileout.Data(), RunMode, filename.Data());
-  // fileout.Form("%sLite_Hist%s", RunMode, filename.Data()); // test
+  // fileout.Form("test/%sLite_Hist%s", RunMode, filename.Data()); // test
   // fileout.Form("Test_hist.root"); // test GRid
 
   TString fileout_tree;
   fileout_tree.Form("%s/%s/Tree_%s", dir_fileout.Data(), RunMode, filename.Data());
-  // fileout_tree.Form("%sTree%s", RunMode, filename.Data()); // test
+  // fileout_tree.Form("test/%sTree%s", RunMode, filename.Data()); // test
   // fileout_tree.Form("Test_tree.root"); // test Grid
 
   TChain *input_tree = Getting_Tree(dir_filename, filename, false);
@@ -298,8 +322,10 @@ void HistMCDimuonHF_lite(
 
   input_tree->ls();
 
-  for (Int_t i = 0; i < input_tree->GetEntries(); i++)
+  //
+  for (Int_t w = 0; w < input_tree->GetEntries(); w++)
   {
+    h_Nevents->Fill(1);
     Int_t Dimuon_rec_charm = 0;
     Int_t Dimuon_rec_beauty = 0;
     Int_t Dimuon_rec_mixed = 0;
@@ -314,8 +340,14 @@ void HistMCDimuonHF_lite(
     Int_t N_anticharm_xevent = 0;
     Int_t N_antibeauty_xevent = 0;
 
-    Int_t N_charmpair_xevent = 0;
-    Int_t N_beautypair_xevent = 0;
+    Int_t N_charmpair_xevent_v1 = 0; // selezione su tutte le possibili combinazioni
+    Int_t N_beautypair_xevent_v1 = 0;
+
+    Int_t N_charmpair_xevent_v2 = 0; // selezione escludendo quark in altre comb
+    Int_t N_beautypair_xevent_v2 = 0;
+
+    Int_t N_charmpair_xevent_v3 = 0; // esiste almeno un quark per evento
+    Int_t N_beautypair_xevent_v3 = 0;
 
     Double_t Pt_dimu_Charm[100];
     Double_t M_dimu_Charm[100];
@@ -326,10 +358,21 @@ void HistMCDimuonHF_lite(
     Double_t Pt_dimu_Mixed[100];
     Double_t M_dimu_Mixed[100];
 
-    input_tree->GetEntry(i);
-    if (i % 500000 == 0)
-      printf("Evento :i %d\n", i);
+    input_tree->GetEntry(w);
+    const Int_t elem_array = 100;
+    Bool_t HF_quark_not_employed[elem_array];
+    for (size_t z = 0; z < elem_array; z++)
+    {
+      HF_quark_not_employed[z] = kTRUE;
+    }
 
+    if (w % 500000 == 0)
+      printf("Evento :i %d\n", w);
+    Int_t N_charm = 0;
+    Int_t N_anticharm = 0;
+
+    Int_t N_beauty = 0;
+    Int_t N_antibeauty = 0;
     for (Int_t i = 0; i < N_HFquarks_gen; i++)
     {
       Int_t PDG_quark_gen1 = PDG_HFquark_gen[i];  // single gen mu PDG mum
@@ -337,31 +380,32 @@ void HistMCDimuonHF_lite(
       Double_t Y_quark_gen1 = Y_HFquark_gen[i];   // single gen mu E
 
       if (PDG_quark_gen1 == 4)
+        N_charm++;
+
+      if (PDG_quark_gen1 == -4)
+        N_anticharm++;
+
+      if (PDG_quark_gen1 == 5)
+        N_beauty++;
+
+      if (PDG_quark_gen1 == -5)
+        N_antibeauty++;
+
+      if (TMath::Abs(PDG_quark_gen1) == 4)
       {
         h_pt_charm_quark->Fill(Pt_quark_gen1);
         h_y_charm_quark->Fill(Y_quark_gen1);
         N_charm_xevent++;
       }
-      else if (PDG_quark_gen1 == -4)
-      {
-        h_pt_charm_antiquark->Fill(Pt_quark_gen1);
-        h_y_charm_antiquark->Fill(Y_quark_gen1);
-        N_anticharm_xevent++;
-      }
-      else if (PDG_quark_gen1 == 5)
+
+      else if (TMath::Abs(PDG_quark_gen1) == 5)
       {
         h_pt_beauty_quark->Fill(Pt_quark_gen1);
         h_y_beauty_quark->Fill(Y_quark_gen1);
         N_beauty_xevent++;
       }
-      else if (PDG_quark_gen1 == 5)
-      {
-        h_pt_beauty_antiquark->Fill(Pt_quark_gen1);
-        h_y_beauty_antiquark->Fill(Y_quark_gen1);
-        N_antibeauty_xevent++;
-      }
 
-      for (Int_t j = i + 1; i < N_HFquarks_gen; i++)
+      for (Int_t j = i + 1; j < N_HFquarks_gen; j++)
       {
         Int_t PDG_quark_gen2 = PDG_HFquark_gen[j];  // sjngle gen mu PDG mum
         Double_t Pt_quark_gen2 = Pt_HFquark_gen[j]; // single gen mu pT
@@ -371,7 +415,13 @@ void HistMCDimuonHF_lite(
         {
           if ((PDG_quark_gen1 + PDG_quark_gen2) == 0)
           {
-            N_charmpair_xevent++;
+            N_charmpair_xevent_v1++;
+            if (HF_quark_not_employed[i] && HF_quark_not_employed[j])
+            {
+              N_charmpair_xevent_v2++;
+            }
+            HF_quark_not_employed[i] = kFALSE;
+            HF_quark_not_employed[j] = kFALSE;
           }
         }
 
@@ -379,13 +429,59 @@ void HistMCDimuonHF_lite(
         {
           if ((PDG_quark_gen1 + PDG_quark_gen2) == 0)
           {
-            N_beautypair_xevent++;
+            N_beautypair_xevent_v1++;
+            if (HF_quark_not_employed[i] && HF_quark_not_employed[j])
+            {
+              N_beautypair_xevent_v2++;
+            }
+            HF_quark_not_employed[i] = kFALSE;
+            HF_quark_not_employed[j] = kFALSE;
           }
         }
       }
     }
-    h_Ncharm_pairs->Fill(N_charmpair_xevent);
-    h_Nbeauty_pairs->Fill(N_beautypair_xevent);
+    if (N_charm > 0 && N_anticharm > 0)
+    {
+      if (N_charm > N_anticharm)
+      {
+        h_Ncharm_pairs_v4->Fill(N_anticharm);
+      }
+      if (N_charm < N_anticharm)
+      {
+        h_Ncharm_pairs_v4->Fill(N_charm);
+      }
+    }
+
+    if (N_beauty > 0 && N_antibeauty > 0)
+    {
+      if (N_beauty > N_antibeauty)
+      {
+        h_Nbeauty_pairs_v4->Fill(N_antibeauty);
+      }
+      if (N_beauty < N_antibeauty)
+      {
+        h_Nbeauty_pairs_v4->Fill(N_beauty);
+      }
+    }
+
+    h_Ncharm_pairs_v1->Fill(N_charmpair_xevent_v1);
+    h_Nbeauty_pairs_v1->Fill(N_beautypair_xevent_v1);
+
+    h_Ncharm_pairs_v2->Fill(N_charmpair_xevent_v2);
+    h_Nbeauty_pairs_v2->Fill(N_beautypair_xevent_v2);
+
+    if (N_charmpair_xevent_v1 > 0)
+    {
+      N_charmpair_xevent_v3++;
+    }
+
+    if (N_beautypair_xevent_v1 > 0)
+    {
+      N_beautypair_xevent_v3++;
+    }
+
+    h_Ncharm_pairs_v3->Fill(N_charmpair_xevent_v3);
+    h_Nbeauty_pairs_v3->Fill(N_beautypair_xevent_v3);
 
     h_Ncharm_quark->Fill(N_charm_xevent);
     h_Nbeauty_quark->Fill(N_beauty_xevent);
@@ -617,9 +713,21 @@ void HistMCDimuonHF_lite(
         Mass_DiMu_gen[0] = kTRUE;
 
       Bool_t Charm_mu0 = kFALSE;
+      Bool_t Charm_mu0_Meson = kFALSE;
+      Bool_t Charm_mu0_Barion = kFALSE;
+
       Bool_t Charm_mu1 = kFALSE;
+      Bool_t Charm_mu1_Meson = kFALSE;
+      Bool_t Charm_mu1_Barion = kFALSE;
+
       Bool_t Beauty_mu0 = kFALSE;
+      Bool_t Beauty_mu0_Meson = kFALSE;
+      Bool_t Beauty_mu0_Barion = kFALSE;
+
       Bool_t Beauty_mu1 = kFALSE;
+      Bool_t Beauty_mu1_Meson = kFALSE;
+      Bool_t Beauty_mu1_Barion = kFALSE;
+
       Bool_t HF_mu0 = kFALSE;
       Bool_t HF_mu1 = kFALSE;
       Bool_t LF_mu0 = kFALSE;
@@ -658,11 +766,32 @@ void HistMCDimuonHF_lite(
       {
         HF_mu0 = kTRUE;
         Charm_mu0 = kTRUE;
+
+        if (TMath::Abs(PDG_Mu0) > 400 && TMath::Abs(PDG_Mu0) < 500)
+        {
+          Charm_mu0_Meson = kTRUE;
+          Charm_mu0_Barion = kFALSE;
+        }
+        else if (TMath::Abs(PDG_Mu0) > 4000 && TMath::Abs(PDG_Mu0) < 5000)
+        {
+          Charm_mu0_Meson = kFALSE;
+          Charm_mu0_Barion = kTRUE;
+        }
       }
       else if ((TMath::Abs(PDG_Mu0) == 5) || (TMath::Abs(PDG_Mu0) > 500 && TMath::Abs(PDG_Mu0) < 600) || (TMath::Abs(PDG_Mu0) > 5000 && TMath::Abs(PDG_Mu0) < 6000))
       {
         HF_mu0 = kTRUE;
         Beauty_mu0 = kTRUE;
+        if (TMath::Abs(PDG_Mu0) > 500 && TMath::Abs(PDG_Mu0) < 600)
+        {
+          Beauty_mu0_Meson = kTRUE;
+          Beauty_mu0_Barion = kFALSE;
+        }
+        else if (TMath::Abs(PDG_Mu0) > 5000 && TMath::Abs(PDG_Mu0) < 6000)
+        {
+          Beauty_mu0_Meson = kFALSE;
+          Beauty_mu0_Barion = kTRUE;
+        }
       }
       else if ((TMath::Abs(PDG_Mu0) > 0 && TMath::Abs(PDG_Mu0) < 4) || (TMath::Abs(PDG_Mu0) > 100 && TMath::Abs(PDG_Mu0) < 400) || (TMath::Abs(PDG_Mu0) > 1000 && TMath::Abs(PDG_Mu0) < 4000))
       {
@@ -683,11 +812,31 @@ void HistMCDimuonHF_lite(
       {
         HF_mu1 = kTRUE;
         Charm_mu1 = kTRUE;
+        if (TMath::Abs(PDG_Mu1) > 400 && TMath::Abs(PDG_Mu1) < 500)
+        {
+          Charm_mu1_Meson = kTRUE;
+          Charm_mu1_Barion = kFALSE;
+        }
+        else if (TMath::Abs(PDG_Mu1) > 4000 && TMath::Abs(PDG_Mu1) < 5000)
+        {
+          Charm_mu1_Meson = kFALSE;
+          Charm_mu1_Barion = kTRUE;
+        }
       }
       else if ((TMath::Abs(PDG_Mu1) == 5) || (TMath::Abs(PDG_Mu1) > 500 && TMath::Abs(PDG_Mu1) < 600) || (TMath::Abs(PDG_Mu1) > 5000 && TMath::Abs(PDG_Mu1) < 6000))
       {
         HF_mu1 = kTRUE;
         Beauty_mu1 = kTRUE;
+        if (TMath::Abs(PDG_Mu1) > 500 && TMath::Abs(PDG_Mu1) < 600)
+        {
+          Beauty_mu1_Meson = kTRUE;
+          Beauty_mu1_Barion = kFALSE;
+        }
+        else if (TMath::Abs(PDG_Mu1) > 5000 && TMath::Abs(PDG_Mu1) < 6000)
+        {
+          Beauty_mu1_Meson = kFALSE;
+          Beauty_mu1_Barion = kTRUE;
+        }
       }
       else if ((TMath::Abs(PDG_Mu1) > 0 && TMath::Abs(PDG_Mu1) < 4) || (TMath::Abs(PDG_Mu1) > 100 && TMath::Abs(PDG_Mu1) < 400) || (TMath::Abs(PDG_Mu1) > 1000 && TMath::Abs(PDG_Mu1) < 4000))
       {
@@ -703,7 +852,7 @@ void HistMCDimuonHF_lite(
         Beauty_mu1 = kFALSE;
         HF_mu1 = kFALSE;
       }
-
+      // 0 For All, 1 For HF, 2 For Charm, 3 For Beauty, 4 For HF Mixed (one muon from Charm, one muon from Beauty), 5 For LF (two muons from LF), 6 For LF Mixed (one muon from LH, one muon from HF), 7 Others, 8 For Charm Meson, 9 For Charm Barion, 10 For Charm Mixed, 11 For Beauty Meson, 12 For Beauty Barion, 13 For Beauty Mixed
       if (HF_mu0 && HF_mu1)
       {
         Selection_DiMu_gen[1] = kTRUE;
@@ -713,6 +862,20 @@ void HistMCDimuonHF_lite(
           Selection_DiMu_gen[3] = kTRUE;
         else if ((Charm_mu0 && Beauty_mu1) || (Beauty_mu0 && Charm_mu1))
           Selection_DiMu_gen[4] = kTRUE;
+
+        if (Charm_mu0_Meson && Charm_mu1_Meson)
+          Selection_DiMu_gen[8] = kTRUE; // Charm meson selection
+        else if (Charm_mu0_Barion && Charm_mu1_Barion)
+          Selection_DiMu_gen[9] = kTRUE; // Charm Barion selection
+        else if ((Charm_mu0_Meson && Charm_mu1_Barion) || (Charm_mu1_Meson && Charm_mu0_Barion))
+          Selection_DiMu_gen[10] = kTRUE; // Charm Mixed selection
+
+        if (Beauty_mu0_Meson && Beauty_mu1_Meson)
+          Selection_DiMu_gen[11] = kTRUE; // Beauty meson selection
+        else if (Beauty_mu0_Barion && Beauty_mu1_Barion)
+          Selection_DiMu_gen[12] = kTRUE; // Beauty Barion selection
+        else if ((Beauty_mu0_Meson && Beauty_mu1_Barion) || (Beauty_mu1_Meson && Beauty_mu0_Barion))
+          Selection_DiMu_gen[13] = kTRUE; // Beauty Mixed selection
       }
       else if (LF_mu0 && LF_mu1)
         Selection_DiMu_gen[5] = kTRUE;
@@ -843,6 +1006,7 @@ void HistMCDimuonHF_lite(
       Double_t RAbs_Mu0 = RAtAbsEnd_rec[DimuMu_rec[i][0]];
       Double_t pDCA_Mu0 = pDCA_rec[DimuMu_rec[i][0]];
       Double_t Eta_Mu0 = Eta_rec[DimuMu_rec[i][0]];
+      Double_t Phi_Mu0 = Phi_rec[DimuMu_rec[i][0]];
 
       Double_t Y_Mu1 = Y_rec[DimuMu_rec[i][1]];
       Double_t Pt_Mu1 = Pt_rec[DimuMu_rec[i][1]];
@@ -851,6 +1015,7 @@ void HistMCDimuonHF_lite(
       Double_t RAbs_Mu1 = RAtAbsEnd_rec[DimuMu_rec[i][1]];
       Double_t pDCA_Mu1 = pDCA_rec[DimuMu_rec[i][1]];
       Double_t Eta_Mu1 = Eta_rec[DimuMu_rec[i][1]];
+      Double_t Phi_Mu1 = Phi_rec[DimuMu_rec[i][1]];
 
       // Int_t controlcharge0 = TMath::Sign(1, PDG_Mu0);
       // Int_t controlcharge1 = TMath::Sign(1, PDG_Mu1);
@@ -899,9 +1064,21 @@ void HistMCDimuonHF_lite(
       Mass_DiMu_rec[0] = kTRUE;
 
       Bool_t Charm_mu0 = kFALSE;
+      Bool_t Charm_mu0_Meson = kFALSE;
+      Bool_t Charm_mu0_Barion = kFALSE;
+
       Bool_t Charm_mu1 = kFALSE;
+      Bool_t Charm_mu1_Meson = kFALSE;
+      Bool_t Charm_mu1_Barion = kFALSE;
+
       Bool_t Beauty_mu0 = kFALSE;
+      Bool_t Beauty_mu0_Meson = kFALSE;
+      Bool_t Beauty_mu0_Barion = kFALSE;
+
       Bool_t Beauty_mu1 = kFALSE;
+      Bool_t Beauty_mu1_Meson = kFALSE;
+      Bool_t Beauty_mu1_Barion = kFALSE;
+
       Bool_t HF_mu0 = kFALSE;
       Bool_t HF_mu1 = kFALSE;
       Bool_t LF_mu0 = kFALSE;
@@ -940,11 +1117,31 @@ void HistMCDimuonHF_lite(
       {
         HF_mu0 = kTRUE;
         Charm_mu0 = kTRUE;
+        if (TMath::Abs(PDG_Mu0) > 400 && TMath::Abs(PDG_Mu0) < 500)
+        {
+          Charm_mu0_Meson = kTRUE;
+          Charm_mu0_Barion = kFALSE;
+        }
+        else if (TMath::Abs(PDG_Mu0) > 4000 && TMath::Abs(PDG_Mu0) < 5000)
+        {
+          Charm_mu0_Meson = kFALSE;
+          Charm_mu0_Barion = kTRUE;
+        }
       }
       else if ((TMath::Abs(PDG_Mu0) == 5) || (TMath::Abs(PDG_Mu0) > 500 && TMath::Abs(PDG_Mu0) < 600) || (TMath::Abs(PDG_Mu0) > 5000 && TMath::Abs(PDG_Mu0) < 6000))
       {
         HF_mu0 = kTRUE;
         Beauty_mu0 = kTRUE;
+        if (TMath::Abs(PDG_Mu0) > 500 && TMath::Abs(PDG_Mu0) < 600)
+        {
+          Beauty_mu0_Meson = kTRUE;
+          Beauty_mu0_Barion = kFALSE;
+        }
+        else if (TMath::Abs(PDG_Mu0) > 5000 && TMath::Abs(PDG_Mu0) < 6000)
+        {
+          Beauty_mu0_Meson = kFALSE;
+          Beauty_mu0_Barion = kTRUE;
+        }
       }
       else if ((TMath::Abs(PDG_Mu0) > 0 && TMath::Abs(PDG_Mu0) < 4) || (TMath::Abs(PDG_Mu0) > 100 && TMath::Abs(PDG_Mu0) < 400) || (TMath::Abs(PDG_Mu0) > 1000 && TMath::Abs(PDG_Mu0) < 4000))
       {
@@ -965,11 +1162,31 @@ void HistMCDimuonHF_lite(
       {
         HF_mu1 = kTRUE;
         Charm_mu1 = kTRUE;
+        if (TMath::Abs(PDG_Mu1) > 400 && TMath::Abs(PDG_Mu1) < 500)
+        {
+          Charm_mu1_Meson = kTRUE;
+          Charm_mu1_Barion = kFALSE;
+        }
+        else if (TMath::Abs(PDG_Mu1) > 4000 && TMath::Abs(PDG_Mu1) < 5000)
+        {
+          Charm_mu1_Meson = kFALSE;
+          Charm_mu1_Barion = kTRUE;
+        }
       }
       else if ((TMath::Abs(PDG_Mu1) == 5) || (TMath::Abs(PDG_Mu1) > 500 && TMath::Abs(PDG_Mu1) < 600) || (TMath::Abs(PDG_Mu1) > 5000 && TMath::Abs(PDG_Mu1) < 6000))
       {
         HF_mu1 = kTRUE;
         Beauty_mu1 = kTRUE;
+        if (TMath::Abs(PDG_Mu1) > 500 && TMath::Abs(PDG_Mu1) < 600)
+        {
+          Beauty_mu1_Meson = kTRUE;
+          Beauty_mu1_Barion = kFALSE;
+        }
+        else if (TMath::Abs(PDG_Mu1) > 5000 && TMath::Abs(PDG_Mu1) < 6000)
+        {
+          Beauty_mu1_Meson = kFALSE;
+          Beauty_mu1_Barion = kTRUE;
+        }
       }
       else if ((TMath::Abs(PDG_Mu1) > 0 && TMath::Abs(PDG_Mu1) < 4) || (TMath::Abs(PDG_Mu1) > 100 && TMath::Abs(PDG_Mu1) < 400) || (TMath::Abs(PDG_Mu1) > 1000 && TMath::Abs(PDG_Mu1) < 4000))
       {
@@ -995,6 +1212,20 @@ void HistMCDimuonHF_lite(
           Selection_DiMu_rec[3] = kTRUE;
         else if ((Charm_mu0 && Beauty_mu1) || (Beauty_mu0 && Charm_mu1))
           Selection_DiMu_rec[4] = kTRUE;
+
+        if (Charm_mu0_Meson && Charm_mu1_Meson)
+          Selection_DiMu_rec[8] = kTRUE; // Charm meson selection
+        else if (Charm_mu0_Barion && Charm_mu1_Barion)
+          Selection_DiMu_rec[9] = kTRUE; // Charm Barion selection
+        else if ((Charm_mu0_Meson && Charm_mu1_Barion) || (Charm_mu1_Meson && Charm_mu0_Barion))
+          Selection_DiMu_rec[10] = kTRUE; // Charm Mixed selection
+
+        if (Beauty_mu0_Meson && Beauty_mu1_Meson)
+          Selection_DiMu_rec[11] = kTRUE; // Beauty meson selection
+        else if (Beauty_mu0_Barion && Beauty_mu1_Barion)
+          Selection_DiMu_rec[12] = kTRUE; // Beauty Barion selection
+        else if ((Beauty_mu0_Meson && Beauty_mu1_Barion) || (Beauty_mu1_Meson && Beauty_mu0_Barion))
+          Selection_DiMu_rec[13] = kTRUE; // Beauty Mixed selection
       }
       else if (LF_mu0 && LF_mu1)
         Selection_DiMu_rec[5] = kTRUE;
@@ -1048,6 +1279,251 @@ void HistMCDimuonHF_lite(
         Charge_DiMu_rec[3] = kTRUE;
       } // End selection over dimuons charge
 
+      if (Kin_DiMu_rec[8] && Selection_DiMu_rec[1] && Mass_DiMu_rec[1])
+      {
+        Double_t weigh_mu0 = weight_single_muon(weight_shifted_eta, Eta_Mu0, Pt_Mu0);
+        Double_t weigh_mu1 = weight_single_muon(weight_shifted_eta, Eta_Mu1, Pt_Mu1);
+        Double_t weight_dimuon = weigh_mu0 * weigh_mu1;
+
+        for (size_t i = 0; i < eta_bins; i++)
+        {
+          if (Eta_Mu0 > eta_binning[i] && Eta_Mu0 < eta_binning[i + 1])
+          {
+            h_PtMuonsRec_notweightedfortrigger[i]->Fill(Pt_Mu0);
+            h_PtMuonsRec_weightedfortrigger[i]->Fill(Pt_Mu0, weigh_mu0);
+          }
+          if (Eta_Mu1 > eta_binning[i] && Eta_Mu1 < eta_binning[i + 1])
+          {
+            h_PtMuonsRec_notweightedfortrigger[i]->Fill(Pt_Mu1);
+            h_PtMuonsRec_weightedfortrigger[i]->Fill(Pt_Mu1, weigh_mu1);
+          }
+        }
+        // printf("Eta Muon0 %0.2f || Pt_muon0 %0.2f || weight0 %0.2f\n", Eta_Mu0, Pt_Mu0, weigh_mu0);
+        // printf("Eta Muon1 %0.2f || Pt_muon1 %0.2f || weight1 %0.2f\n", Eta_Mu1, Pt_Mu1, weigh_mu1);
+        if (Charge_DiMu_rec[0])
+        {
+
+          h_PtDiMuonsRec_weightedfortrigger_ULS->Fill(Pt_DiMu, weight_dimuon);
+          h_MDiMuonsRec_weightedfortrigger_ULS->Fill(M_DiMu, weight_dimuon);
+          h_Dimu_deltaphi_deltaeta_ULS->Fill(Phi_Mu0 - Phi_Mu1, Eta_Mu0 - Eta_Mu1);
+
+          if (Selection_DiMu_rec[2])
+          {
+            Double_t pt_weigh_mu0_pythia_tune_Charm = 9999;
+            Double_t pt_weigh_mu1_pythia_tune_Charm = 9999;
+            Double_t total_weight_dimuon_pythia_tune = 9999;
+
+            if (Pt_Mu0 < 4.5)
+            {
+
+              // printf("Pt Muon %0.4f || weight muon charm %0.4f\n", Pt_Mu0, Pt_weight_PYTHIA_ratio_Charm_before_five->Eval(Pt_Mu0));
+              pt_weigh_mu0_pythia_tune_Charm = Pt_weight_PYTHIA_ratio_Charm_before_five->Eval(Pt_Mu0);
+              h_PtMuonsRec_notweightedforpythia_tune_fromCharm->Fill(Pt_Mu0);
+              h_PtMuonsRec_weightedforpythia_tune_fromCharm->Fill(Pt_Mu0, pt_weigh_mu0_pythia_tune_Charm);
+            }
+            else if (Pt_Mu0 > 4.5)
+            {
+              pt_weigh_mu0_pythia_tune_Charm = Pt_weight_PYTHIA_ratio_Charm_after_five->Eval(Pt_Mu0);
+              h_PtMuonsRec_notweightedforpythia_tune_fromCharm->Fill(Pt_Mu0);
+              h_PtMuonsRec_weightedforpythia_tune_fromCharm->Fill(Pt_Mu0, pt_weigh_mu0_pythia_tune_Charm);
+            }
+
+            if (Pt_Mu1 < 4.5)
+            {
+              // printf("Pt Muon %0.4f || weight muon charm %0.4f\n", Pt_Mu1, Pt_weight_PYTHIA_ratio_Charm_before_five->Eval(Pt_Mu1));
+              pt_weigh_mu1_pythia_tune_Charm = Pt_weight_PYTHIA_ratio_Charm_before_five->Eval(Pt_Mu1);
+              h_PtMuonsRec_notweightedforpythia_tune_fromCharm->Fill(Pt_Mu1);
+              h_PtMuonsRec_weightedforpythia_tune_fromCharm->Fill(Pt_Mu1, pt_weigh_mu1_pythia_tune_Charm);
+            }
+            else if (Pt_Mu1 > 4.5)
+            {
+              pt_weigh_mu1_pythia_tune_Charm = Pt_weight_PYTHIA_ratio_Charm_after_five->Eval(Pt_Mu1);
+              h_PtMuonsRec_notweightedforpythia_tune_fromCharm->Fill(Pt_Mu1);
+              h_PtMuonsRec_weightedforpythia_tune_fromCharm->Fill(Pt_Mu1, pt_weigh_mu1_pythia_tune_Charm);
+            }
+
+            total_weight_dimuon_pythia_tune = pt_weigh_mu0_pythia_tune_Charm * pt_weigh_mu1_pythia_tune_Charm;
+            h_PtDiMuonsRec_notweightedforPythiaTune_fromCharm_ULS->Fill(Pt_DiMu);
+            h_MDiMuonsRec_notweightedforPythiaTune_fromCharm_ULS->Fill(M_DiMu);
+            h_PtDiMuonsRec_weightedforPythiaTune_fromCharm_ULS->Fill(Pt_DiMu, total_weight_dimuon_pythia_tune);
+            h_MDiMuonsRec_weightedforPythiaTune_fromCharm_ULS->Fill(M_DiMu, total_weight_dimuon_pythia_tune);
+
+            h_PtDiMuonsRec_weightedfortrigger_fromCharm_ULS->Fill(Pt_DiMu, weight_dimuon);
+            h_MDiMuonsRec_weightedfortrigger_fromCharm_ULS->Fill(M_DiMu, weight_dimuon);
+            h_Dimu_deltaphi_deltaeta_fromCharm_ULS->Fill(Phi_Mu0 - Phi_Mu1, Eta_Mu0 - Eta_Mu1);
+          }
+
+          else if (Selection_DiMu_rec[3])
+          {
+            Double_t pt_weigh_mu0_pythia_tune_Beauty = 9999;
+            Double_t pt_weigh_mu1_pythia_tune_Beauty = 9999;
+            Double_t total_weight_dimuon_pythia_tune = 9999;
+
+            if (Pt_Mu0 < 4.5)
+            {
+              pt_weigh_mu0_pythia_tune_Beauty = Pt_weight_PYTHIA_ratio_Beauty_before_five->Eval(Pt_Mu0);
+              h_PtMuonsRec_notweightedforpythia_tune_fromBeauty->Fill(Pt_Mu0);
+              h_PtMuonsRec_weightedforpythia_tune_fromBeauty->Fill(Pt_Mu0, pt_weigh_mu0_pythia_tune_Beauty);
+            }
+            else if (Pt_Mu0 > 4.5)
+            {
+              pt_weigh_mu0_pythia_tune_Beauty = Pt_weight_PYTHIA_ratio_Beauty_after_five->Eval(Pt_Mu0);
+              h_PtMuonsRec_notweightedforpythia_tune_fromBeauty->Fill(Pt_Mu0);
+              h_PtMuonsRec_weightedforpythia_tune_fromBeauty->Fill(Pt_Mu0, pt_weigh_mu0_pythia_tune_Beauty);
+            }
+
+            if (Pt_Mu1 < 4.5)
+            {
+              pt_weigh_mu1_pythia_tune_Beauty = Pt_weight_PYTHIA_ratio_Beauty_before_five->Eval(Pt_Mu1);
+              h_PtMuonsRec_notweightedforpythia_tune_fromBeauty->Fill(Pt_Mu1);
+              h_PtMuonsRec_weightedforpythia_tune_fromBeauty->Fill(Pt_Mu1, pt_weigh_mu1_pythia_tune_Beauty);
+            }
+            else if (Pt_Mu1 > 4.5)
+            {
+              pt_weigh_mu1_pythia_tune_Beauty = Pt_weight_PYTHIA_ratio_Beauty_after_five->Eval(Pt_Mu1);
+              h_PtMuonsRec_notweightedforpythia_tune_fromBeauty->Fill(Pt_Mu1);
+              h_PtMuonsRec_weightedforpythia_tune_fromBeauty->Fill(Pt_Mu1, pt_weigh_mu1_pythia_tune_Beauty);
+            }
+
+            total_weight_dimuon_pythia_tune = pt_weigh_mu0_pythia_tune_Beauty * pt_weigh_mu1_pythia_tune_Beauty;
+            h_PtDiMuonsRec_notweightedforPythiaTune_fromBeauty_ULS->Fill(Pt_DiMu);
+            h_MDiMuonsRec_notweightedforPythiaTune_fromBeauty_ULS->Fill(M_DiMu);
+            h_PtDiMuonsRec_weightedforPythiaTune_fromBeauty_ULS->Fill(Pt_DiMu, total_weight_dimuon_pythia_tune);
+            h_MDiMuonsRec_weightedforPythiaTune_fromBeauty_ULS->Fill(M_DiMu, total_weight_dimuon_pythia_tune);
+
+            h_PtDiMuonsRec_weightedfortrigger_fromBeauty_ULS->Fill(Pt_DiMu, weight_dimuon);
+            h_MDiMuonsRec_weightedfortrigger_fromBeauty_ULS->Fill(M_DiMu, weight_dimuon);
+
+            h_Dimu_deltaphi_deltaeta_fromBeauty_ULS->Fill(Phi_Mu0 - Phi_Mu1, Eta_Mu0 - Eta_Mu1);
+            h_PtDiMuonsRec_weightedfortrigger_fromBeauty_ULS->Fill(Pt_DiMu, weight_dimuon);
+            h_MDiMuonsRec_weightedfortrigger_fromBeauty_ULS->Fill(M_DiMu, weight_dimuon);
+          }
+
+          else if (Selection_DiMu_rec[4])
+          {
+            h_Dimu_deltaphi_deltaeta_fromMixed_ULS->Fill(Phi_Mu0 - Phi_Mu1, Eta_Mu0 - Eta_Mu1);
+            h_PtDiMuonsRec_weightedfortrigger_fromMixed_ULS->Fill(Pt_DiMu, weight_dimuon);
+            h_MDiMuonsRec_weightedfortrigger_fromMixed_ULS->Fill(M_DiMu, weight_dimuon);
+          }
+        }
+        else if (Charge_DiMu_rec[3])
+        {
+          h_PtDiMuonsRec_weightedfortrigger_LS->Fill(Pt_DiMu, weight_dimuon);
+          h_MDiMuonsRec_weightedfortrigger_LS->Fill(M_DiMu, weight_dimuon);
+          h_Dimu_deltaphi_deltaeta_LS->Fill(Phi_Mu0 - Phi_Mu1, Eta_Mu0 - Eta_Mu1);
+          if (Selection_DiMu_rec[2])
+          {
+            h_PtDiMuonsRec_weightedfortrigger_fromCharm_LS->Fill(Pt_DiMu, weight_dimuon);
+            h_MDiMuonsRec_weightedfortrigger_fromCharm_LS->Fill(M_DiMu, weight_dimuon);
+            h_Dimu_deltaphi_deltaeta_fromCharm_LS->Fill(Phi_Mu0 - Phi_Mu1, Eta_Mu0 - Eta_Mu1);
+          }
+          else if (Selection_DiMu_rec[3])
+          {
+            h_Dimu_deltaphi_deltaeta_fromBeauty_LS->Fill(Phi_Mu0 - Phi_Mu1, Eta_Mu0 - Eta_Mu1);
+            h_PtDiMuonsRec_weightedfortrigger_fromBeauty_LS->Fill(Pt_DiMu, weight_dimuon);
+            h_MDiMuonsRec_weightedfortrigger_fromBeauty_LS->Fill(M_DiMu, weight_dimuon);
+          }
+          else if (Selection_DiMu_rec[4])
+          {
+            h_PtDiMuonsRec_weightedfortrigger_fromMixed_LS->Fill(Pt_DiMu, weight_dimuon);
+            h_MDiMuonsRec_weightedfortrigger_fromMixed_LS->Fill(M_DiMu, weight_dimuon);
+            h_Dimu_deltaphi_deltaeta_fromMixed_LS->Fill(Phi_Mu0 - Phi_Mu1, Eta_Mu0 - Eta_Mu1);
+          }
+        }
+      }
+      
+      
+      if (Kin_DiMu_rec[8] && Selection_DiMu_rec[1] && Mass_DiMu_rec[8])
+      {
+        
+        if (Charge_DiMu_rec[0])
+        {
+
+          if (Selection_DiMu_rec[2])
+          {
+            Double_t pt_weigh_mu0_pythia_tune_Charm = 9999;
+            Double_t pt_weigh_mu1_pythia_tune_Charm = 9999;
+            Double_t total_weight_dimuon_pythia_tune = 9999;
+
+            if (Pt_Mu0 < 4.5)
+            {
+
+              // printf("Pt Muon %0.4f || weight muon charm %0.4f\n", Pt_Mu0, Pt_weight_PYTHIA_ratio_Charm_before_five->Eval(Pt_Mu0));
+              pt_weigh_mu0_pythia_tune_Charm = Pt_weight_PYTHIA_ratio_Charm_before_five->Eval(Pt_Mu0);
+              h_PtMuonsRec_notweightedforpythia_tune_fromCharm_LowMass_LowPt->Fill(Pt_Mu0);
+              h_PtMuonsRec_weightedforpythia_tune_fromCharm_LowMass_LowPt->Fill(Pt_Mu0, pt_weigh_mu0_pythia_tune_Charm);
+            }
+            else if (Pt_Mu0 > 4.5)
+            {
+              pt_weigh_mu0_pythia_tune_Charm = Pt_weight_PYTHIA_ratio_Charm_after_five->Eval(Pt_Mu0);
+              h_PtMuonsRec_notweightedforpythia_tune_fromCharm_LowMass_LowPt->Fill(Pt_Mu0);
+              h_PtMuonsRec_weightedforpythia_tune_fromCharm_LowMass_LowPt->Fill(Pt_Mu0, pt_weigh_mu0_pythia_tune_Charm);
+            }
+
+            if (Pt_Mu1 < 4.5)
+            {
+              // printf("Pt Muon %0.4f || weight muon charm %0.4f\n", Pt_Mu1, Pt_weight_PYTHIA_ratio_Charm_before_five->Eval(Pt_Mu1));
+              pt_weigh_mu1_pythia_tune_Charm = Pt_weight_PYTHIA_ratio_Charm_before_five->Eval(Pt_Mu1);
+              h_PtMuonsRec_notweightedforpythia_tune_fromCharm_LowMass_LowPt->Fill(Pt_Mu1);
+              h_PtMuonsRec_weightedforpythia_tune_fromCharm_LowMass_LowPt->Fill(Pt_Mu1, pt_weigh_mu1_pythia_tune_Charm);
+            }
+            else if (Pt_Mu1 > 4.5)
+            {
+              pt_weigh_mu1_pythia_tune_Charm = Pt_weight_PYTHIA_ratio_Charm_after_five->Eval(Pt_Mu1);
+              h_PtMuonsRec_notweightedforpythia_tune_fromCharm_LowMass_LowPt->Fill(Pt_Mu1);
+              h_PtMuonsRec_weightedforpythia_tune_fromCharm_LowMass_LowPt->Fill(Pt_Mu1, pt_weigh_mu1_pythia_tune_Charm);
+            }
+
+            total_weight_dimuon_pythia_tune = pt_weigh_mu0_pythia_tune_Charm * pt_weigh_mu1_pythia_tune_Charm;
+            h_PtDiMuonsRec_notweightedforPythiaTune_fromCharm_ULS_LowMass_LowPt->Fill(Pt_DiMu);
+            h_MDiMuonsRec_notweightedforPythiaTune_fromCharm_ULS_LowMass_LowPt->Fill(M_DiMu);
+            h_PtDiMuonsRec_weightedforPythiaTune_fromCharm_ULS_LowMass_LowPt->Fill(Pt_DiMu, total_weight_dimuon_pythia_tune);
+            h_MDiMuonsRec_weightedforPythiaTune_fromCharm_ULS_LowMass_LowPt->Fill(M_DiMu, total_weight_dimuon_pythia_tune);
+          }
+
+          else if (Selection_DiMu_rec[3])
+          {
+            Double_t pt_weigh_mu0_pythia_tune_Beauty = 9999;
+            Double_t pt_weigh_mu1_pythia_tune_Beauty = 9999;
+            Double_t total_weight_dimuon_pythia_tune = 9999;
+
+            if (Pt_Mu0 < 4.5)
+            {
+              pt_weigh_mu0_pythia_tune_Beauty = Pt_weight_PYTHIA_ratio_Beauty_before_five->Eval(Pt_Mu0);
+              h_PtMuonsRec_notweightedforpythia_tune_fromBeauty_LowMass_LowPt->Fill(Pt_Mu0);
+              h_PtMuonsRec_weightedforpythia_tune_fromBeauty_LowMass_LowPt->Fill(Pt_Mu0, pt_weigh_mu0_pythia_tune_Beauty);
+            }
+            else if (Pt_Mu0 > 4.5)
+            {
+              pt_weigh_mu0_pythia_tune_Beauty = Pt_weight_PYTHIA_ratio_Beauty_after_five->Eval(Pt_Mu0);
+              h_PtMuonsRec_notweightedforpythia_tune_fromBeauty_LowMass_LowPt->Fill(Pt_Mu0);
+              h_PtMuonsRec_weightedforpythia_tune_fromBeauty_LowMass_LowPt->Fill(Pt_Mu0, pt_weigh_mu0_pythia_tune_Beauty);
+            }
+
+            if (Pt_Mu1 < 4.5)
+            {
+              pt_weigh_mu1_pythia_tune_Beauty = Pt_weight_PYTHIA_ratio_Beauty_before_five->Eval(Pt_Mu1);
+              h_PtMuonsRec_notweightedforpythia_tune_fromBeauty_LowMass_LowPt->Fill(Pt_Mu1);
+              h_PtMuonsRec_weightedforpythia_tune_fromBeauty_LowMass_LowPt->Fill(Pt_Mu1, pt_weigh_mu1_pythia_tune_Beauty);
+            }
+            else if (Pt_Mu1 > 4.5)
+            {
+              pt_weigh_mu1_pythia_tune_Beauty = Pt_weight_PYTHIA_ratio_Beauty_after_five->Eval(Pt_Mu1);
+              h_PtMuonsRec_notweightedforpythia_tune_fromBeauty_LowMass_LowPt->Fill(Pt_Mu1);
+              h_PtMuonsRec_weightedforpythia_tune_fromBeauty_LowMass_LowPt->Fill(Pt_Mu1, pt_weigh_mu1_pythia_tune_Beauty);
+            }
+
+            total_weight_dimuon_pythia_tune = pt_weigh_mu0_pythia_tune_Beauty * pt_weigh_mu1_pythia_tune_Beauty;
+            h_PtDiMuonsRec_notweightedforPythiaTune_fromBeauty_ULS_LowMass_LowPt->Fill(Pt_DiMu);
+            h_MDiMuonsRec_notweightedforPythiaTune_fromBeauty_ULS_LowMass_LowPt->Fill(M_DiMu);
+            h_PtDiMuonsRec_weightedforPythiaTune_fromBeauty_ULS_LowMass_LowPt->Fill(Pt_DiMu, total_weight_dimuon_pythia_tune);
+            h_MDiMuonsRec_weightedforPythiaTune_fromBeauty_ULS_LowMass_LowPt->Fill(M_DiMu, total_weight_dimuon_pythia_tune);
+          }
+
+        }
+      }
+      
+      
       for (Int_t DiMu_a = 0; DiMu_a < n_Mass_Cut; DiMu_a++)
       {
         for (Int_t DiMu_b = n_DiMuCut - 1; DiMu_b < n_DiMuCut; DiMu_b++)
@@ -1066,7 +1542,6 @@ void HistMCDimuonHF_lite(
                 h_pdgDimuMu[DiMu_a][DiMu_b][DiMu_c][DiMu_d]->Fill(PDG_Mu1);
                 nDiMu_xevent[DiMu_a][DiMu_b][DiMu_c][DiMu_d]++;
               }
-
             } // End definition over DiMu selection
 
           } // End definition over DiMu charge cut
@@ -1226,6 +1701,7 @@ void HistMCDimuonHF_lite(
   } // End Loop over Tree Entries
 
   fr.cd();
+  h_Nevents->Write(0, 2, 0);
   h_Ncharm_quark->Write(0, 2, 0);
   h_pt_charm_quark->Write(0, 2, 0);
   h_y_charm_quark->Write(0, 2, 0);
@@ -1233,8 +1709,17 @@ void HistMCDimuonHF_lite(
   h_pt_beauty_quark->Write(0, 2, 0);
   h_y_beauty_quark->Write(0, 2, 0);
 
-  h_Ncharm_pairs->Write(0, 2, 0);
-  h_Nbeauty_pairs->Write(0, 2, 0);
+  h_Ncharm_pairs_v1->Write(0, 2, 0);
+  h_Nbeauty_pairs_v1->Write(0, 2, 0);
+
+  h_Ncharm_pairs_v2->Write(0, 2, 0);
+  h_Nbeauty_pairs_v2->Write(0, 2, 0);
+
+  h_Ncharm_pairs_v3->Write(0, 2, 0);
+  h_Nbeauty_pairs_v3->Write(0, 2, 0);
+
+  h_Ncharm_pairs_v4->Write(0, 2, 0);
+  h_Nbeauty_pairs_v4->Write(0, 2, 0);
   TDirectory *dir_fr = fr.GetDirectory("Gen");
   if (!dir_fr)
     dir_fr = fr.mkdir("Gen");
@@ -1282,7 +1767,7 @@ void HistMCDimuonHF_lite(
   // TH1F *h1Trials = (TH1F*)list->FindObject("h1Trials");
   // TH1F *h1Xsec = (TH1F*)list->FindObject("h1Xsec");
 
-  TFile *outFile = new TFile(fileout.Data(), "UPDATE");
+  TFile *outFile = new TFile(fileout.Data(), "RECREATE");
   outFile->cd();
   // h1Trials->Write(0,2,0);
   // h1Xsec->Write(0,2,0);
@@ -1372,9 +1857,132 @@ void HistMCDimuonHF_lite(
     }
   }
   printf("Finish Filling\n");
+  outFile->cd();
+  h_Nevents->Write(0, 2, 0);
   h_nMu_xevent_rec_charm->Write(0, 2, 0);
-
   h_nMu_xevent_rec_beauty->Write(0, 2, 0);
+  //-------------------//
+  dir = outFile->GetDirectory("delta_phi");
+
+  if (!dir)
+    dir = outFile->mkdir("delta_phi");
+  else
+    printf("%s already exists \n", "delta_phi");
+  outFile->cd("delta_phi");
+  h_Dimu_deltaphi_deltaeta_ULS->Write(0, 2, 0);
+  h_Dimu_deltaphi_deltaeta_fromCharm_ULS->Write(0, 2, 0);
+  h_Dimu_deltaphi_deltaeta_fromBeauty_ULS->Write(0, 2, 0);
+  h_Dimu_deltaphi_deltaeta_fromMixed_ULS->Write(0, 2, 0);
+
+  h_Dimu_deltaphi_deltaeta_LS->Write(0, 2, 0);
+  h_Dimu_deltaphi_deltaeta_fromCharm_LS->Write(0, 2, 0);
+  h_Dimu_deltaphi_deltaeta_fromBeauty_LS->Write(0, 2, 0);
+  h_Dimu_deltaphi_deltaeta_fromMixed_LS->Write(0, 2, 0);
+
+  dir = outFile->GetDirectory("mu_weighted_triggereff");
+
+  if (!dir)
+    dir = outFile->mkdir("mu_weighted_triggereff");
+  else
+    printf("%s already exists \n", "mu_weighted_triggereff");
+  outFile->cd("mu_weighted_triggereff");
+
+  for (size_t w = 0; w < eta_bins; w++)
+  {
+    h_PtMuonsRec_notweightedfortrigger[w]->Write(0, 2, 0);
+    h_PtMuonsRec_weightedfortrigger[w]->Write(0, 2, 0);
+  }
+
+  dir = outFile->GetDirectory("mu_weighted_pythiatune");
+
+  if (!dir)
+    dir = outFile->mkdir("mu_weighted_pythiatune");
+  else
+    printf("%s already exists \n", "mu_weighted_pythiatune");
+  outFile->cd("mu_weighted_pythiatune");
+  h_PtMuonsRec_notweightedforpythia_tune_fromCharm->Write(0, 2, 0);
+  h_PtMuonsRec_weightedforpythia_tune_fromCharm->Write(0, 2, 0);
+  h_PtMuonsRec_notweightedforpythia_tune_fromBeauty->Write(0, 2, 0);
+  h_PtMuonsRec_weightedforpythia_tune_fromBeauty->Write(0, 2, 0);
+
+  h_PtMuonsRec_notweightedforpythia_tune_fromCharm_LowMass_LowPt->Write(0, 2, 0);
+  h_PtMuonsRec_weightedforpythia_tune_fromCharm_LowMass_LowPt->Write(0, 2, 0);
+  h_PtMuonsRec_notweightedforpythia_tune_fromBeauty_LowMass_LowPt->Write(0, 2, 0);
+  h_PtMuonsRec_weightedforpythia_tune_fromBeauty_LowMass_LowPt->Write(0, 2, 0);
+
+  dir = outFile->GetDirectory("dimu_weighted_triggereff");
+
+  if (!dir)
+    dir = outFile->mkdir("dimu_weighted_triggereff");
+  else
+    printf("%s already exists \n", "dimu_weighted_triggereff");
+  outFile->cd("dimu_weighted_triggereff");
+
+  h_PtDiMuonsRec_weightedfortrigger_ULS->Write(0, 2, 0);
+  h_PtDiMuonsRec_weightedfortrigger_fromCharm_ULS->Write(0, 2, 0);
+  h_PtDiMuonsRec_weightedfortrigger_fromBeauty_ULS->Write(0, 2, 0);
+  h_PtDiMuonsRec_weightedfortrigger_fromMixed_ULS->Write(0, 2, 0);
+  //-------------------//
+  h_MDiMuonsRec_weightedfortrigger_ULS->Write(0, 2, 0);
+  h_MDiMuonsRec_weightedfortrigger_fromCharm_ULS->Write(0, 2, 0);
+  h_MDiMuonsRec_weightedfortrigger_fromBeauty_ULS->Write(0, 2, 0);
+  h_MDiMuonsRec_weightedfortrigger_fromMixed_ULS->Write(0, 2, 0);
+  //-------------------//
+  h_PtDiMuonsRec_weightedfortrigger_LS->Write(0, 2, 0);
+  h_PtDiMuonsRec_weightedfortrigger_fromCharm_LS->Write(0, 2, 0);
+  h_PtDiMuonsRec_weightedfortrigger_fromBeauty_LS->Write(0, 2, 0);
+  h_PtDiMuonsRec_weightedfortrigger_fromMixed_LS->Write(0, 2, 0);
+  //-------------------//
+  h_MDiMuonsRec_weightedfortrigger_LS->Write(0, 2, 0);
+  h_MDiMuonsRec_weightedfortrigger_fromCharm_LS->Write(0, 2, 0);
+  h_MDiMuonsRec_weightedfortrigger_fromBeauty_LS->Write(0, 2, 0);
+  h_MDiMuonsRec_weightedfortrigger_fromMixed_LS->Write(0, 2, 0);
+  //-------------------//
+  dir = outFile->GetDirectory("dimu_weighted_pythia_tune");
+
+  if (!dir)
+    dir = outFile->mkdir("dimu_weighted_pythia_tune");
+  else
+    printf("%s already exists \n", "dimu_weighted_pythia_tune");
+  outFile->cd("dimu_weighted_pythia_tune");
+
+  h_PtDiMuonsRec_notweightedforPythiaTune_fromCharm_ULS->Write(0, 2, 0);
+  h_MDiMuonsRec_notweightedforPythiaTune_fromCharm_ULS->Write(0, 2, 0);
+
+  h_PtDiMuonsRec_weightedforPythiaTune_fromCharm_ULS->Write(0, 2, 0);
+  h_MDiMuonsRec_weightedforPythiaTune_fromCharm_ULS->Write(0, 2, 0);
+
+  h_PtDiMuonsRec_notweightedforPythiaTune_fromBeauty_ULS->Write(0, 2, 0);
+  h_MDiMuonsRec_notweightedforPythiaTune_fromBeauty_ULS->Write(0, 2, 0);
+
+  h_PtDiMuonsRec_weightedforPythiaTune_fromBeauty_ULS->Write(0, 2, 0);
+  h_MDiMuonsRec_weightedforPythiaTune_fromBeauty_ULS->Write(0, 2, 0);
+
+  h_PtDiMuonsRec_notweightedforPythiaTune_fromCharm_ULS_LowMass_LowPt->Write(0, 2, 0);
+  h_MDiMuonsRec_notweightedforPythiaTune_fromCharm_ULS_LowMass_LowPt->Write(0, 2, 0);
+  h_PtDiMuonsRec_weightedforPythiaTune_fromCharm_ULS_LowMass_LowPt->Write(0, 2, 0);
+  h_MDiMuonsRec_weightedforPythiaTune_fromCharm_ULS_LowMass_LowPt->Write(0, 2, 0);
+  h_PtDiMuonsRec_notweightedforPythiaTune_fromBeauty_ULS_LowMass_LowPt->Write(0, 2, 0);
+  h_MDiMuonsRec_notweightedforPythiaTune_fromBeauty_ULS_LowMass_LowPt->Write(0, 2, 0);
+  h_PtDiMuonsRec_weightedforPythiaTune_fromBeauty_ULS_LowMass_LowPt->Write(0, 2, 0);
+  h_MDiMuonsRec_weightedforPythiaTune_fromBeauty_ULS_LowMass_LowPt->Write(0, 2, 0);
 
   outFile->Close();
+}
+
+Double_t weight_single_muon(TH1D *h_weigh[5], Double_t eta_muon, Double_t pt_muon)
+{
+  Double_t weight = 999;
+  Int_t bin_weight = 999;
+
+  for (size_t i = 0; i < eta_bins; i++)
+  {
+    if (eta_muon > eta_binning[i] && eta_muon < eta_binning[i + 1])
+    {
+      bin_weight = h_weigh[i]->FindBin(pt_muon, 0, 0);
+      weight = h_weigh[i]->GetBinContent(bin_weight);
+    }
+  }
+
+  return weight;
 }

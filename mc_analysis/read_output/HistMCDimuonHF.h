@@ -29,6 +29,7 @@
 #include "TGrid.h"
 #endif
 
+Double_t weight_single_muon(TH1D *h_weigh[5], Double_t eta_muon, Double_t pt_muon);
 Int_t N_HFquarks_gen; // gen c/cbar or b/bar HFquarks in the event
 // Int_t N_HFquarks_rec; // gen c/cbar or b/bar HFquarks in the event
 
@@ -97,11 +98,11 @@ Int_t DimuMatch_rec[fDimu_dim];    // rec dimuon match
 Double_t DimuPhi_rec[fDimu_dim];   // rec dimuon phi
 Double_t DimuTheta_rec[fDimu_dim]; // rec dimuon theta
 
-// 0 For Generated, 1 For Generated -4.0<Y<-2.5, 2 For Generated in ALICEacc, 3 For Generated with DQ Cut, 4 For Reconstructed, 5 For Reconstructed with OLD all cut applied, 6 For Reconstructed OLD with all cut, 7 For Reconstructed with DQ CUT, 8 Reconstructed with DQ CUT and match
 const Int_t n_MuCut = 9;
 const Int_t n_MuCut_rec = 5;
 TString name_MuCut[n_MuCut];
 
+// 0 For Generated, 1 For Generated -4.0<Y<-2.5, 2 For Generated in ALICEacc, 3 For Generated with DQ Cut, 4 For Reconstructed, 5 For Reconstructed with OLD all cut applied, 6 For Reconstructed OLD with all cut, 7 For Reconstructed with DQ CUT, 8 Reconstructed with DQ CUT and match
 const Int_t n_DiMuCut = 9;
 const Int_t n_DiMuCut_rec = 5;
 TString name_DiMuCut[n_DiMuCut];
@@ -116,12 +117,12 @@ Double_t Mass_Edge[n_Mass_Cut][2];
 Double_t Mass_Bin[n_Mass_Cut];
 
 //-----------------------------------------------------//
-// 0 For All, 1 For HF, 2 For Charm, 3 For Beauty, 4 For LF, 5 for others
-const Int_t n_MuSelection = 6;
+// 0 For All, 1 For HF, 2 For Charm, 3 For Beauty, 4 For LF, 5 for others, 6 For Charm Mesons, 7 For Charm Barions, 8 For Beauty Mesons, 9 For Beauty Barions,
+const Int_t n_MuSelection = 10;
 TString name_MuSelection[n_MuSelection];
 
-// 0 For All, 1 For HF, 2 For Charm, 3 For Beauty, 4 For HF Mixed (one muon from Charm, one muon from Beauty), 5 For LF (two muons from LF), 6 For LF Mixed (one muon from LH, one muon from HF), 7 Others
-const Int_t n_DiMuSelection = 8;
+// 0 For All, 1 For HF, 2 For Charm, 3 For Beauty, 4 For HF Mixed (one muon from Charm, one muon from Beauty), 5 For LF (two muons from LF), 6 For LF Mixed (one muon from LH, one muon from HF), 7 Others, 8 For Charm Mesons, 9 For Charm Barions, 10 For Charm Mixed, 11 For Beauty Mesons, 12 For Beauty Barions, 13 For Beauty Mixed
+const Int_t n_DiMuSelection = 14;
 TString name_DiMuSelection[n_DiMuSelection];
 
 //-----------------------------------------------------//
@@ -152,8 +153,8 @@ TH1D *h_nMu_xevent_rec_charm = new TH1D("h_nMu_xevent_rec_charm", "h_nMu_xevent_
 TH1D *h_nMu_xevent_rec_beauty = new TH1D("h_nMu_xevent_rec_beauty", "h_nMu_xevent_rec_beauty", 10, -0.5, 9.5);
 
 TH1D *h_Ncharm_quark = new TH1D("h_Ncharm_quark", "h_Ncharm_quark", 60, -0.5, 60.5);
-TH1D *h_pt_charm_quark = new TH1D("h_pt_charm_quark", "h_pt_charm_quark", 300, -0.5, 299.5);
-TH1D *h_pt_beauty_quark = new TH1D("h_pt_beauty_quark", "h_pt_beauty_quark", 300, -0.5, 299.5);
+TH1D *h_pt_charm_quark = new TH1D("h_pt_charm_quark", "h_pt_charm_quark", 300, -0.5, 2999.5);
+TH1D *h_pt_beauty_quark = new TH1D("h_pt_beauty_quark", "h_pt_beauty_quark", 300, -0.5, 2999.5);
 
 TH1D *h_Nbeauty_quark = new TH1D("h_Nbeauty_quark", "h_Nbeauty_quark", 60, -0.5, 60.5);
 TH1D *h_y_charm_quark = new TH1D("h_y_charm_quark", "h_y_charm_quark", 200, -10.0, 10.0);
@@ -167,16 +168,134 @@ TH1D *h_Nbeauty_antiquark = new TH1D("h_Nbeauty_antiquark", "h_Nbeauty_antiquark
 TH1D *h_y_charm_antiquark = new TH1D("h_y_charm_antiquark", "h_y_charm_antiquark", 200, -10.0, 10.0);
 TH1D *h_y_beauty_antiquark = new TH1D("h_y_beauty_antiquark", "h_y_beauty_antiquark", 200, -10.0, 10.0);
 
-TH1D *h_Nbeauty_pairs = new TH1D("h_Nbeauty_pairs", "h_Nbeauty_pairs", 60, -0.5, 60.5);
-TH1D *h_ptbeauty_pairs = new TH1D("h_ptbeauty_pairs", "h_ptbeauty_pairs", 300, 0, 300);
-TH1D *h_ybeauty_pairs = new TH1D("h_ybeauty_pairs", "h_ybeauty_pairs", 200, -10, 10);
+TH1D *h_Nbeauty_pairs_v1 = new TH1D("h_Nbeauty_pairs_v1", "h_Nbeauty_pairs selezione comb. no cut", 60, -0.5, 60.5);
+TH1D *h_ptbeauty_pairs_v1 = new TH1D("h_ptbeauty_pairs_v1", "h_ptbeauty_pairs selezione comb. no cut", 300, 0, 300);
+TH1D *h_ybeauty_pairs_v1 = new TH1D("h_ybeauty_pairs_v1", "h_ybeauty_pairs selezione comb. no cut", 200, -10, 10);
 
-TH1D *h_Ncharm_pairs = new TH1D("h_Ncharm_pairs", "h_Ncharm_pairs", 60, -0.5, 60.5);
-TH1D *h_ptcharm_pairs = new TH1D("h_ptcharm_pairs", "h_ptcharm_pairs", 300, 0, 300);
-TH1D *h_ycharm_pairs = new TH1D("h_ycharm_pairs", "h_ycharm_pairs", 200, -10, 10);
+TH1D *h_Ncharm_pairs_v1 = new TH1D("h_Ncharm_pairs_v1", "h_Ncharm_pairs comb. no cut senza tagli", 60, -0.5, 60.5);
+TH1D *h_ptcharm_pairs_v1 = new TH1D("h_ptcharm_pairs_v1", "h_ptcharm_pairs comb. no cut senza tagli", 300, 0, 300);
+TH1D *h_ycharm_pairs_v1 = new TH1D("h_ycharm_pairs_v1", "h_ycharm_pairs comb. no cut senza tagli", 200, -10, 10);
+
+TH1D *h_Nbeauty_pairs_v2 = new TH1D("h_Nbeauty_pairs_v2", "h_Nbeauty_pairs no ripetizioni", 60, -0.5, 60.5);
+TH1D *h_ptbeauty_pairs_v2 = new TH1D("h_ptbeauty_pairs_v2", "h_ptbeauty_pairs no ripetizioni", 300, 0, 300);
+TH1D *h_ybeauty_pairs_v2 = new TH1D("h_ybeauty_pairs_v2", "h_ybeauty_pairs no ripetizioni", 200, -10, 10);
+
+TH1D *h_Ncharm_pairs_v2 = new TH1D("h_Ncharm_pairs_v2", "h_Ncharm_pairs no ripetizioni", 60, -0.5, 60.5);
+TH1D *h_ptcharm_pairs_v2 = new TH1D("h_ptcharm_pairs_v2", "h_ptcharm_pairs no ripetizioni", 300, 0, 300);
+TH1D *h_ycharm_pairs_v2 = new TH1D("h_ycharm_pairs_v2", "h_ycharm_pairs no ripetizioni", 200, -10, 10);
+
+TH1D *h_Nbeauty_pairs_v3 = new TH1D("h_Nbeauty_pairs_v3", "h_Nbeauty_pairs E 1 pari per event", 60, -0.5, 60.5);
+TH1D *h_ptbeauty_pairs_v3 = new TH1D("h_ptbeauty_pairs_v3", "h_ptbeauty_pairs E 1 pari per event", 300, 0, 300);
+TH1D *h_ybeauty_pairs_v3 = new TH1D("h_ybeauty_pairs_v3", "h_ybeauty_pairs E 1 pari per event", 200, -10, 10);
+
+TH1D *h_Ncharm_pairs_v3 = new TH1D("h_Ncharm_pairs_v3", "h_Ncharm_pairs E 1 pari per event", 60, -0.5, 60.5);
+TH1D *h_ptcharm_pairs_v3 = new TH1D("h_ptcharm_pairs_v3", "h_ptcharm_pairs E 1 pari per event", 300, 0, 300);
+TH1D *h_ycharm_pairs_v3 = new TH1D("h_ycharm_pairs_v3", "h_ycharm_pairs E 1 pari per event", 200, -10, 10);
+
+TH1D *h_Nbeauty_pairs_v4 = new TH1D("h_Nbeauty_pairs_v4", "h_Nbeauty_pairs E 1 pari per event", 60, -0.5, 60.5);
+TH1D *h_ptbeauty_pairs_v4 = new TH1D("h_ptbeauty_pairs_v4", "h_ptbeauty_pairs E 1 pari per event", 300, 0, 300);
+TH1D *h_ybeauty_pairs_v4 = new TH1D("h_ybeauty_pairs_v4", "h_ybeauty_pairs E 1 pari per event", 200, -10, 10);
+
+TH1D *h_Ncharm_pairs_v4 = new TH1D("h_Ncharm_pairs_v4", "h_Ncharm_pairs E 1 pari per event", 60, -0.5, 60.5);
+TH1D *h_ptcharm_pairs_v4 = new TH1D("h_ptcharm_pairs_v4", "h_ptcharm_pairs E 1 pari per event", 300, 0, 300);
+TH1D *h_ycharm_pairs_v4 = new TH1D("h_ycharm_pairs_v4", "h_ycharm_pairs E 1 pari per event", 200, -10, 10);
+
+TH1D *h_Nevents = new TH1D("h_Nevents", "h_Nevents", 2, 0, 2);
+
+TH2D *h_Dimu_deltaphi_deltaeta_ULS = new TH2D("h_Dimu_deltaphi_deltaeta_ULS", "h_Dimu_deltaphi_deltaeta_ULS", 100, -10, 10, 100, -10, 10);
+TH2D *h_Dimu_deltaphi_deltaeta_fromCharm_ULS = new TH2D("h_Dimu_deltaphi_deltaeta_fromCharm_ULS", "h_Dimu_deltaphi_deltaeta_fromCharm_ULS", 100, -10, 10, 100, -10, 10);
+TH2D *h_Dimu_deltaphi_deltaeta_fromBeauty_ULS = new TH2D("h_Dimu_deltaphi_deltaeta_fromBeauty_ULS", "h_Dimu_deltaphi_deltaeta_fromBeauty_ULS", 100, -10, 10, 100, -10, 10);
+TH2D *h_Dimu_deltaphi_deltaeta_fromMixed_ULS = new TH2D("h_Dimu_deltaphi_deltaeta_fromMixed_ULS", "h_Dimu_deltaphi_deltaeta_fromMixed_ULS", 100, -10, 10, 100, -10, 10);
+
+TH2D *h_Dimu_deltaphi_deltaeta_LS = new TH2D("h_Dimu_deltaphi_deltaeta_LS", "h_Dimu_deltaphi_deltaeta_LS", 100, -10, 10, 100, -10, 10);
+TH2D *h_Dimu_deltaphi_deltaeta_fromCharm_LS = new TH2D("h_Dimu_deltaphi_deltaeta_fromCharm_LS", "h_Dimu_deltaphi_deltaeta_fromCharm_LS", 100, -10, 10, 100, -10, 10);
+TH2D *h_Dimu_deltaphi_deltaeta_fromBeauty_LS = new TH2D("h_Dimu_deltaphi_deltaeta_fromBeauty_LS", "h_Dimu_deltaphi_deltaeta_fromBeauty_LS", 100, -10, 10, 100, -10, 10);
+TH2D *h_Dimu_deltaphi_deltaeta_fromMixed_LS = new TH2D("h_Dimu_deltaphi_deltaeta_fromMixed_LS", "h_Dimu_deltaphi_deltaeta_fromMixed_LS", 100, -10, 10, 100, -10, 10);
+
+const Int_t eta_bins = 5;
+Double_t eta_binning[eta_bins + 1] = {-4.0, -3.7, -3.4, -3.1, -2.8, -2.5};
+TH1D *h_PtMuonsRec_notweightedfortrigger[eta_bins];
+TH1D *h_PtMuonsRec_weightedfortrigger[eta_bins];
+
+TH1D *h_PtMuonsRec_notweightedforpythia_tune_fromCharm=new TH1D("h_PtMuonsRec_notweightedforpythia_tune_fromCharm","h_PtMuonsRec_notweightedforpythia_tune_fromCharm",300,0,30.0);
+TH1D *h_PtMuonsRec_weightedforpythia_tune_fromCharm=new TH1D("h_PtMuonsRec_weightedforpythia_tune_fromCharm","h_PtMuonsRec_weightedforpythia_tune_fromCharm",300,0,30.0);
+TH1D *h_PtMuonsRec_notweightedforpythia_tune_fromCharm_LowMass_LowPt=new TH1D("h_PtMuonsRec_notweightedforpythia_tune_fromCharm_LowMass_LowPt","h_PtMuonsRec_notweightedforpythia_tune_fromCharm_LowMass_LowPt",300,0,30.0);
+TH1D *h_PtMuonsRec_weightedforpythia_tune_fromCharm_LowMass_LowPt=new TH1D("h_PtMuonsRec_weightedforpythia_tune_fromCharm_LowMass_LowPt","h_PtMuonsRec_weightedforpythia_tune_fromCharm_LowMass_LowPt",300,0,30.0);
+
+
+TH1D *h_PtMuonsRec_notweightedforpythia_tune_fromBeauty=new TH1D("h_PtMuonsRec_notweightedforpythia_tune_fromBeauty","h_PtMuonsRec_notweightedforpythia_tune_fromBeauty",300,0,30.0);
+TH1D *h_PtMuonsRec_weightedforpythia_tune_fromBeauty=new TH1D("h_PtMuonsRec_weightedforpythia_tune_fromBeauty","h_PtMuonsRec_weightedforpythia_tune_fromBeauty",300,0,30.0);
+TH1D *h_PtMuonsRec_notweightedforpythia_tune_fromBeauty_LowMass_LowPt=new TH1D("h_PtMuonsRec_notweightedforpythia_tune_fromBeauty_LowMass_LowPt","h_PtMuonsRec_notweightedforpythia_tune_fromBeauty_LowMass_LowPt",300,0,30.0);
+TH1D *h_PtMuonsRec_weightedforpythia_tune_fromBeauty_LowMass_LowPt=new TH1D("h_PtMuonsRec_weightedforpythia_tune_fromBeauty_LowMass_LowPt","h_PtMuonsRec_weightedforpythia_tune_fromBeauty_LowMass_LowPt",300,0,30.0);
+
+
+TH1D *h_PtDiMuonsRec_notweightedforPythiaTune_fromCharm_ULS = new TH1D("h_PtDiMuonsRec_notweightedforPythiaTune_fromCharm_ULS", "h_PtDiMuonsRec_notweightedforPythiaTune_fromCharm_ULS", 300, 0, 30.0);
+TH1D *h_PtDiMuonsRec_weightedforPythiaTune_fromCharm_ULS = new TH1D("h_PtDiMuonsRec_weightedforPythiaTune_fromCharm_ULS", "h_PtDiMuonsRec_weightedforPythiaTune_fromCharm_ULS", 300, 0, 30.0);
+
+TH1D *h_PtDiMuonsRec_notweightedforPythiaTune_fromCharm_ULS_LowMass_LowPt = new TH1D("h_PtDiMuonsRec_notweightedforPythiaTune_fromCharm_ULS_LowMass_LowPt", "h_PtDiMuonsRec_notweightedforPythiaTune_fromCharm_ULS_LowMass_LowPt", 100, 0, 10.0);
+TH1D *h_PtDiMuonsRec_weightedforPythiaTune_fromCharm_ULS_LowMass_LowPt = new TH1D("h_PtDiMuonsRec_weightedforPythiaTune_fromCharm_ULS_LowMass_LowPt", "h_PtDiMuonsRec_weightedforPythiaTune_fromCharm_ULS_LowMass_LowPt", 100, 0, 10.0);
+
+// TH1D *h_PtDiMuonsRec_weightedforPythiaTune_fromCharm_ULS_fixingparam = new TH1D("h_PtDiMuonsRec_weightedforPythiaTune_fromCharm_ULS_fixingparam", "h_PtDiMuonsRec_weightedforPythiaTune_fromCharm_ULS_fixingparam", 300, 
+
+TH1D *h_PtDiMuonsRec_weightedforPythiaTune_fromCharm_Mesons_ULS = new TH1D("h_PtDiMuonsRec_weightedforPythiaTune_fromCharm_Mesons_ULS", "h_PtDiMuonsRec_weightedforPythiaTune_fromCharm_Mesons_ULS", 300, 0, 30.0);
+TH1D *h_PtDiMuonsRec_weightedforPythiaTune_fromCharm_Barions_ULS = new TH1D("h_PtDiMuonsRec_weightedforPythiaTune_fromCharm_Barions_ULS", "h_PtDiMuonsRec_weightedforPythiaTune_fromCharm_Barions_ULS", 300, 0, 30.0);
+
+TH1D *h_MDiMuonsRec_notweightedforPythiaTune_fromCharm_ULS = new TH1D("h_MDiMuonsRec_notweightedforPythiaTune_fromCharm_ULS", "h_MDiMuonsRec_notweightedforPythiaTune_fromCharm_ULS", 260, 4, 30.0);
+TH1D *h_MDiMuonsRec_weightedforPythiaTune_fromCharm_ULS = new TH1D("h_MDiMuonsRec_weightedforPythiaTune_fromCharm_ULS", "h_MDiMuonsRec_weightedforPythiaTune_fromCharm_ULS", 260, 4, 30.0);
+
+TH1D *h_MDiMuonsRec_notweightedforPythiaTune_fromCharm_ULS_LowMass_LowPt = new TH1D("h_MDiMuonsRec_notweightedforPythiaTune_fromCharm_ULS_LowMass_LowPt", "h_MDiMuonsRec_notweightedforPythiaTune_fromCharm_ULS_LowMass_LowPt", 50, 4, 9.0);
+TH1D *h_MDiMuonsRec_weightedforPythiaTune_fromCharm_ULS_LowMass_LowPt = new TH1D("h_MDiMuonsRec_weightedforPythiaTune_fromCharm_ULS_LowMass_LowPt", "h_MDiMuonsRec_weightedforPythiaTune_fromCharm_ULS_LowMass_LowPt", 50, 4, 9.0);
+
+TH1D *h_MDiMuonsRec_weightedforPythiaTune_fromCharm_Mesons_ULS = new TH1D("h_MDiMuonsRec_weightedforPythiaTune_fromCharm_Mesons_ULS", "h_MDiMuonsRec_weightedforPythiaTune_fromCharm_Mesons_ULS", 300, 0, 30.0);
+TH1D *h_MDiMuonsRec_weightedforPythiaTune_fromCharm_Barions_ULS = new TH1D("h_MDiMuonsRec_weightedforPythiaTune_fromCharm_Barions_ULS", "h_MDiMuonsRec_weightedforPythiaTune_fromCharm_Barions_ULS", 300, 0, 30.0);
+
+TH1D *h_PtDiMuonsRec_notweightedforPythiaTune_fromBeauty_ULS = new TH1D("h_PtDiMuonsRec_notweightedforPythiaTune_fromBeauty_ULS", "h_PtDiMuonsRec_notweightedforPythiaTune_fromBeauty_ULS", 300, 0, 30.0);
+TH1D *h_PtDiMuonsRec_weightedforPythiaTune_fromBeauty_ULS = new TH1D("h_PtDiMuonsRec_weightedforPythiaTune_fromBeauty_ULS", "h_PtDiMuonsRec_weightedforPythiaTune_fromBeauty_ULS", 300, 0, 30.0);
+
+TH1D *h_PtDiMuonsRec_notweightedforPythiaTune_fromBeauty_ULS_LowMass_LowPt = new TH1D("h_PtDiMuonsRec_notweightedforPythiaTune_fromBeauty_ULS_LowMass_LowPt", "h_PtDiMuonsRec_notweightedforPythiaTune_fromBeauty_ULS_LowMass_LowPt", 100, 0, 10.0);
+TH1D *h_PtDiMuonsRec_weightedforPythiaTune_fromBeauty_ULS_LowMass_LowPt = new TH1D("h_PtDiMuonsRec_weightedforPythiaTune_fromBeauty_ULS_LowMass_LowPt", "h_PtDiMuonsRec_weightedforPythiaTune_fromBeauty_ULS_LowMass_LowPt", 100, 0, 10.0);
+
+TH1D *h_PtDiMuonsRec_weightedforPythiaTune_fromBeauty_Mesons_ULS = new TH1D("h_PtDiMuonsRec_weightedforPythiaTune_fromBeauty_Mesons_ULS", "h_PtDiMuonsRec_weightedforPythiaTune_fromBeauty_Mesons_ULS", 300, 0, 30.0);
+TH1D *h_PtDiMuonsRec_weightedforPythiaTune_fromBeauty_Barions_ULS = new TH1D("h_PtDiMuonsRec_weightedforPythiaTune_fromBeauty_Barions_ULS", "h_PtDiMuonsRec_weightedforPythiaTune_fromBeauty_Barions_ULS", 300, 0, 30.0);
+
+TH1D *h_MDiMuonsRec_notweightedforPythiaTune_fromBeauty_ULS = new TH1D("h_MDiMuonsRec_notweightedforPythiaTune_fromBeauty_ULS", "h_MDiMuonsRec_notweightedforPythiaTune_fromBeauty_ULS", 260, 4, 30.0);
+TH1D *h_MDiMuonsRec_weightedforPythiaTune_fromBeauty_ULS = new TH1D("h_MDiMuonsRec_weightedforPythiaTune_fromBeauty_ULS", "h_MDiMuonsRec_weightedforPythiaTune_fromBeauty_ULS", 260, 4, 30.0);
+
+TH1D *h_MDiMuonsRec_notweightedforPythiaTune_fromBeauty_ULS_LowMass_LowPt = new TH1D("h_MDiMuonsRec_notweightedforPythiaTune_fromBeauty_ULS_LowMass_LowPt", "h_MDiMuonsRec_notweightedforPythiaTune_fromBeauty_ULS_LowMass_LowPt", 50, 4, 9.0);
+TH1D *h_MDiMuonsRec_weightedforPythiaTune_fromBeauty_ULS_LowMass_LowPt = new TH1D("h_MDiMuonsRec_weightedforPythiaTune_fromBeauty_ULS_LowMass_LowPt", "h_MDiMuonsRec_weightedforPythiaTune_fromBeauty_ULS_LowMass_LowPt", 50, 4, 9.0);
+
+
+TH1D *h_MDiMuonsRec_weightedforPythiaTune_fromBeauty_Mesons_ULS = new TH1D("h_MDiMuonsRec_weightedforPythiaTune_fromBeauty_Mesons_ULS", "h_MDiMuonsRec_weightedforPythiaTune_fromBeauty_Mesons_ULS", 300, 0, 30.0);
+TH1D *h_MDiMuonsRec_weightedforPythiaTune_fromBeauty_Barions_ULS = new TH1D("h_MDiMuonsRec_weightedforPythiaTune_fromBeauty_Barions_ULS", "h_MDiMuonsRec_weightedforPythiaTune_fromBeauty_Barions_ULS", 300, 0, 30.0);
+
+TH1D *h_PtDiMuonsRec_weightedfortrigger_ULS = new TH1D("h_PtDiMuonsRec_weightedfortrigger_ULS", "h_PtDiMuonsRec_weightedfortrigger_ULS", 300, 0, 30.0);
+TH1D *h_PtDiMuonsRec_weightedfortrigger_fromCharm_ULS = new TH1D("h_PtDiMuonsRec_weightedfortrigger_fromCharm_ULS", "h_PtDiMuonsRec_weightedfortrigger_fromCharm_ULS", 300, 0, 30.0);
+TH1D *h_PtDiMuonsRec_weightedfortrigger_fromBeauty_ULS = new TH1D("h_PtDiMuonsRec_weightedfortrigger_fromBeauty_ULS", "h_PtDiMuonsRec_weightedfortrigger_fromBeauty_ULS", 300, 0, 30.0);
+TH1D *h_PtDiMuonsRec_weightedfortrigger_fromMixed_ULS = new TH1D("h_PtDiMuonsRec_weightedfortrigger_fromMixed_ULS", "h_PtDiMuonsRec_weightedfortrigger_fromMixed_ULS", 300, 0, 30.0);
+
+TH1D *h_PtDiMuonsRec_weightedfortrigger_LS = new TH1D("h_PtDiMuonsRec_weightedfortrigger_LS", "h_PtDiMuonsRec_weightedfortrigger_LS", 300, 0, 30.0);
+TH1D *h_PtDiMuonsRec_weightedfortrigger_fromCharm_LS = new TH1D("h_PtDiMuonsRec_weightedfortrigger_fromCharm_LS", "h_PtDiMuonsRec_weightedfortrigger_fromCharm_LS", 300, 0, 30.0);
+TH1D *h_PtDiMuonsRec_weightedfortrigger_fromBeauty_LS = new TH1D("h_PtDiMuonsRec_weightedfortrigger_fromBeauty_LS", "h_PtDiMuonsRec_weightedfortrigger_fromBeauty_LS", 300, 0, 30.0);
+TH1D *h_PtDiMuonsRec_weightedfortrigger_fromMixed_LS = new TH1D("h_PtDiMuonsRec_weightedfortrigger_fromMixed_LS", "h_PtDiMuonsRec_weightedfortrigger_fromMixed_LS", 300, 0, 30.0);
+
+TH1D *h_MDiMuonsRec_weightedfortrigger_ULS = new TH1D("h_MDiMuonsRec_weightedfortrigger_ULS", "h_MDiMuonsRec_weightedfortrigger_ULS", 260, 4, 30.0);
+TH1D *h_MDiMuonsRec_weightedfortrigger_fromCharm_ULS = new TH1D("h_MDiMuonsRec_weightedfortrigger_fromCharm_ULS", "h_MDiMuonsRec_weightedfortrigger_fromCharm_ULS", 260, 4, 30.0);
+TH1D *h_MDiMuonsRec_weightedfortrigger_fromBeauty_ULS = new TH1D("h_MDiMuonsRec_weightedfortrigger_fromBeauty_ULS", "h_MDiMuonsRec_weightedfortrigger_fromBeauty_ULS", 260, 4, 30.0);
+TH1D *h_MDiMuonsRec_weightedfortrigger_fromMixed_ULS = new TH1D("h_MDiMuonsRec_weightedfortrigger_fromMixed_ULS", "h_MDiMuonsRec_weightedfortrigger_fromMixed_ULS", 260, 4, 30.0);
+
+TH1D *h_MDiMuonsRec_weightedfortrigger_LS = new TH1D("h_MDiMuonsRec_weightedfortrigger_LS", "h_MDiMuonsRec_weightedfortrigger_LS", 260, 4, 30.0);
+TH1D *h_MDiMuonsRec_weightedfortrigger_fromCharm_LS = new TH1D("h_MDiMuonsRec_weightedfortrigger_fromCharm_LS", "h_MDiMuonsRec_weightedfortrigger_fromCharm_LS", 260, 4, 30.0);
+TH1D *h_MDiMuonsRec_weightedfortrigger_fromBeauty_LS = new TH1D("h_MDiMuonsRec_weightedfortrigger_fromBeauty_LS", "h_MDiMuonsRec_weightedfortrigger_fromBeauty_LS", 260, 4, 30.0);
+TH1D *h_MDiMuonsRec_weightedfortrigger_fromMixed_LS = new TH1D("h_MDiMuonsRec_weightedfortrigger_fromMixed_LS", "h_MDiMuonsRec_weightedfortrigger_fromMixed_LS", 260, 4, 30.0);
 
 void SetHist()
 {
+  for (size_t w = 0; w < eta_bins; w++)
+  {
+    h_PtMuonsRec_notweightedfortrigger[w] = new TH1D(Form("h_PtMuonsRec_notweightedfortrigger_eta%zu", w), Form("notweighted %0.1f < #eta < %0.1f", eta_binning[w], eta_binning[w + 1]), 300, 0, 30.0);
+    h_PtMuonsRec_weightedfortrigger[w] = new TH1D(Form("h_PtMuonsRec_weightedfortrigger_eta%zu", w), Form("weighted %0.1f < #eta < %0.1f", eta_binning[w], eta_binning[w + 1]), 300, 0, 30.0);
+  }
+
   name_MuCut[0].Form("Gen"); // All single muon produced
   name_MuCut[1].Form("Gen_ycut");
   name_MuCut[2].Form("Gen_ALICEacc"); //
@@ -243,6 +362,10 @@ void SetHist()
   name_MuSelection[3].Form("fromBeauty");
   name_MuSelection[4].Form("fromLF");
   name_MuSelection[5].Form("fromOthers");
+  name_MuSelection[6].Form("fromCharm_Mesons");
+  name_MuSelection[7].Form("fromCharm_Barions");
+  name_MuSelection[8].Form("fromBeauty_Mesons");
+  name_MuSelection[9].Form("fromBeauty_Barions");
 
   name_DiMuSelection[0].Form("All");
   name_DiMuSelection[1].Form("fromHF");
@@ -252,6 +375,12 @@ void SetHist()
   name_DiMuSelection[5].Form("fromLF");
   name_DiMuSelection[6].Form("fromLFMixed");
   name_DiMuSelection[7].Form("fromOthers");
+  name_DiMuSelection[8].Form("fromCharm_Mesons");
+  name_DiMuSelection[9].Form("fromCharm_Barions");
+  name_DiMuSelection[10].Form("fromCharm_Mixed");
+  name_DiMuSelection[11].Form("fromBeauty_Mesons");
+  name_DiMuSelection[12].Form("fromBeauty_Barions");
+  name_DiMuSelection[13].Form("fromBeauty_Mixed");
 
   name_DiMu_Charge[0].Form("ULS");
   name_DiMu_Charge[1].Form("LSplus");
