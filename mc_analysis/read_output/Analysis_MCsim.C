@@ -1,79 +1,8 @@
 #include "Analysis_MCsim.h"
 
-TChain *Importing_Tree(TString dir_filename, TString filename)
-{
-    TChain *tree = nullptr;
-
-    tree = new TChain("MCTree");
-    //    printf("%s \n",Form("%s/%s",dir_filename.Data(),filename.Data()));
-    tree->AddFile(Form("%s/%s", dir_filename.Data(), filename.Data()));
-
-    tree->SetBranchAddress("N_HFquarks_gen", &N_HFquarks_gen);
-
-    tree->SetBranchAddress("PDG_HFquark_gen", PDG_HFquark_gen);
-    tree->SetBranchAddress("Pt_HFquark_gen", Pt_HFquark_gen);
-    tree->SetBranchAddress("Y_HFquark_gen", Y_HFquark_gen);
-
-    tree->SetBranchAddress("NDimu_gen", &NDimu_gen);
-    tree->SetBranchAddress("DimuMu_gen", DimuMu_gen);
-    tree->SetBranchAddress("DimuPt_gen", DimuPt_gen);
-    tree->SetBranchAddress("DimuPx_gen", DimuPx_gen);
-    tree->SetBranchAddress("DimuPy_gen", DimuPy_gen);
-    tree->SetBranchAddress("DimuPz_gen", DimuPz_gen);
-    tree->SetBranchAddress("DimuY_gen", DimuY_gen);
-    tree->SetBranchAddress("DimuMass_gen", DimuMass_gen);
-    tree->SetBranchAddress("DimuCharge_gen", DimuCharge_gen);
-
-    tree->SetBranchAddress("NMuons_gen", &NMuons_gen);
-    tree->SetBranchAddress("PDGmum_gen", PDGmum_gen);
-    tree->SetBranchAddress("Pt_gen", Pt_gen);
-    tree->SetBranchAddress("E_gen", E_gen);
-    tree->SetBranchAddress("Px_gen", Px_gen);
-    tree->SetBranchAddress("Py_gen", Py_gen);
-    tree->SetBranchAddress("Pz_gen", Pz_gen);
-    tree->SetBranchAddress("Y_gen", Y_gen);
-    tree->SetBranchAddress("Eta_gen", Eta_gen);
-    tree->SetBranchAddress("Phi_gen", Phi_gen);
-    tree->SetBranchAddress("Theta_gen", Theta_gen);
-    tree->SetBranchAddress("Charge_gen", Charge_gen);
-
-    tree->SetBranchAddress("NDimu_rec", &NDimu_rec);
-    tree->SetBranchAddress("DimuMu_rec", DimuMu_rec);
-    tree->SetBranchAddress("DimuPt_rec", DimuPt_rec);
-    tree->SetBranchAddress("DimuPx_rec", DimuPx_rec);
-    tree->SetBranchAddress("DimuPy_rec", DimuPy_rec);
-    tree->SetBranchAddress("DimuPz_rec", DimuPz_rec);
-    tree->SetBranchAddress("DimuY_rec", DimuY_rec);
-    tree->SetBranchAddress("DimuMass_rec", DimuMass_rec);
-    tree->SetBranchAddress("DimuCharge_rec", DimuCharge_rec);
-    tree->SetBranchAddress("DimuMatch_rec", DimuMatch_rec);
-    tree->SetBranchAddress("DimuPhi_rec", DimuPhi_rec);
-    tree->SetBranchAddress("DimuTheta_rec", DimuTheta_rec);
-
-    tree->SetBranchAddress("NMuons_rec", &NMuons_rec);
-    tree->SetBranchAddress("PDGmum_rec", PDGmum_rec);
-    tree->SetBranchAddress("E_rec", E_rec);
-    tree->SetBranchAddress("Px_rec", Px_rec);
-    tree->SetBranchAddress("Pt_rec", Pt_rec);
-    tree->SetBranchAddress("Py_rec", Py_rec);
-    tree->SetBranchAddress("Pz_rec", Pz_rec);
-    tree->SetBranchAddress("Y_rec", Y_rec);
-    tree->SetBranchAddress("Eta_rec", Eta_rec);
-    tree->SetBranchAddress("MatchTrig_rec", MatchTrig_rec);
-    tree->SetBranchAddress("TrackChi2_rec", TrackChi2_rec);
-    tree->SetBranchAddress("MatchTrigChi2_rec", MatchTrigChi2_rec);
-    tree->SetBranchAddress("Charge_rec", Charge_rec);
-    tree->SetBranchAddress("RAtAbsEnd_rec", RAtAbsEnd_rec);
-    tree->SetBranchAddress("pDCA_rec", pDCA_rec);
-    tree->SetBranchAddress("Phi_rec", Phi_rec);
-    tree->SetBranchAddress("Theta_rec", Theta_rec);
-
-    return tree;
-}
-
 void Analysis_MCsim(
     TString RunMode = "HF",
-    Int_t RunNumber = 294241,
+    Int_t RunNumber = 294925,
     TString Task_Version = "Version1",
     Bool_t test = kTRUE,
     TString prefix_filename = "MCDimuHFTree")
@@ -100,28 +29,12 @@ void Analysis_MCsim(
 
     TChain *input_tree = Importing_Tree(Form("/home/michele_pennisi/cernbox/output_HF_dimuons/mc_analysis_output/%s/%s", Task_Version.Data(), RunMode.Data()), filename);
     input_tree->ls();
-    for (Int_t i_Event = 0; i_Event < input_tree->GetEntries(); i_Event++)
+    Int_t total_entries = input_tree->GetEntries();
+    for (Int_t i_Event = 0; i_Event < total_entries; i_Event++)
     {
         if (i_Event % 500000 == 0)
         {
-            Double_t progress = (Double_t)i_Event / input_tree->GetEntries();
-            int barWidth = 70;
-
-            std::cout << "[";
-            int pos = barWidth * progress;
-            for (int i = 0; i < barWidth; ++i)
-            {
-                if (i < pos)
-                    std::cout << "=";
-                else if (i == pos)
-                    std::cout << ">";
-                else
-                    std::cout << " ";
-            }
-            std::cout << "] " << int(progress * 100.0) << " % (" << i_Event << "/ " << input_tree->GetEntries() << ")\r";
-            std::cout.flush();
-
-            std::cout << std::endl;
+            progress_status(i_Event,total_entries);
         }
         input_tree->GetEntry(i_Event);
 
@@ -149,7 +62,7 @@ void Analysis_MCsim(
             Bool_t Beauty_mu_Meson = kFALSE;
             Bool_t Beauty_mu_Barion = kFALSE;
 
-            Bool_t DQ_Muon=kFALSE;
+            Bool_t DQ_Muon = kFALSE;
             if (Pt_Mu > 0.0 && Pt_Mu < 30.0)
                 if (Eta_Mu > -4.0 && Eta_Mu < -2.5)
                     DQ_Muon = kTRUE;
@@ -361,6 +274,8 @@ void Analysis_MCsim(
             {
                 h_PtMPdg_DiMu_Gen_Meson_ULS->Fill(Pt_DiMu, M_DiMu, DiMu_PDG);
                 h_PtYPdg_DiMu_Gen_Meson_ULS->Fill(Pt_DiMu, Y_DiMu, DiMu_PDG);
+                if (M_DiMu > 4.0 && M_DiMu < 9.0)
+                    h_PtYPdg_DiMu_Gen_Meson_ULS_M4cut->Fill(Pt_DiMu, Y_DiMu, DiMu_PDG);
             }
 
             else if (Charge_DiMu == 0 && (DiMu_PDG > 4000 && DiMu_PDG < 7000))
@@ -368,6 +283,8 @@ void Analysis_MCsim(
 
                 h_PtMPdg_DiMu_Gen_Barion_ULS->Fill(Pt_DiMu, M_DiMu, DiMu_PDG);
                 h_PtYPdg_DiMu_Gen_Barion_ULS->Fill(Pt_DiMu, Y_DiMu, DiMu_PDG);
+                if (M_DiMu > 4.0 && M_DiMu < 9.0)
+                    h_PtYPdg_DiMu_Gen_Barion_ULS_M4cut->Fill(Pt_DiMu, Y_DiMu, DiMu_PDG);
             }
         }
 
@@ -558,6 +475,8 @@ void Analysis_MCsim(
             {
                 h_PtMPdg_DiMu_Rec_Meson_ULS->Fill(Pt_DiMu, M_DiMu, DiMu_PDG);
                 h_PtYPdg_DiMu_Rec_Meson_ULS->Fill(Pt_DiMu, Y_DiMu, DiMu_PDG);
+                if (M_DiMu > 4.0 && M_DiMu < 9.0)
+                    h_PtYPdg_DiMu_Rec_Meson_ULS_M4cut->Fill(Pt_DiMu, Y_DiMu, DiMu_PDG);
             }
 
             else if (Charge_DiMu == 0 && (DiMu_PDG > 4000 && DiMu_PDG < 7000))
@@ -565,6 +484,8 @@ void Analysis_MCsim(
 
                 h_PtMPdg_DiMu_Rec_Barion_ULS->Fill(Pt_DiMu, M_DiMu, DiMu_PDG);
                 h_PtYPdg_DiMu_Rec_Barion_ULS->Fill(Pt_DiMu, Y_DiMu, DiMu_PDG);
+                if (M_DiMu > 4.0 && M_DiMu < 9.0)
+                    h_PtYPdg_DiMu_Rec_Barion_ULS_M4cut->Fill(Pt_DiMu, Y_DiMu, DiMu_PDG);
             }
         }
     }
@@ -600,6 +521,9 @@ void Analysis_MCsim(
     h_PtYPdg_DiMu_Gen_Meson_ULS->Write();
     h_PtYPdg_DiMu_Gen_Barion_ULS->Write();
 
+    h_PtYPdg_DiMu_Gen_Meson_ULS_M4cut->Write();
+    h_PtYPdg_DiMu_Gen_Barion_ULS_M4cut->Write();
+
     if (!fOut.GetDirectory("DiMu_Rec"))
         fOut.mkdir("DiMu_Rec");
 
@@ -609,6 +533,9 @@ void Analysis_MCsim(
 
     h_PtYPdg_DiMu_Rec_Meson_ULS->Write();
     h_PtYPdg_DiMu_Rec_Barion_ULS->Write();
+
+    h_PtYPdg_DiMu_Rec_Meson_ULS_M4cut->Write();
+    h_PtYPdg_DiMu_Rec_Barion_ULS_M4cut->Write();
 
     fOut.Close();
 
