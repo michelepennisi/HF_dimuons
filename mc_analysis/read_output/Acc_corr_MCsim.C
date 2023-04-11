@@ -3,6 +3,7 @@
 void Acc_corr_MCsim(
     TString RunMode = "HF",
     Int_t RunNumber = 294925,
+    // Int_t RunNumber = 294241,
     TString Task_Version = "Version1",
     Bool_t test = kTRUE,
     TString prefix_filename = "MCDimuHFTree")
@@ -15,7 +16,7 @@ void Acc_corr_MCsim(
     if (test)
         dir_fileout = "/home/michele_pennisi/cernbox/output_HF_dimuons/mc_analysis_output/root_files/test";
     else
-        dir_fileout.Form("/home/michele_pennisi/cernbox/output_HF_dimuons/mc_analysis_output/%s/%s", Task_Version.Data(), RunMode.Data()); // official with files saved locally
+        dir_fileout.Form("/home/michele_pennisi/cernbox/output_HF_dimuons/mc_analysis_output/%s/%s/Acc_corr_MCsim", Task_Version.Data(), RunMode.Data()); // official with files saved locally
 
     printf("%s/%s\n", dir_fileout.Data(), fileout.Data());
 
@@ -29,34 +30,30 @@ void Acc_corr_MCsim(
     printf("Saving in dir: %s \nFile: %s\n", dir_fileout.Data(), file_out.Data());
 
     TString file_corr;
+    TString dir_file_corr;
     // file_corr.Form("%s_Analysis_MCsim_%d_Acc_Table.root", RunMode.Data(), RunNumber);
-    file_corr.Form("%s_Analysis_MCsim_Big_Acc_Table.root", RunMode.Data());
+    dir_file_corr.Form("/home/michele_pennisi/cernbox/output_HF_dimuons/mc_analysis_output/%s/%s/Analysis_MCsim", Task_Version.Data(), RunMode.Data()); // official with files saved locally
+    file_corr.Form("%s_Analysis_MCsim_Acc_Table_merged.root", RunMode.Data());
 
-    printf("Saving in dir: %s \nFile: %s\n", dir_fileout.Data(), file_corr.Data());
+    printf("Saving in dir: %s \nFile: %s\n", dir_file_corr.Data(), file_corr.Data());
 
-    TFile fIn_corr(Form("%s/%s", dir_fileout.Data(), file_corr.Data()), "READ");
+    TFile fIn_corr(Form("%s/%s", dir_file_corr.Data(), file_corr.Data()), "READ");
     fIn_corr.ls();
     fIn_corr.cd();
-    TH2D *h_PtY_Muon_ACC_Charm_Meson = (TH2D *)fIn_corr.Get("Muon_Acc/h_PtY_Muon_ACC_Charm_Meson");
-    h_PtY_Muon_ACC_Charm_Meson->SetDirectory(0);
-    TH2D *h_PtY_Muon_ACC_Charm_Barion = (TH2D *)fIn_corr.Get("Muon_Acc/h_PtY_Muon_ACC_Charm_Barion");
-    h_PtY_Muon_ACC_Charm_Barion->SetDirectory(0);
-    TH2D *h_PtY_Muon_ACC_Beauty_Meson = (TH2D *)fIn_corr.Get("Muon_Acc/h_PtY_Muon_ACC_Beauty_Meson");
-    h_PtY_Muon_ACC_Beauty_Meson->SetDirectory(0);
-    TH2D *h_PtY_Muon_ACC_Beauty_Barion = (TH2D *)fIn_corr.Get("Muon_Acc/h_PtY_Muon_ACC_Beauty_Barion");
-    h_PtY_Muon_ACC_Beauty_Barion->SetDirectory(0);
+    TH2D *h_PtY_DiMu_Acc_ULS_M49_Pt010_Charm = (TH2D *)fIn_corr.Get("DiMu_Corr/h_PtY_DiMu_Acc_ULS_M49_Pt010_Charm");
+    h_PtY_DiMu_Acc_ULS_M49_Pt010_Charm->SetDirectory(0);
 
-    TH2D *h_PtY_DiMu_ACC_Charm_Meson_ULS_M4cut = (TH2D *)fIn_corr.Get("DiMu_Acc/h_PtY_DiMu_ACC_Charm_Meson_ULS_M4cut");
-    h_PtY_DiMu_ACC_Charm_Meson_ULS_M4cut->SetDirectory(0);
-    TH2D *h_PtY_DiMu_ACC_Charm_Barion_ULS_M4cut = (TH2D *)fIn_corr.Get("DiMu_Acc/h_PtY_DiMu_ACC_Charm_Barion_ULS_M4cut");
-    h_PtY_DiMu_ACC_Charm_Barion_ULS_M4cut->SetDirectory(0);
-    TH2D *h_PtY_DiMu_ACC_Beauty_Meson_ULS_M4cut = (TH2D *)fIn_corr.Get("DiMu_Acc/h_PtY_DiMu_ACC_Beauty_Meson_ULS_M4cut");
-    h_PtY_DiMu_ACC_Beauty_Meson_ULS_M4cut->SetDirectory(0);
-    TH2D *h_PtY_DiMu_ACC_Beauty_Barion_ULS_M4cut = (TH2D *)fIn_corr.Get("DiMu_Acc/h_PtY_DiMu_ACC_Beauty_Barion_ULS_M4cut");
-    h_PtY_DiMu_ACC_Beauty_Barion_ULS_M4cut->SetDirectory(0);
+    TH2D *h_PtY_DiMu_Acc_ULS_M49_Pt010_Beauty = (TH2D *)fIn_corr.Get("DiMu_Corr/h_PtY_DiMu_Acc_ULS_M49_Pt010_Beauty");
+    h_PtY_DiMu_Acc_ULS_M49_Pt010_Beauty->SetDirectory(0);
+
+    TH2D *h_PtY_Muon_Charm_Acc = (TH2D *)fIn_corr.Get("Muon_Corr/h_PtY_Muon_Charm_Acc");
+    h_PtY_Muon_Charm_Acc->SetDirectory(0);
+
+    TH2D *h_PtY_Muon_Beauty_Acc = (TH2D *)fIn_corr.Get("Muon_Corr/h_PtY_Muon_Beauty_Acc");
+    h_PtY_Muon_Beauty_Acc->SetDirectory(0);
 
     fIn_corr.Close();
-
+    Set_Hist();
     TChain *input_tree = Importing_Tree(Form("/home/michele_pennisi/cernbox/output_HF_dimuons/mc_analysis_output/%s/%s", Task_Version.Data(), RunMode.Data()), filename);
     input_tree->ls();
     Int_t total_entries = input_tree->GetEntries();
@@ -68,50 +65,35 @@ void Acc_corr_MCsim(
         }
         input_tree->GetEntry(i_Event);
 
-        for (Int_t i_NDimu_rec = 0; i_NDimu_rec < NDimu_rec; i_NDimu_rec++)
+        for (Int_t i_NDimu_gen = 0; i_NDimu_gen < NDimu_gen; i_NDimu_gen++)
         {
 
-            Double_t Pt_DiMu = DimuPt_rec[i_NDimu_rec];      // rec dimuon pT
-            Double_t Px_DiMu = DimuPx_rec[i_NDimu_rec];      // rec dimuon px
-            Double_t Py_DiMu = DimuPy_rec[i_NDimu_rec];      // rec dimuon py
-            Double_t Pz_DiMu = DimuPz_rec[i_NDimu_rec];      // rec dimuon pz
-            Double_t Y_DiMu = DimuY_rec[i_NDimu_rec];        // rec dimuon y
-            Double_t M_DiMu = DimuMass_rec[i_NDimu_rec];     // rec dimuon invariant mass
-            Int_t Charge_DiMu = DimuCharge_rec[i_NDimu_rec]; // rec dimuon charge
+            Double_t Pt_DiMu = DimuPt_gen[i_NDimu_gen];      // gen dimuon pT
+            Double_t Px_DiMu = DimuPx_gen[i_NDimu_gen];      // gen dimuon px
+            Double_t Py_DiMu = DimuPy_gen[i_NDimu_gen];      // gen dimuon py
+            Double_t Pz_DiMu = DimuPz_gen[i_NDimu_gen];      // gen dimuon pz
+            Double_t Y_DiMu = DimuY_gen[i_NDimu_gen];        // gen dimuon y
+            Double_t M_DiMu = DimuMass_gen[i_NDimu_gen];     // gen dimuon invariant mass
+            Int_t Charge_DiMu = DimuCharge_gen[i_NDimu_gen]; // gen dimuon charge
 
-            Double_t Pt_Mu0 = Pt_rec[DimuMu_rec[i_NDimu_rec][0]];
-            Double_t Y_Mu0 = Y_rec[DimuMu_rec[i_NDimu_rec][0]];
-            Int_t PDG_Mu0 = PDGmum_rec[DimuMu_rec[i_NDimu_rec][0]];
-            Double_t Charge_Mu0 = Charge_rec[DimuMu_rec[i_NDimu_rec][0]];
-            Double_t RAbs_Mu0 = RAtAbsEnd_rec[DimuMu_rec[i_NDimu_rec][0]];
-            Double_t pDCA_Mu0 = pDCA_rec[DimuMu_rec[i_NDimu_rec][0]];
-            Double_t Eta_Mu0 = Eta_rec[DimuMu_rec[i_NDimu_rec][0]];
-            Double_t Phi_Mu0 = Phi_rec[DimuMu_rec[i_NDimu_rec][0]];
+            Double_t Pt_Mu0 = Pt_gen[DimuMu_gen[i_NDimu_gen][0]];
+            Double_t Y_Mu0 = Y_gen[DimuMu_gen[i_NDimu_gen][0]];
+            Double_t Eta_Mu0 = Eta_gen[DimuMu_gen[i_NDimu_gen][0]];
 
-            Double_t Y_Mu1 = Y_rec[DimuMu_rec[i_NDimu_rec][1]];
-            Double_t Pt_Mu1 = Pt_rec[DimuMu_rec[i_NDimu_rec][1]];
-            Int_t PDG_Mu1 = PDGmum_rec[DimuMu_rec[i_NDimu_rec][1]];
-            Double_t Charge_Mu1 = Charge_rec[DimuMu_rec[i_NDimu_rec][1]];
-            Double_t RAbs_Mu1 = RAtAbsEnd_rec[DimuMu_rec[i_NDimu_rec][1]];
-            Double_t pDCA_Mu1 = pDCA_rec[DimuMu_rec[i_NDimu_rec][1]];
-            Double_t Eta_Mu1 = Eta_rec[DimuMu_rec[i_NDimu_rec][1]];
-            Double_t Phi_Mu1 = Phi_rec[DimuMu_rec[i_NDimu_rec][1]];
+            Double_t Pt_Mu1 = Pt_gen[DimuMu_gen[i_NDimu_gen][1]];
+            Double_t Y_Mu1 = Y_gen[DimuMu_gen[i_NDimu_gen][1]];
+            Double_t Eta_Mu1 = Eta_gen[DimuMu_gen[i_NDimu_gen][1]];
+
+            Int_t PDG_Mu0 = PDGmum_gen[DimuMu_gen[i_NDimu_gen][0]];
+            Int_t PDG_Mu1 = PDGmum_gen[DimuMu_gen[i_NDimu_gen][1]];
 
             Bool_t DQ_Dimuon = kFALSE;
-            if (pDCA_Mu0 == 1 && pDCA_Mu1 == 1)
-
-                if ((RAbs_Mu0 > 17.6 && RAbs_Mu0 < 89.5) && (RAbs_Mu1 > 17.6 && RAbs_Mu1 < 89.5))
-
-                    if ((Pt_Mu0 > 0.0 && Pt_Mu0 < 30.0) && (Pt_Mu1 > 0.0 && Pt_Mu1 < 30.0))
-
-                        if ((Y_DiMu > -4.0 && Y_DiMu < -2.5) && (Eta_Mu0 > -4.0 && Eta_Mu0 < -2.5) && (Eta_Mu1 > -4.0 && Eta_Mu1 < -2.5))
-
-                            if (DimuMatch_rec[i_NDimu_rec] == 2)
-
-                                DQ_Dimuon = kTRUE;
+            if ((Y_DiMu > -4.0 && Y_DiMu < -2.5) && (Eta_Mu0 > -4.0 && Eta_Mu0 < -2.5) && (Eta_Mu1 > -4.0 && Eta_Mu1 < -2.5))
+                DQ_Dimuon = kTRUE;
 
             if (!DQ_Dimuon)
                 continue;
+
             Bool_t Charm_mu0 = kFALSE;
             Bool_t Charm_mu0_Meson = kFALSE;
             Bool_t Charm_mu0_Barion = kFALSE;
@@ -137,6 +119,7 @@ void Acc_corr_MCsim(
             {
                 HF_mu0 = kTRUE;
                 Charm_mu0 = kTRUE;
+
                 if (TMath::Abs(PDG_Mu0) > 400 && TMath::Abs(PDG_Mu0) < 500)
                 {
                     Charm_mu0_Meson = kTRUE;
@@ -162,20 +145,6 @@ void Acc_corr_MCsim(
                     Beauty_mu0_Meson = kFALSE;
                     Beauty_mu0_Barion = kTRUE;
                 }
-            }
-            else if ((TMath::Abs(PDG_Mu0) > 0 && TMath::Abs(PDG_Mu0) < 4) || (TMath::Abs(PDG_Mu0) > 100 && TMath::Abs(PDG_Mu0) < 400) || (TMath::Abs(PDG_Mu0) > 1000 && TMath::Abs(PDG_Mu0) < 4000))
-            {
-                LF_mu0 = kTRUE;
-                Charm_mu0 = kFALSE;
-                Beauty_mu0 = kFALSE;
-                HF_mu0 = kFALSE;
-            }
-            else
-            {
-                LF_mu0 = kFALSE;
-                Charm_mu0 = kFALSE;
-                Beauty_mu0 = kFALSE;
-                HF_mu0 = kFALSE;
             }
 
             if ((TMath::Abs(PDG_Mu1) == 4) || (TMath::Abs(PDG_Mu1) > 400 && TMath::Abs(PDG_Mu1) < 500) || (TMath::Abs(PDG_Mu1) > 4000 && TMath::Abs(PDG_Mu1) < 5000))
@@ -208,89 +177,140 @@ void Acc_corr_MCsim(
                     Beauty_mu1_Barion = kTRUE;
                 }
             }
-            else if ((TMath::Abs(PDG_Mu1) > 0 && TMath::Abs(PDG_Mu1) < 4) || (TMath::Abs(PDG_Mu1) > 100 && TMath::Abs(PDG_Mu1) < 400) || (TMath::Abs(PDG_Mu1) > 1000 && TMath::Abs(PDG_Mu1) < 4000))
-            {
-                LF_mu1 = kTRUE;
-                Charm_mu1 = kFALSE;
-                Beauty_mu1 = kFALSE;
-                HF_mu1 = kFALSE;
-            }
-            else
-            {
-                LF_mu1 = kFALSE;
-                Charm_mu1 = kFALSE;
-                Beauty_mu1 = kFALSE;
-                HF_mu1 = kFALSE;
-            }
+            Bool_t DiMu_origin_Selection[n_DiMu_origin] = {kFALSE};
+            Int_t type_DiMu = 999;
+            Double_t DiMu_weight_DiMu_Corr = 999;
+            Double_t DiMu_weight_Muon_Corr = 999;
 
-            Int_t DiMu_PDG = 999;
+            Bool_t Verbose = kFALSE;
 
-            if (Beauty_mu0_Meson && Beauty_mu1_Meson)
+            if (Charm_mu0 && Charm_mu1)
             {
-                DiMu_PDG = 501;
-            }
-            else if (Charm_mu0_Meson && Charm_mu1_Meson)
-            {
-                DiMu_PDG = 401;
-            }
-            else if ((Charm_mu0_Meson && Beauty_mu1_Meson) || (Beauty_mu0_Meson && Charm_mu1_Meson))
-            {
-                DiMu_PDG = 601;
-            }
+                DiMu_origin_Selection[0] = kTRUE;
+                if (Charm_mu0_Meson && Charm_mu1_Meson)
+                    type_DiMu = 0;
+                if (Charm_mu0_Barion && Charm_mu1_Barion)
+                    type_DiMu = 1;
+                if ((Charm_mu0_Meson && Charm_mu1_Barion) || (Charm_mu1_Meson && Charm_mu0_Barion))
+                    type_DiMu = 2;
+                Double_t Bin_Pt_Mu0 = h_PtY_Muon_Charm_Acc->GetXaxis()->FindBin(Pt_Mu0);
+                Double_t Bin_Y_Mu0 = h_PtY_Muon_Charm_Acc->GetYaxis()->FindBin(Y_Mu0);
 
-            if (Beauty_mu0_Barion && Beauty_mu1_Barion)
-            {
-                DiMu_PDG = 5001;
-            }
-            else if (Charm_mu0_Barion && Charm_mu1_Barion)
-            {
-                DiMu_PDG = 4001;
-            }
-            else if ((Charm_mu0_Barion && Beauty_mu1_Barion) || (Beauty_mu0_Barion && Charm_mu1_Barion))
-            {
-                DiMu_PDG = 6001;
-            }
+                Double_t Bin_Pt_Mu1 = h_PtY_Muon_Charm_Acc->GetXaxis()->FindBin(Pt_Mu1);
+                Double_t Bin_Y_Mu1 = h_PtY_Muon_Charm_Acc->GetYaxis()->FindBin(Y_Mu1);
 
-            if (Charge_DiMu == 0 && DiMu_PDG == 401)
-            {
+                Double_t Weight_Mu0 = h_PtY_Muon_Charm_Acc->GetBinContent(Bin_Pt_Mu0, Bin_Y_Mu0);
 
-                if ((M_DiMu > 4.0 && M_DiMu<9) && (Pt_DiMu<10))
+                Double_t Weight_Mu1 = h_PtY_Muon_Charm_Acc->GetBinContent(Bin_Pt_Mu1, Bin_Y_Mu1);
+
+                DiMu_weight_Muon_Corr = Weight_Mu0 * Weight_Mu1;
+
+                // h_PtY_Muon_Charm_Acc->Draw("COLZ");
+                // return;
+
+                Double_t Bin_Pt = h_PtY_DiMu_Acc_ULS_M49_Pt010_Charm->GetXaxis()->FindBin(Pt_DiMu);
+                Double_t Bin_Y = h_PtY_DiMu_Acc_ULS_M49_Pt010_Charm->GetYaxis()->FindBin(Y_DiMu);
+
+                DiMu_weight_DiMu_Corr = h_PtY_DiMu_Acc_ULS_M49_Pt010_Charm->GetBinContent(Bin_Pt, Bin_Y);
+
+                if (Verbose)
                 {
+                    printf("Pt_Mu0 %0.5f || Y_Mu0 %0.5f \n", Pt_Mu0, Y_Mu0);
+                    printf("Bin_Pt_Mu0 %0.0f || Bin_Y_Mu0 %0.0f \n", Bin_Pt_Mu0, Bin_Y_Mu0);
+                    printf("Weight_Mu0 %0.3f \n", Weight_Mu0);
+                    printf("Pt_Mu1 %0.5f || Y_Mu1 %0.5f \n", Pt_Mu1, Y_Mu1);
+                    printf("Bin_Pt_Mu1 %0.0f || Bin_Y_Mu1 %0.0f \n", Bin_Pt_Mu1, Bin_Y_Mu1);
+                    printf("Weight_Mu1 %0.3f \n", Weight_Mu1);
 
-                    Int_t Bin = h_PtY_DiMu_ACC_Charm_Meson_ULS_M4cut->FindBin(Pt_DiMu, Y_DiMu);
-                    Double_t weee = h_PtY_DiMu_ACC_Charm_Meson_ULS_M4cut->GetBinContent(Bin);
-                    // cout<<Bin<<endl;
-                    // cout<<weee<<endl;
+                    printf("DiMu_weight_Muon_Corr %0.2f\n", DiMu_weight_Muon_Corr);
 
-                    Int_t Bin_X = h_PtY_DiMu_ACC_Charm_Meson_ULS_M4cut->GetXaxis()->FindBin(Pt_DiMu);
-                    Int_t Bin_Y = h_PtY_DiMu_ACC_Charm_Meson_ULS_M4cut->GetYaxis()->FindBin(Y_DiMu);
-                    Double_t Acc = h_PtY_DiMu_ACC_Charm_Meson_ULS_M4cut->GetBinContent(Bin_X, Bin_Y);
-                    Double_t Weight = 1. / Acc;
+                    printf("Pt_DiMu %0.5f || Y_DiMu %0.5f \n", Pt_DiMu, Y_DiMu);
+                    printf("Bin_Pt %005f || Bin_Y %0.0f \n", Bin_Pt, Bin_Y);
+                    printf("DiMu_weight_DiMu_Corr %0.2f\n", DiMu_weight_DiMu_Corr);
+                }
+                // h_PtY_DiMu_Acc_ULS_M49_Pt010_Charm->Draw("COLZ");
+                // return;
+            }
+            
+            else if (Beauty_mu0 && Beauty_mu1)
+            {
+                DiMu_origin_Selection[1] = kTRUE;
+                if (Beauty_mu0_Meson && Beauty_mu1_Meson)
+                    type_DiMu = 0;
+                if (Beauty_mu0_Barion && Beauty_mu1_Barion)
+                    type_DiMu = 1;
+                if ((Beauty_mu0_Meson && Beauty_mu1_Barion) || (Beauty_mu1_Meson && Beauty_mu0_Barion))
+                    type_DiMu = 2;
 
-                    if (Acc == 0.0)
+                Double_t Bin_Pt_Mu0 = h_PtY_Muon_Beauty_Acc->GetXaxis()->FindBin(Pt_Mu0);
+                Double_t Bin_Y_Mu0 = h_PtY_Muon_Beauty_Acc->GetYaxis()->FindBin(Y_Mu0);
+
+                Double_t Bin_Pt_Mu1 = h_PtY_Muon_Beauty_Acc->GetXaxis()->FindBin(Pt_Mu1);
+                Double_t Bin_Y_Mu1 = h_PtY_Muon_Beauty_Acc->GetYaxis()->FindBin(Y_Mu1);
+
+                Double_t Weight_Mu0 = h_PtY_Muon_Beauty_Acc->GetBinContent(Bin_Pt_Mu0, Bin_Y_Mu0);
+
+                Double_t Weight_Mu1 = h_PtY_Muon_Beauty_Acc->GetBinContent(Bin_Pt_Mu1, Bin_Y_Mu1);
+
+                DiMu_weight_Muon_Corr = Weight_Mu0 * Weight_Mu1;
+
+                Double_t Bin_Pt = h_PtY_DiMu_Acc_ULS_M49_Pt010_Beauty->GetXaxis()->FindBin(Pt_DiMu);
+                Double_t Bin_Y = h_PtY_DiMu_Acc_ULS_M49_Pt010_Beauty->GetYaxis()->FindBin(Y_DiMu);
+
+                DiMu_weight_DiMu_Corr = h_PtY_DiMu_Acc_ULS_M49_Pt010_Beauty->GetBinContent(Bin_Pt, Bin_Y);
+
+                if (Verbose)
+                {
+                    printf("Pt_Mu0 %0.5f || Y_Mu0 %0.5f \n", Pt_Mu0, Y_Mu0);
+                    printf("Bin_Pt_Mu0 %0.0f || Bin_Y_Mu0 %0.0f \n", Bin_Pt_Mu0, Bin_Y_Mu0);
+                    printf("Weight_Mu0 %0.3f \n", Weight_Mu0);
+                    printf("Pt_Mu1 %0.5f || Y_Mu1 %0.5f \n", Pt_Mu1, Y_Mu1);
+                    printf("Bin_Pt_Mu1 %0.0f || Bin_Y_Mu1 %0.0f \n", Bin_Pt_Mu1, Bin_Y_Mu1);
+                    printf("Weight_Mu1 %0.3f \n", Weight_Mu1);
+
+                    printf("DiMu_weight_Muon_Corr %0.2f\n", DiMu_weight_Muon_Corr);
+
+                    h_PtY_Muon_Beauty_Acc->Draw("COLZ");
+
+                    printf("Pt_DiMu %0.5f || Y_DiMu %0.5f \n", Pt_DiMu, Y_DiMu);
+                    printf("Bin_Pt %005f || Bin_Y %0.0f \n", Bin_Pt, Bin_Y);
+                    printf("DiMu_weight_DiMu_Corr %0.2f\n", DiMu_weight_DiMu_Corr);
+                }
+                // h_PtY_DiMu_Acc_ULS_M49_Pt010_Beauty->Draw("COLZ");
+
+                // return;
+            }
+            else if ((Charm_mu0 && Beauty_mu1) || (Charm_mu1 && Beauty_mu0))
+            {
+                DiMu_origin_Selection[2] = kTRUE;
+                type_DiMu = 0;
+            }
+            else if (LF_mu0 && LF_mu1)
+            {
+                DiMu_origin_Selection[3] = kTRUE;
+                type_DiMu = 0;
+            }
+            else if ((LF_mu0 && HF_mu1) || (LF_mu1 && HF_mu0))
+            {
+                DiMu_origin_Selection[4] = kTRUE;
+                type_DiMu = 0;
+            }
+
+            for (Int_t i_DiMu_origin = 0; i_DiMu_origin < n_DiMu_origin - 3; i_DiMu_origin++)
+            {
+
+                if (DiMu_origin_Selection[i_DiMu_origin])
+                {
+                    if (Charge_DiMu == 0)
                     {
-                        printf("Pt_DiMu %0.2f Y_Dimu %0.2f\n", Pt_DiMu, Y_DiMu);
-                        printf("Bin_X %d \n", Bin_X);
-                        printf("Bin_Y %d \n", Bin_Y);
-                        printf("Acc %0.2f \n", Acc);
-                        printf("Weight %0.2f \n", Weight);
-                        h_PtY_DiMu_ACC_Charm_Meson_ULS_M4cut->Draw("COLZ");
-                        return;
+                        if ((M_DiMu > 4 && M_DiMu < 9) && Pt_DiMu < 10)
+                        {
+                            h_PtYPdg_DiMu_DiMu_Corr_ULS_M49_Pt010[i_DiMu_origin]->Fill(Pt_DiMu, Y_DiMu,type_DiMu, DiMu_weight_DiMu_Corr);
+                            h_PtYPdg_DiMu_Muon_Corr_ULS_M49_Pt010[i_DiMu_origin]->Fill(Pt_DiMu, Y_DiMu,type_DiMu, DiMu_weight_Muon_Corr);
+                        }
                     }
-
-                    // return;
-                    h_PtYPdg_DiMu_Corr_Meson_ULS_M4cut->Fill(Pt_DiMu, Y_DiMu, DiMu_PDG, Weight);
                 }
             }
-
-            // else if (Charge_DiMu == 0 && (DiMu_PDG > 4000 && DiMu_PDG < 7000))
-            // {
-
-            //     h_PtMPdg_DiMu_Rec_Barion_ULS->Fill(Pt_DiMu, M_DiMu, DiMu_PDG);
-            //     h_PtYPdg_DiMu_Rec_Barion_ULS->Fill(Pt_DiMu, Y_DiMu, DiMu_PDG);
-            //     if (M_DiMu > 4.0)
-            //         h_PtYPdg_DiMu_Rec_Barion_ULS_M4cut->Fill(Pt_DiMu, Y_DiMu, DiMu_PDG);
-            // }
         }
     }
 
@@ -299,6 +319,19 @@ void Acc_corr_MCsim(
     if (!fOut.GetDirectory("DiMu_corr"))
         fOut.mkdir("DiMu_corr");
 
-    fOut.cd("DiMu_corr");
-    h_PtYPdg_DiMu_Corr_Meson_ULS_M4cut->Write();
+    if (!fOut.GetDirectory("Muon_corr"))
+        fOut.mkdir("Muon_corr");
+        
+    for (Int_t i_DiMu_origin = 0; i_DiMu_origin < n_DiMu_origin - 3; i_DiMu_origin++)
+    {
+        fOut.cd("DiMu_corr");
+        h_PtYPdg_DiMu_DiMu_Corr_ULS_M49_Pt010[i_DiMu_origin]->Write();
+        fOut.cd("Muon_corr");
+        h_PtYPdg_DiMu_Muon_Corr_ULS_M49_Pt010[i_DiMu_origin]->Write();
+    }
+
+    if (!fOut.GetDirectory("Single_Muon"))
+        fOut.mkdir("Single_Muon");
+
+    fOut.cd("Single_Muon");
 }
