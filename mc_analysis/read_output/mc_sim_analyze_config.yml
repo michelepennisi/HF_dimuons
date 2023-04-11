@@ -1,0 +1,11 @@
+
+MC:
+  task_version: Version1
+  macro_to_run: Acc_corr_MCsim
+  prefix_file_name: MCDimuHFTree
+  run_list_file: /home/michele_pennisi/dimuon_HF_pp/MC_Analysis/Grid/general_run_information/LHC18p/run_list_part.txt
+
+merging_MC:
+  input_file: Acc_corr_MCsim
+  output_path: /home/michele_pennisi/cernbox/output_HF_dimuons/mc_analysis_output/Hist_fromSim/Version1/HF
+  output_file_prefix: Tree_HF_MCDimuHFTree
