@@ -2,7 +2,7 @@
 
 void Analysis_MCsim(
     TString RunMode = "HF",
-    Int_t RunNumber = 294925,
+    Int_t RunNumber = 294241,
     TString Task_Version = "Version1",
     Bool_t test = kTRUE,
     TString prefix_filename = "MCDimuHFTree")
@@ -14,7 +14,7 @@ void Analysis_MCsim(
     if (test)
         dir_fileout = "/home/michele_pennisi/cernbox/output_HF_dimuons/mc_analysis_output/root_files/test";
     else
-        dir_fileout.Form("/home/michele_pennisi/cernbox/output_HF_dimuons/mc_analysis_output/%s/%s", Task_Version.Data(), RunMode.Data()); // official with files saved locally
+        dir_fileout.Form("/home/michele_pennisi/cernbox/output_HF_dimuons/mc_analysis_output/%s/%s/Analysis_MCsim", Task_Version.Data(), RunMode.Data()); // official with files saved locally
 
     printf("%s/%s\n", dir_fileout.Data(), fileout.Data());
 
@@ -30,11 +30,13 @@ void Analysis_MCsim(
     TChain *input_tree = Importing_Tree(Form("/home/michele_pennisi/cernbox/output_HF_dimuons/mc_analysis_output/%s/%s", Task_Version.Data(), RunMode.Data()), filename);
     input_tree->ls();
     Int_t total_entries = input_tree->GetEntries();
+
+    Set_Hist();
     for (Int_t i_Event = 0; i_Event < total_entries; i_Event++)
     {
         if (i_Event % 500000 == 0)
         {
-            progress_status(i_Event,total_entries);
+            progress_status(i_Event, total_entries);
         }
         input_tree->GetEntry(i_Event);
 
@@ -70,15 +72,61 @@ void Analysis_MCsim(
             if (!DQ_Muon)
                 continue;
 
-            if (TMath::Abs(PDG_Mu) > 400 && TMath::Abs(PDG_Mu) < 600)
+            if ((TMath::Abs(PDG_Mu) > 400 && TMath::Abs(PDG_Mu) < 500) || (TMath::Abs(PDG_Mu) > 4000 && TMath::Abs(PDG_Mu) < 5000))
             {
-                h_PtYPdg_Muon_Gen_Meson->Fill(Pt_Mu, Y_Mu, PDG_Mu);
-                h_PtPdg_Muon_Gen_Meson->Fill(Pt_Mu, PDG_Mu);
+                HF_mu = kTRUE;
+                Charm_mu = kTRUE;
+                h_PtYPdg_Muon_Gen[0]->Fill(Pt_Mu, Y_Mu, 0);
+                if (TMath::Abs(PDG_Mu) > 400 && TMath::Abs(PDG_Mu) < 500)
+                {
+                    Charm_mu_Meson = kTRUE;
+                    Charm_mu_Barion = kFALSE;
+                    h_PtYPdg_Muon_Gen[0]->Fill(Pt_Mu, Y_Mu, 1);
+                    h_PtPdg_Muon_Gen_Meson->Fill(Pt_Mu, TMath::Abs(PDG_Mu));
+                }
+                else if (TMath::Abs(PDG_Mu) > 4000 && TMath::Abs(PDG_Mu) < 5000)
+                {
+                    Charm_mu_Meson = kFALSE;
+                    Charm_mu_Barion = kTRUE;
+                    h_PtYPdg_Muon_Gen[0]->Fill(Pt_Mu, Y_Mu, 2);
+                    h_PtPdg_Muon_Gen_Barion->Fill(Pt_Mu, TMath::Abs(PDG_Mu));
+                }
             }
-            else if (TMath::Abs(PDG_Mu) > 4000 && TMath::Abs(PDG_Mu) < 6000)
+            else if ((TMath::Abs(PDG_Mu) > 500 && TMath::Abs(PDG_Mu) < 600) || (TMath::Abs(PDG_Mu) > 5000 && TMath::Abs(PDG_Mu) < 6000))
             {
-                h_PtYPdg_Muon_Gen_Barion->Fill(Pt_Mu, Y_Mu, PDG_Mu);
-                h_PtPdg_Muon_Gen_Barion->Fill(Pt_Mu, PDG_Mu);
+                HF_mu = kTRUE;
+                Beauty_mu = kTRUE;
+                h_PtYPdg_Muon_Gen[1]->Fill(Pt_Mu, Y_Mu, 0);
+                if (TMath::Abs(PDG_Mu) > 500 && TMath::Abs(PDG_Mu) < 600)
+                {
+                    Beauty_mu_Meson = kTRUE;
+                    Beauty_mu_Barion = kFALSE;
+                    h_PtYPdg_Muon_Gen[1]->Fill(Pt_Mu, Y_Mu, 1);
+                    h_PtPdg_Muon_Gen_Meson->Fill(Pt_Mu, TMath::Abs(PDG_Mu));
+                }
+                else if (TMath::Abs(PDG_Mu) > 5000 && TMath::Abs(PDG_Mu) < 6000)
+                {
+                    Beauty_mu_Meson = kFALSE;
+                    Beauty_mu_Barion = kTRUE;
+                    h_PtYPdg_Muon_Gen[1]->Fill(Pt_Mu, Y_Mu, 2);
+                    h_PtPdg_Muon_Gen_Barion->Fill(Pt_Mu, TMath::Abs(PDG_Mu));
+                }
+            }
+            else if ((TMath::Abs(PDG_Mu) > 100 && TMath::Abs(PDG_Mu) < 400) || (TMath::Abs(PDG_Mu) > 1000 && TMath::Abs(PDG_Mu) < 4000))
+            {
+                HF_mu = kFALSE;
+                // LF_mu=kTRUE;
+                h_PtYPdg_Muon_Gen[2]->Fill(Pt_Mu, Y_Mu, 0);
+                // if (TMath::Abs(PDG_Mu) > 500 && TMath::Abs(PDG_Mu) < 600)
+                // {
+                //     Beauty_mu_Meson = kTRUE;
+                //     Beauty_mu_Barion = kFALSE;
+                // }
+                // else if (TMath::Abs(PDG_Mu) > 5000 && TMath::Abs(PDG_Mu) < 6000)
+                // {
+                //     Beauty_mu_Meson = kFALSE;
+                //     Beauty_mu_Barion = kTRUE;
+                // }
             }
         }
 
@@ -99,6 +147,7 @@ void Analysis_MCsim(
             Double_t pDCA_Mu = pDCA_rec[i_NMuons_rec];
 
             Bool_t HF_mu = kFALSE;
+            Bool_t LF_mu = kFALSE;
 
             Bool_t Charm_mu = kFALSE;
             Bool_t Charm_mu_Meson = kFALSE;
@@ -118,15 +167,63 @@ void Analysis_MCsim(
             if (!DQ_Muon)
                 continue;
 
-            if (TMath::Abs(PDG_Mu) > 400 && TMath::Abs(PDG_Mu) < 600)
+            // Bool_t Muon_origin_Selection[n_Muon_origin] = {kFALSE};
+
+            if ((TMath::Abs(PDG_Mu) > 400 && TMath::Abs(PDG_Mu) < 500) || (TMath::Abs(PDG_Mu) > 4000 && TMath::Abs(PDG_Mu) < 5000))
             {
-                h_PtYPdg_Muon_Rec_Meson->Fill(Pt_Mu, Y_Mu, PDG_Mu);
-                h_PtPdg_Muon_Rec_Meson->Fill(Pt_Mu, PDG_Mu);
+                HF_mu = kTRUE;
+                Charm_mu = kTRUE;
+                h_PtYPdg_Muon_Rec[0]->Fill(Pt_Mu, Y_Mu, 0);
+                if (TMath::Abs(PDG_Mu) > 400 && TMath::Abs(PDG_Mu) < 500)
+                {
+                    Charm_mu_Meson = kTRUE;
+                    Charm_mu_Barion = kFALSE;
+                    h_PtYPdg_Muon_Rec[0]->Fill(Pt_Mu, Y_Mu, 1);
+                    h_PtPdg_Muon_Rec_Meson->Fill(Pt_Mu, TMath::Abs(PDG_Mu));
+                }
+                else if (TMath::Abs(PDG_Mu) > 4000 && TMath::Abs(PDG_Mu) < 5000)
+                {
+                    Charm_mu_Meson = kFALSE;
+                    Charm_mu_Barion = kTRUE;
+                    h_PtYPdg_Muon_Rec[0]->Fill(Pt_Mu, Y_Mu, 2);
+                    h_PtPdg_Muon_Rec_Barion->Fill(Pt_Mu, TMath::Abs(PDG_Mu));
+                }
             }
-            else if (TMath::Abs(PDG_Mu) > 4000 && TMath::Abs(PDG_Mu) < 6000)
+            else if ((TMath::Abs(PDG_Mu) > 500 && TMath::Abs(PDG_Mu) < 600) || (TMath::Abs(PDG_Mu) > 5000 && TMath::Abs(PDG_Mu) < 6000))
             {
-                h_PtYPdg_Muon_Rec_Barion->Fill(Pt_Mu, Y_Mu, PDG_Mu);
-                h_PtPdg_Muon_Rec_Barion->Fill(Pt_Mu, PDG_Mu);
+                HF_mu = kTRUE;
+                Beauty_mu = kTRUE;
+                h_PtYPdg_Muon_Rec[1]->Fill(Pt_Mu, Y_Mu, 0);
+                if (TMath::Abs(PDG_Mu) > 500 && TMath::Abs(PDG_Mu) < 600)
+                {
+                    Beauty_mu_Meson = kTRUE;
+                    Beauty_mu_Barion = kFALSE;
+                    h_PtYPdg_Muon_Rec[1]->Fill(Pt_Mu, Y_Mu, 1);
+                    h_PtPdg_Muon_Rec_Meson->Fill(Pt_Mu, TMath::Abs(PDG_Mu));
+                }
+                else if (TMath::Abs(PDG_Mu) > 5000 && TMath::Abs(PDG_Mu) < 6000)
+                {
+                    Beauty_mu_Meson = kFALSE;
+                    Beauty_mu_Barion = kTRUE;
+                    h_PtYPdg_Muon_Rec[1]->Fill(Pt_Mu, Y_Mu, 2);
+                    h_PtPdg_Muon_Rec_Barion->Fill(Pt_Mu, TMath::Abs(PDG_Mu));
+                }
+            }
+            else if ((TMath::Abs(PDG_Mu) > 100 && TMath::Abs(PDG_Mu) < 400) || (TMath::Abs(PDG_Mu) > 1000 && TMath::Abs(PDG_Mu) < 4000))
+            {
+                HF_mu = kFALSE;
+                LF_mu = kTRUE;
+                h_PtYPdg_Muon_Rec[2]->Fill(Pt_Mu, Y_Mu, 0);
+                // if (TMath::Abs(PDG_Mu) > 500 && TMath::Abs(PDG_Mu) < 600)
+                // {
+                //     Beauty_mu_Meson = kTRUE;
+                //     Beauty_mu_Barion = kFALSE;
+                // }
+                // else if (TMath::Abs(PDG_Mu) > 5000 && TMath::Abs(PDG_Mu) < 6000)
+                // {
+                //     Beauty_mu_Meson = kFALSE;
+                //     Beauty_mu_Barion = kTRUE;
+                // }
             }
         }
 
@@ -172,6 +269,13 @@ void Analysis_MCsim(
             Bool_t HF_mu1 = kFALSE;
             Bool_t LF_mu0 = kFALSE;
             Bool_t LF_mu1 = kFALSE;
+
+            Bool_t DQ_Dimuon = kFALSE;
+            if ((Y_DiMu > -4.0 && Y_DiMu < -2.5) && (Eta_Mu0 > -4.0 && Eta_Mu0 < -2.5) && (Eta_Mu1 > -4.0 && Eta_Mu1 < -2.5))
+                DQ_Dimuon = kTRUE;
+
+            if (!DQ_Dimuon)
+                continue;
 
             if ((TMath::Abs(PDG_Mu0) == 4) || (TMath::Abs(PDG_Mu0) > 400 && TMath::Abs(PDG_Mu0) < 500) || (TMath::Abs(PDG_Mu0) > 4000 && TMath::Abs(PDG_Mu0) < 5000))
             {
@@ -235,56 +339,64 @@ void Analysis_MCsim(
                     Beauty_mu1_Barion = kTRUE;
                 }
             }
-            Int_t DiMu_PDG = 999;
 
-            if (Beauty_mu0_Meson && Beauty_mu1_Meson)
+            Bool_t DiMu_origin_Selection[n_DiMu_origin] = {kFALSE};
+            Int_t type_DiMu = 999;
+            if (Charm_mu0 && Charm_mu1)
             {
-                DiMu_PDG = 501;
+                DiMu_origin_Selection[0] = kTRUE;
+                if (Charm_mu0_Meson && Charm_mu1_Meson)
+                    type_DiMu = 0;
+                if (Charm_mu0_Barion && Charm_mu1_Barion)
+                    type_DiMu = 1;
+                if ((Charm_mu0_Meson && Charm_mu1_Barion) || (Charm_mu1_Meson && Charm_mu0_Barion))
+                    type_DiMu = 2;
             }
-            else if (Charm_mu0_Meson && Charm_mu1_Meson)
+            else if (Beauty_mu0 && Beauty_mu1)
             {
-                DiMu_PDG = 401;
+                DiMu_origin_Selection[1] = kTRUE;
+                if (Beauty_mu0_Meson && Beauty_mu1_Meson)
+                    type_DiMu = 0;
+                if (Beauty_mu0_Barion && Beauty_mu1_Barion)
+                    type_DiMu = 1;
+                if ((Beauty_mu0_Meson && Beauty_mu1_Barion) || (Beauty_mu1_Meson && Beauty_mu0_Barion))
+                    type_DiMu = 2;
             }
-            else if ((Charm_mu0_Meson && Beauty_mu1_Meson) || (Beauty_mu0_Meson && Charm_mu1_Meson))
+            else if ((Charm_mu0 && Beauty_mu1) || (Charm_mu1 && Beauty_mu0))
             {
-                DiMu_PDG = 601;
+                DiMu_origin_Selection[2] = kTRUE;
+                type_DiMu = 0;
             }
-
-            if (Beauty_mu0_Barion && Beauty_mu1_Barion)
+            else if (LF_mu0 && LF_mu1)
             {
-                DiMu_PDG = 5001;
+                DiMu_origin_Selection[3] = kTRUE;
+                type_DiMu = 0;
             }
-            else if (Charm_mu0_Barion && Charm_mu1_Barion)
+            else if ((LF_mu0 && HF_mu1) || (LF_mu1 && HF_mu0))
             {
-                DiMu_PDG = 4001;
-            }
-            else if ((Charm_mu0_Barion && Beauty_mu1_Barion) || (Beauty_mu0_Barion && Charm_mu1_Barion))
-            {
-                DiMu_PDG = 6001;
-            }
-
-            Bool_t DQ_Dimuon = kFALSE;
-            if ((Y_DiMu > -4.0 && Y_DiMu < -2.5) && (Eta_Mu0 > -4.0 && Eta_Mu0 < -2.5) && (Eta_Mu1 > -4.0 && Eta_Mu1 < -2.5))
-                DQ_Dimuon = kTRUE;
-
-            if (!DQ_Dimuon)
-                continue;
-
-            if (Charge_DiMu == 0 && DiMu_PDG < 700)
-            {
-                h_PtMPdg_DiMu_Gen_Meson_ULS->Fill(Pt_DiMu, M_DiMu, DiMu_PDG);
-                h_PtYPdg_DiMu_Gen_Meson_ULS->Fill(Pt_DiMu, Y_DiMu, DiMu_PDG);
-                if (M_DiMu > 4.0 && M_DiMu < 9.0)
-                    h_PtYPdg_DiMu_Gen_Meson_ULS_M4cut->Fill(Pt_DiMu, Y_DiMu, DiMu_PDG);
+                DiMu_origin_Selection[4] = kTRUE;
+                type_DiMu = 0;
             }
 
-            else if (Charge_DiMu == 0 && (DiMu_PDG > 4000 && DiMu_PDG < 7000))
+            for (Int_t i_DiMu_origin = 0; i_DiMu_origin < n_DiMu_origin; i_DiMu_origin++)
             {
-
-                h_PtMPdg_DiMu_Gen_Barion_ULS->Fill(Pt_DiMu, M_DiMu, DiMu_PDG);
-                h_PtYPdg_DiMu_Gen_Barion_ULS->Fill(Pt_DiMu, Y_DiMu, DiMu_PDG);
-                if (M_DiMu > 4.0 && M_DiMu < 9.0)
-                    h_PtYPdg_DiMu_Gen_Barion_ULS_M4cut->Fill(Pt_DiMu, Y_DiMu, DiMu_PDG);
+                if (DiMu_origin_Selection[i_DiMu_origin])
+                {
+                    if (Charge_DiMu == 0)
+                    {
+                        h_PtMPdg_DiMu_Gen_ULS[i_DiMu_origin]->Fill(Pt_DiMu, M_DiMu, type_DiMu);
+                        h_PtYPdg_DiMu_Gen_ULS[i_DiMu_origin]->Fill(Pt_DiMu, Y_DiMu, type_DiMu);
+                        h_PtPt_DiMuULS_Muon_Gen[i_DiMu_origin]->Fill(Pt_DiMu, Pt_Mu0);
+                        h_PtPt_DiMuULS_Muon_Gen[i_DiMu_origin]->Fill(Pt_DiMu, Pt_Mu1);
+                        if ((M_DiMu > 4 && M_DiMu < 9) && Pt_DiMu < 10)
+                        {
+                            h_PtYPdg_DiMu_Gen_ULS_M49_Pt010[i_DiMu_origin]->Fill(Pt_DiMu, Y_DiMu, type_DiMu);
+                            h_PtPt_DiMuULS_M49_Pt010_Muon_Gen[i_DiMu_origin]->Fill(Pt_DiMu, Pt_Mu0);
+                            h_PtPt_DiMuULS_M49_Pt010_Muon_Gen[i_DiMu_origin]->Fill(Pt_DiMu, Pt_Mu1);
+                        }
+                        
+                    }
+                }
             }
         }
 
@@ -443,49 +555,64 @@ void Analysis_MCsim(
                 HF_mu1 = kFALSE;
             }
 
-            Int_t DiMu_PDG = 999;
+            Bool_t DiMu_origin_Selection[n_DiMu_origin] = {kFALSE};
+            Int_t type_DiMu = 999;
+            if (Charm_mu0 && Charm_mu1)
+            {
+                DiMu_origin_Selection[0] = kTRUE;
+                if (Charm_mu0_Meson && Charm_mu1_Meson)
+                    type_DiMu = 0;
+                if (Charm_mu0_Barion && Charm_mu1_Barion)
+                    type_DiMu = 1;
+                if ((Charm_mu0_Meson && Charm_mu1_Barion) || (Charm_mu1_Meson && Charm_mu0_Barion))
+                    type_DiMu = 2;
+            }
+            else if (Beauty_mu0 && Beauty_mu1)
+            {
+                DiMu_origin_Selection[1] = kTRUE;
+                if (Beauty_mu0_Meson && Beauty_mu1_Meson)
+                    type_DiMu = 0;
+                if (Beauty_mu0_Barion && Beauty_mu1_Barion)
+                    type_DiMu = 1;
+                if ((Beauty_mu0_Meson && Beauty_mu1_Barion) || (Beauty_mu1_Meson && Beauty_mu0_Barion))
+                    type_DiMu = 2;
+            }
+            else if ((Charm_mu0 && Beauty_mu1) || (Charm_mu1 && Beauty_mu0))
+            {
+                DiMu_origin_Selection[2] = kTRUE;
+                type_DiMu = 0;
+            }
+            else if (LF_mu0 && LF_mu1)
+            {
+                DiMu_origin_Selection[3] = kTRUE;
+                type_DiMu = 0;
+            }
+            else if ((LF_mu0 && HF_mu1) || (LF_mu1 && HF_mu0))
+            {
+                DiMu_origin_Selection[4] = kTRUE;
+                type_DiMu = 0;
+            }
 
-            if (Beauty_mu0_Meson && Beauty_mu1_Meson)
-            {
-                DiMu_PDG = 501;
-            }
-            else if (Charm_mu0_Meson && Charm_mu1_Meson)
-            {
-                DiMu_PDG = 401;
-            }
-            else if ((Charm_mu0_Meson && Beauty_mu1_Meson) || (Beauty_mu0_Meson && Charm_mu1_Meson))
-            {
-                DiMu_PDG = 601;
-            }
-
-            if (Beauty_mu0_Barion && Beauty_mu1_Barion)
-            {
-                DiMu_PDG = 5001;
-            }
-            else if (Charm_mu0_Barion && Charm_mu1_Barion)
-            {
-                DiMu_PDG = 4001;
-            }
-            else if ((Charm_mu0_Barion && Beauty_mu1_Barion) || (Beauty_mu0_Barion && Charm_mu1_Barion))
-            {
-                DiMu_PDG = 6001;
-            }
-
-            if (Charge_DiMu == 0 && DiMu_PDG < 700)
-            {
-                h_PtMPdg_DiMu_Rec_Meson_ULS->Fill(Pt_DiMu, M_DiMu, DiMu_PDG);
-                h_PtYPdg_DiMu_Rec_Meson_ULS->Fill(Pt_DiMu, Y_DiMu, DiMu_PDG);
-                if (M_DiMu > 4.0 && M_DiMu < 9.0)
-                    h_PtYPdg_DiMu_Rec_Meson_ULS_M4cut->Fill(Pt_DiMu, Y_DiMu, DiMu_PDG);
-            }
-
-            else if (Charge_DiMu == 0 && (DiMu_PDG > 4000 && DiMu_PDG < 7000))
+            for (Int_t i_DiMu_origin = 0; i_DiMu_origin < n_DiMu_origin; i_DiMu_origin++)
             {
 
-                h_PtMPdg_DiMu_Rec_Barion_ULS->Fill(Pt_DiMu, M_DiMu, DiMu_PDG);
-                h_PtYPdg_DiMu_Rec_Barion_ULS->Fill(Pt_DiMu, Y_DiMu, DiMu_PDG);
-                if (M_DiMu > 4.0 && M_DiMu < 9.0)
-                    h_PtYPdg_DiMu_Rec_Barion_ULS_M4cut->Fill(Pt_DiMu, Y_DiMu, DiMu_PDG);
+                if (DiMu_origin_Selection[i_DiMu_origin])
+                {
+                    if (Charge_DiMu == 0)
+                    {
+                        h_PtMPdg_DiMu_Rec_ULS[i_DiMu_origin]->Fill(Pt_DiMu, M_DiMu, type_DiMu);
+                        h_PtYPdg_DiMu_Rec_ULS[i_DiMu_origin]->Fill(Pt_DiMu, Y_DiMu, type_DiMu);
+                        h_PtPt_DiMuULS_Muon_Rec[i_DiMu_origin]->Fill(Pt_DiMu, Pt_Mu0);
+                        h_PtPt_DiMuULS_Muon_Rec[i_DiMu_origin]->Fill(Pt_DiMu, Pt_Mu1);
+                        if ((M_DiMu > 4 && M_DiMu < 9) && Pt_DiMu < 10)
+                        {
+
+                            h_PtYPdg_DiMu_Rec_ULS_M49_Pt010[i_DiMu_origin]->Fill(Pt_DiMu, Y_DiMu, type_DiMu);
+                            h_PtPt_DiMuULS_M49_Pt010_Muon_Rec[i_DiMu_origin]->Fill(Pt_DiMu, Pt_Mu0);
+                            h_PtPt_DiMuULS_M49_Pt010_Muon_Rec[i_DiMu_origin]->Fill(Pt_DiMu, Pt_Mu1);
+                        }
+                    }
+                }
             }
         }
     }
@@ -493,49 +620,53 @@ void Analysis_MCsim(
     fOut.cd();
     if (!fOut.GetDirectory("Muon_Gen"))
         fOut.mkdir("Muon_Gen");
-
     fOut.cd("Muon_Gen");
-    h_PtYPdg_Muon_Gen_Meson->Write();
-    h_PtYPdg_Muon_Gen_Barion->Write();
-
     h_PtPdg_Muon_Gen_Meson->Write();
     h_PtPdg_Muon_Gen_Barion->Write();
-
     if (!fOut.GetDirectory("Muon_Rec"))
         fOut.mkdir("Muon_Rec");
 
     fOut.cd("Muon_Rec");
-    h_PtYPdg_Muon_Rec_Meson->Write();
-    h_PtYPdg_Muon_Rec_Barion->Write();
-
     h_PtPdg_Muon_Rec_Meson->Write();
     h_PtPdg_Muon_Rec_Barion->Write();
-
     if (!fOut.GetDirectory("DiMu_Gen"))
         fOut.mkdir("DiMu_Gen");
-
-    fOut.cd("DiMu_Gen");
-    h_PtMPdg_DiMu_Gen_Meson_ULS->Write();
-    h_PtMPdg_DiMu_Gen_Barion_ULS->Write();
-
-    h_PtYPdg_DiMu_Gen_Meson_ULS->Write();
-    h_PtYPdg_DiMu_Gen_Barion_ULS->Write();
-
-    h_PtYPdg_DiMu_Gen_Meson_ULS_M4cut->Write();
-    h_PtYPdg_DiMu_Gen_Barion_ULS_M4cut->Write();
 
     if (!fOut.GetDirectory("DiMu_Rec"))
         fOut.mkdir("DiMu_Rec");
 
-    fOut.cd("DiMu_Rec");
-    h_PtMPdg_DiMu_Rec_Meson_ULS->Write();
-    h_PtMPdg_DiMu_Rec_Barion_ULS->Write();
+    for (Int_t i_Muon_origin = 0; i_Muon_origin < n_Muon_origin; i_Muon_origin++)
+    {
+        fOut.cd("Muon_Gen");
+        h_PtYPdg_Muon_Gen[i_Muon_origin]->Write();
 
-    h_PtYPdg_DiMu_Rec_Meson_ULS->Write();
-    h_PtYPdg_DiMu_Rec_Barion_ULS->Write();
+        fOut.cd("Muon_Rec");
+        h_PtYPdg_Muon_Rec[i_Muon_origin]->Write();
+    }
+    for (Int_t i_DiMu_origin = 0; i_DiMu_origin < n_DiMu_origin; i_DiMu_origin++)
+    {
+        fOut.cd("DiMu_Gen");
+        h_PtMPdg_DiMu_Gen_ULS[i_DiMu_origin]->Write();
+        h_PtYPdg_DiMu_Gen_ULS[i_DiMu_origin]->Write();
+        h_PtYPdg_DiMu_Gen_ULS_M49_Pt010[i_DiMu_origin]->Write();
+        h_PtPt_DiMuULS_Muon_Gen[i_DiMu_origin]->GetXaxis()->SetTitle("#it{p}_{T} dimu");
+        h_PtPt_DiMuULS_Muon_Gen[i_DiMu_origin]->GetYaxis()->SetTitle("#it{p}_{T} mu");
+        h_PtPt_DiMuULS_Muon_Gen[i_DiMu_origin]->Write();
+        h_PtPt_DiMuULS_M49_Pt010_Muon_Gen[i_DiMu_origin]->GetXaxis()->SetTitle("#it{p}_{T} dimu");
+        h_PtPt_DiMuULS_M49_Pt010_Muon_Gen[i_DiMu_origin]->GetYaxis()->SetTitle("#it{p}_{T} mu");
+        h_PtPt_DiMuULS_M49_Pt010_Muon_Gen[i_DiMu_origin]->Write();
 
-    h_PtYPdg_DiMu_Rec_Meson_ULS_M4cut->Write();
-    h_PtYPdg_DiMu_Rec_Barion_ULS_M4cut->Write();
+        fOut.cd("DiMu_Rec");
+        h_PtMPdg_DiMu_Rec_ULS[i_DiMu_origin]->Write();
+        h_PtYPdg_DiMu_Rec_ULS[i_DiMu_origin]->Write();
+        h_PtYPdg_DiMu_Rec_ULS_M49_Pt010[i_DiMu_origin]->Write();
+        h_PtPt_DiMuULS_Muon_Rec[i_DiMu_origin]->GetXaxis()->SetTitle("#it{p}_{T} dimu");
+        h_PtPt_DiMuULS_Muon_Rec[i_DiMu_origin]->GetYaxis()->SetTitle("#it{p}_{T} mu");
+        h_PtPt_DiMuULS_Muon_Rec[i_DiMu_origin]->Write();
+        h_PtPt_DiMuULS_M49_Pt010_Muon_Rec[i_DiMu_origin]->GetXaxis()->SetTitle("#it{p}_{T} dimu");
+        h_PtPt_DiMuULS_M49_Pt010_Muon_Rec[i_DiMu_origin]->GetYaxis()->SetTitle("#it{p}_{T} mu");
+        h_PtPt_DiMuULS_M49_Pt010_Muon_Rec[i_DiMu_origin]->Write();
+    }
 
     fOut.Close();
 
