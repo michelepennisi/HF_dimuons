@@ -2,21 +2,25 @@
 TCanvas *compare_cs(TH1D *MC, TH1D *data, TString part, TString rapidity);
 TCanvas *compare_cs_LHCb_ratio(TH1D *MC[4][6], TH1D *data[4][6], TString part[4], TString rapidity[6], Int_t i_hadron = 0);
 TCanvas *compare_cs_LHCb(TH1D *MC[4][6], TH1D *data[4][6], TString part[4], TString rapidity[6], Int_t i_hadron = 0);
-void hf_cross_section()
+// void hf_cross_section(TString change = "Def")
+void hf_cross_section(TString change = "Mode2")
 {
     TString output_dir("/home/michele_pennisi/cernbox/output_HF_dimuons/mc_analysis_output/hf_hadron_cs");
 
-    TFile *fIn = new TFile("Hist_HFHadronpythia_sim_SoftQCD_Def_1000000_2710_DefaultBR_HFcount_HFhadron.root", "READ");
+    TFile *fIn = new TFile(Form("Hist_HFHadronpythia_sim_SoftQCD_%s_1000000_2710_DefaultBR.root", change.Data()), "READ");
     fIn->ls();
-    double pythia_cs = 5.642e+4; // pythia cs in mb
+    double pythia_cs = 5.642e+4; // pythia cs in mub
 
     const Int_t n_Hadron_studied = 4;
     const Int_t n_Rapidity_studied = 6;
-    Double_t norm_factor[n_Hadron_studied];
-    norm_factor[0] = pythia_cs / (2. * 1000000);
-    norm_factor[1] = pythia_cs * 0.0913 / (2.);
-    norm_factor[2] = pythia_cs * 0.0228 / (2.);
-    norm_factor[3] = pythia_cs / (2. * 1000000);
+    Double_t BR_data[n_Hadron_studied];
+    BR_data[0] = 1.;
+    BR_data[1] = 0.0913; // BR Dplus for normalizing data
+    BR_data[2] = 0.0228; // BR DStrange for normalizing data
+    BR_data[3] = 1.;
+
+    Double_t norm_factor_ALICE = pythia_cs / (2. * 1000000);
+    Double_t norm_factor_LHCb = 2 * pythia_cs / (1000000); //
 
     TString name_root_files[n_Hadron_studied + 1];
     name_root_files[0].Form("%s/root_files/D0-Lc-Xsec-pp13.root", output_dir.Data());
@@ -77,15 +81,18 @@ void hf_cross_section()
                 TFile *fIn_data = new TFile(Form("%s", name_root_files[i_hadron].Data()), "READ");
                 TH1D *hist_data = (TH1D *)fIn_data->Get(Form("%s", name_histo[i_hadron].Data()));
                 hist_data->SetDirectory(0);
-                h_ptHadron_prompt[i_hadron][i_rapidity]->Scale(norm_factor[i_hadron], "width");
+                h_ptHadron_prompt[i_hadron][i_rapidity]->SetName(Form("%s_%s", h_ptHadron_prompt[i_hadron][i_rapidity]->GetName(), change.Data()));
+                h_ptHadron_prompt[i_hadron][i_rapidity]->Scale(norm_factor_ALICE, "width");
                 if (i_hadron == 1 || i_hadron == 2)
                 {
-                    h_ptHadron_prompt[i_hadron][i_rapidity]->Scale(1. / 1000000);
-                    hist_data->Scale(1. / 1000000);
+                    // h_ptHadron_prompt[i_hadron][i_rapidity]->Scale(1. / 1000000);
+                    hist_data->Scale(1. / (BR_data[i_hadron] * 1000000));
                 }
 
                 cs_compare[i_hadron][i_rapidity] = compare_cs(h_ptHadron_prompt[i_hadron][i_rapidity], hist_data, name_Hadron_studied[i_hadron], name_rapidity_studied[i_rapidity]);
-                cs_compare[i_hadron][i_rapidity]->SetName(Form("cs_compariso_%s_%s", name_Hadron_studied[i_hadron].Data(), name_rapidity_studied[i_rapidity].Data()));
+                cs_compare[i_hadron][i_rapidity]->SetName(Form("cs_comparison_%s_%s", name_Hadron_studied[i_hadron].Data(), name_rapidity_studied[i_rapidity].Data()));
+                cs_compare[i_hadron][i_rapidity]->SaveAs(Form("%s/plot/Pythia8_%s_%s.pdf", output_dir.Data(), change.Data(), cs_compare[i_hadron][i_rapidity]->GetName()));
+                cs_compare[i_hadron][i_rapidity]->SaveAs(Form("%s/plot/Pythia8_%s_%s.png", output_dir.Data(), change.Data(), cs_compare[i_hadron][i_rapidity]->GetName()));
             }
             else
             {
@@ -105,8 +112,8 @@ void hf_cross_section()
                     // hist_data_LHCb[i_hadron][i_rapidity]->SetLineColor(kRed);
                     // hist_data_LHCb[i_hadron][i_rapidity]->Draw("PESAME");
                     // return;
-
-                    h_ptHadron_prompt[i_hadron][i_rapidity]->Scale(2 * pythia_cs / (1000000), "width");
+                    h_ptHadron_prompt[i_hadron][i_rapidity]->SetName(Form("%s_%s", h_ptHadron_prompt[i_hadron][i_rapidity]->GetName(), change.Data()));
+                    h_ptHadron_prompt[i_hadron][i_rapidity]->Scale(norm_factor_LHCb, "width");
 
                     // cs_compare[i_hadron][i_rapidity] = compare_cs(h_ptHadron_prompt[i_hadron][i_rapidity], hist_data_LHCb[i_hadron][i_rapidity], name_Hadron_studied[i_hadron], name_rapidity_studied[i_rapidity]);
                     // cs_compare[i_hadron][i_rapidity]->SetName(Form("cs_compariso_%s_%s", name_Hadron_studied[i_hadron].Data(), name_rapidity_studied[i_rapidity].Data()));
@@ -120,18 +127,18 @@ void hf_cross_section()
     }
     TCanvas *cs_compare_LHCb_Dzero = compare_cs_LHCb_ratio(h_ptHadron_prompt, hist_data_LHCb, name_Hadron_studied, name_rapidity_studied, 0);
     cs_compare_LHCb_Dzero->SetName("cs_compare_LHCb_Dzero");
-    cs_compare_LHCb_Dzero->SaveAs(Form("%s/plot/cs_compare_LHCb_Dzero_Monashstd.pdf", output_dir.Data()));
-    cs_compare_LHCb_Dzero->SaveAs(Form("%s/plot/cs_compare_LHCb_Dzero_Monashstd.png", output_dir.Data()));
+    cs_compare_LHCb_Dzero->SaveAs(Form("%s/plot/Pythia8_%s_cs_compare_LHCb_Dzero.pdf", output_dir.Data(), change.Data()));
+    cs_compare_LHCb_Dzero->SaveAs(Form("%s/plot/Pythia8_%s_cs_compare_LHCb_Dzero.png", output_dir.Data(), change.Data()));
 
     TCanvas *cs_compare_LHCb_Dplus = compare_cs_LHCb_ratio(h_ptHadron_prompt, hist_data_LHCb, name_Hadron_studied, name_rapidity_studied, 1);
     cs_compare_LHCb_Dplus->SetName("cs_compare_LHCb_Dplus");
-    cs_compare_LHCb_Dplus->SaveAs(Form("%s/plot/cs_compare_LHCb_Dplus_Monashstd.pdf", output_dir.Data()));
-    cs_compare_LHCb_Dplus->SaveAs(Form("%s/plot/cs_compare_LHCb_Dplus_Monashstd.png", output_dir.Data()));
+    cs_compare_LHCb_Dplus->SaveAs(Form("%s/plot/Pythia8_%s_cs_compare_LHCb_Dplus.pdf", output_dir.Data(), change.Data()));
+    cs_compare_LHCb_Dplus->SaveAs(Form("%s/plot/Pythia8_%s_cs_compare_LHCb_Dplus.png", output_dir.Data(), change.Data()));
 
     TCanvas *cs_compare_LHCb_Dstrage = compare_cs_LHCb_ratio(h_ptHadron_prompt, hist_data_LHCb, name_Hadron_studied, name_rapidity_studied, 2);
     cs_compare_LHCb_Dstrage->SetName("cs_compare_LHCb_Dstrage");
-    cs_compare_LHCb_Dstrage->SaveAs(Form("%s/plot/cs_compare_LHCb_Dstrage_Monashstd.pdf", output_dir.Data()));
-    cs_compare_LHCb_Dstrage->SaveAs(Form("%s/plot/cs_compare_LHCb_Dstrage_Monashstd.png", output_dir.Data()));
+    cs_compare_LHCb_Dstrage->SaveAs(Form("%s/plot/Pythia8_%s_cs_compare_LHCb_Dstrage.pdf", output_dir.Data(), change.Data()));
+    cs_compare_LHCb_Dstrage->SaveAs(Form("%s/plot/Pythia8_%s_cs_compare_LHCb_Dstrage.png", output_dir.Data(), change.Data()));
 
     // h_ptHadron_prompt[0][0]->SetLineColor(kRed);
     // h_ptHadron_prompt[0][0]->Draw();
@@ -145,6 +152,7 @@ void hf_cross_section()
 
 TCanvas *compare_cs(TH1D *MC, TH1D *data, TString part, TString rapidity)
 {
+    TString MC_name(Form("%s", MC->GetName()));
     gStyle->SetImageScaling(3.);
     gStyle->SetOptStat(0);
     TCanvas *canvas = new TCanvas("canvas", "canvas", 1000, 1100);
@@ -216,7 +224,18 @@ TCanvas *compare_cs(TH1D *MC, TH1D *data, TString part, TString rapidity)
     // legend->SetHeader("Data");
     legend->SetTextAlign(12);
     legend->AddEntry(data, "Data", "LP");
-    legend->AddEntry(MC, "Monash", "LP");
+    if (MC_name.Contains("Def"))
+    {
+        legend->AddEntry(MC, "Monash", "LP");
+    }
+    else if (MC_name.Contains("Config+Atlas"))
+    {
+        legend->AddEntry(MC, "MNR", "LP");
+    }
+    else if (MC_name.Contains("Mode2"))
+    {
+        legend->AddEntry(MC, "CR mode 2", "LP");
+    }
 
     legend->Draw();
     TLatex *letexTitle = new TLatex();
@@ -269,12 +288,22 @@ TCanvas *compare_cs(TH1D *MC, TH1D *data, TString part, TString rapidity)
     // ratioata->Rebin(15);
     ratio->Divide(MC);
 
-    TH2D *h_grid_ratio = new TH2D(Form("grid_ratio_%s", data->GetName()), " ", data->GetXaxis()->GetNbins(), data->GetXaxis()->GetBinLowEdge(1), data->GetXaxis()->GetBinLowEdge(data->GetXaxis()->GetNbins() + 1), 1000, 0.002, ratio->GetMaximum() * 1.45);
+    TH2D *h_grid_ratio = new TH2D(Form("grid_ratio_%s", data->GetName()), " ", data->GetXaxis()->GetNbins(), data->GetXaxis()->GetBinLowEdge(1), data->GetXaxis()->GetBinLowEdge(data->GetXaxis()->GetNbins() + 1), 1000, 0.002, 3.4);
     h_grid_ratio->SetTitle("");
 
     // TH1D *c_data = (TH1D *)data->Clone("c_data");
-
-    h_grid_ratio->GetYaxis()->SetTitle(Form("#frac{Data}{Monash}"));
+    if (MC_name.Contains("Def"))
+    {
+        h_grid_ratio->GetYaxis()->SetTitle(Form("#frac{Data}{Monash}"));
+    }
+    else if (MC_name.Contains("Config+Atlas"))
+    {
+        h_grid_ratio->GetYaxis()->SetTitle(Form("#frac{Data}{MNR}"));
+    }
+    else if (MC_name.Contains("Mode2"))
+    {
+        h_grid_ratio->GetYaxis()->SetTitle(Form("#frac{Data}{CR mode 2}"));
+    }
     h_grid_ratio->GetYaxis()->CenterTitle();
     h_grid_ratio->GetYaxis()->SetNdivisions(504);
     h_grid_ratio->GetYaxis()->SetTitleSize(0.07);
@@ -296,6 +325,7 @@ TCanvas *compare_cs(TH1D *MC, TH1D *data, TString part, TString rapidity)
 }
 TCanvas *compare_cs_LHCb_ratio(TH1D *MC[4][6], TH1D *data[4][6], TString part[4], TString rapidity[6], Int_t i_hadron = 0)
 {
+    TString MC_name(Form("%s", MC[i_hadron][1]->GetName()));
     gStyle->SetImageScaling(3.);
     gStyle->SetOptStat(0);
     TCanvas *canvas = new TCanvas("canvas", "canvas", 2000, 2200);
@@ -353,12 +383,25 @@ TCanvas *compare_cs_LHCb_ratio(TH1D *MC[4][6], TH1D *data[4][6], TString part[4]
         rp->SetRightMargin(0.03);
         rp->SetH1DrawOpt("PE");
         rp->SetH2DrawOpt("PE");
-        rp->SetGraphDrawOpt("AB");
+        rp->SetGraphDrawOpt("AP");
         rp->Draw();
+        rp->GetLowerRefGraph()->SetMarkerStyle(20);
         rp->GetLowerRefGraph()->SetMinimum(-0.2);
         rp->GetLowerRefGraph()->SetMaximum(2.5);
         rp->GetLowYaxis()->SetNdivisions(508);
-        rp->GetLowerRefYaxis()->SetTitle("#frac{Data}{Monash}");
+        if (MC_name.Contains("Def"))
+        {
+            rp->GetLowerRefYaxis()->SetTitle("#frac{Data}{Monash}");
+        }
+        else if (MC_name.Contains("Config+Atlas"))
+        {
+            rp->GetLowerRefYaxis()->SetTitle("#frac{Data}{MNR}");
+        }
+        else if (MC_name.Contains("Mode2"))
+        {
+            rp->GetLowerRefYaxis()->SetTitle("#frac{Data}{CR mode 2}");
+        }
+
         rp->GetLowerRefYaxis()->CenterTitle();
         rp->GetLowerRefYaxis()->SetTitleOffset(1.75);
         canvas->Update();
@@ -374,7 +417,19 @@ TCanvas *compare_cs_LHCb_ratio(TH1D *MC[4][6], TH1D *data[4][6], TString part[4]
     // legend->SetHeader("Data");
     legend->SetTextAlign(12);
     legend->AddEntry(data[i_hadron][1], "Data", "LP");
-    legend->AddEntry(MC[i_hadron][1], "PYTHIA8 Monash", "LP");
+    if (MC_name.Contains("Def"))
+    {
+        legend->AddEntry(MC[i_hadron][1], "PYTHIA8 Monash", "LP");
+    }
+    else if (MC_name.Contains("Config+Atlas"))
+    {
+        legend->AddEntry(MC[i_hadron][1], "PYTHIA8 MNR", "LP");
+    }
+    else if (MC_name.Contains("Mode2"))
+    {
+        legend->AddEntry(MC[i_hadron][1], "PYTHIA8 CR mode 2", "LP");
+    }
+    
     legend->Draw();
 
     // letexTitle -> DrawLatex(0.405,0.86,"ALICE Simulation, pp #sqrt{#it{s}} = 13 TeV");
