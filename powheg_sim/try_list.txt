@@ -1,0 +1,12 @@
+294586 5 100 geant4 powheg pp pPb
+294587 5 100 geant4 powheg pp pPb
+294588 5 100 geant4 powheg pp pPb
+294590 5 100 geant4 powheg pp pPb
+294591 5 100 geant4 powheg pp pPb
+294593 5 100 geant4 powheg pp pPb
+294741 5 100 geant4 powheg pp pPb
+294742 5 100 geant4 powheg pp pPb
+294743 5 100 geant4 powheg pp pPb
+294747 5 100 geant4 powheg pp pPb
+294749 5 100 geant4 powheg pp pPb
+294769 5 100 geant4 powheg pp pPb
