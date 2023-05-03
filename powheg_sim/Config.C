@@ -512,7 +512,6 @@ AliGenPythia* GenZ_Pythia6(TString collisionSystem = "pp", TString beamConfig ="
 
   gener->SetCutOnChild(1); // Enable/disable cuts on child particles
   gener->SetChildThetaRange(168.0,178.5);
-  gener->SetChildPtRange(10., 1.e10); // 10 to reduce gamma* contribution
   gener->SetNumberOfAcceptedParticles(2);
   gener->SetPdgCodeParticleforAcceptanceCut(13);
 
