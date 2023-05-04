@@ -7,21 +7,21 @@ Jobtag =
       "comment: Z simulation LHC18p with powheg, eliminating all related to pPb in Submit.C, s=13 tev"
    };
 split = "production:1-$2";
-OutputDir = "/alice/cern.ch/user/m/mpennisi/powheg_test/LHC18p/$1/$6/#alien_counter_03i#";
+OutputDir = "/alice/cern.ch/user/m/mpennisi/powheg_sim/LHC18p/$1/$6/#alien_counter_03i#";
 Price = 1;
 Executable = "/alice/bin/aliroot_new";
 InputFile =
    {
 
-      "LF:/alice/cern.ch/user/m/mpennisi/powheg_test/CheckESD.C",
-      "LF:/alice/cern.ch/user/m/mpennisi/powheg_test/Config.C",
-      "LF:/alice/cern.ch/user/m/mpennisi/powheg_test/base_powheg.input",
-      "LF:/alice/cern.ch/user/m/mpennisi/powheg_test/basiclibs.C",
-      "LF:/alice/cern.ch/user/m/mpennisi/powheg_test/g4libs.C",
-      "LF:/alice/cern.ch/user/m/mpennisi/powheg_test/rec.C",
-      "LF:/alice/cern.ch/user/m/mpennisi/powheg_test/sim.C",
-      "LF:/alice/cern.ch/user/m/mpennisi/powheg_test/simrun.sh",
-      "LF:/alice/cern.ch/user/m/mpennisi/powheg_test/AODtrainsim.C"
+      "LF:/alice/cern.ch/user/m/mpennisi/powheg_sim/CheckESD.C",
+      "LF:/alice/cern.ch/user/m/mpennisi/powheg_sim/Config.C",
+      "LF:/alice/cern.ch/user/m/mpennisi/powheg_sim/base_powheg.input",
+      "LF:/alice/cern.ch/user/m/mpennisi/powheg_sim/basiclibs.C",
+      "LF:/alice/cern.ch/user/m/mpennisi/powheg_sim/g4libs.C",
+      "LF:/alice/cern.ch/user/m/mpennisi/powheg_sim/rec.C",
+      "LF:/alice/cern.ch/user/m/mpennisi/powheg_sim/sim.C",
+      "LF:/alice/cern.ch/user/m/mpennisi/powheg_sim/simrun.sh",
+      "LF:/alice/cern.ch/user/m/mpennisi/powheg_sim/AODtrainsim.C"
    };
 
 User = "mpennisi";
@@ -42,4 +42,4 @@ JDLVariables =
       "Packages",
       "OutputDir"
    };
-Validationcommand = "/alice/cern.ch/user/m/mpennisi/powheg_test/validation.sh"
+Validationcommand = "/alice/cern.ch/user/m/mpennisi/powheg_sim/validation.sh"

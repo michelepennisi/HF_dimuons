@@ -15,7 +15,7 @@ Bool_t DirectoryExists(const char *dirname);
 // simrun.sh
 // validation.sh
 
-void Submit(const char* alienWorkingDirectory = "/alice/cern.ch/user/m/mpennisi/powheg_test/",
+void Submit(const char* alienWorkingDirectory = "/alice/cern.ch/user/m/mpennisi/powheg_sim/",
 	    const char* jdl = "run.jdl",
 	    const char* runList = "try_list.txt")
 {
@@ -34,7 +34,7 @@ void Submit(const char* alienWorkingDirectory = "/alice/cern.ch/user/m/mpennisi/
 
   if (!FileExists(jdl)) {
     Error("Submit", Form("file %s does not exist in %s", jdl, alienWorkingDirectory));
-    return;
+    return; 
   }
 
 
