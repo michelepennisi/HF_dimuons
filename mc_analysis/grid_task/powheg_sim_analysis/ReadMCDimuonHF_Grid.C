@@ -12,11 +12,11 @@
 #endif
 /// alice/sim/2022/LHC22b3/294925/AOD/
 void ReadMCDimuonHF_Grid(
-    const char *RunMode = "test",
-    Int_t RunNumber = 294743,
-    TString MC_type = "Z",
+    const char *RunMode = "terminate",
+    Int_t RunNumber = 294155,
+    TString MC_type = "powheg_Z_MC",
     Bool_t usePhysicsSelection = kFALSE,
-    TString GridDir = "/alice/cern.ch/user/m/mpennisi/powheg_test/LHC18p",
+    TString GridDir = "/alice/cern.ch/user/m/mpennisi/powheg_sim/LHC18p",
     TString DataPattern = "/*/AliAOD.root",
     TString AliPhysicsVersion = "vAN-20220204_ROOT6-1",
     Bool_t gridMerge = kTRUE)
