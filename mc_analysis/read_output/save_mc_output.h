@@ -124,8 +124,8 @@ TH1F *h_Nperevent_DiMuon_Rec[n_DiMuon_origin];
 
 TString DiMuon_origin[n_DiMuon_origin];
 
-const Int_t n_PDG_selection = 23;
-Double_t PDG_Selection[n_PDG_selection] = {0, 23, 24, 200, 400, 410, 420, 430, 440, 450, 500, 510, 520, 530, 540, 550, 600, 4100, 4200, 4300, 5100, 5200, 5300};
+const Int_t n_PDG_selection = 31;
+Double_t PDG_Selection[n_PDG_selection] = {0, 23, 24, 200, 400, 410, 420, 430, 440, 450, 500, 510, 520, 530, 540, 550, 600, 4000, 4100, 4120, 4130, 4140, 4200, 4230, 4240, 4300, 5000, 5100, 5200, 5300, 6000};
 void Set_Histograms()
 {
     // 0 for All sources, 1 for Charm, 2 for Beauty, 3 for LF, 4 for DY

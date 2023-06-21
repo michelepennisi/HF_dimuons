@@ -25,9 +25,7 @@ void save_mc_output(
     }
     
     if (test)
-    {
         dir_fileOut.Form("test");
-    }
     
     TString filename;
     filename.Form("%s_MCDimuHFTree_%d.root", RunMode.Data(), RunNumber);
@@ -254,7 +252,7 @@ void save_mc_output(
             Bool_t Charm_mu1 = kFALSE;
             Bool_t Beauty_mu1 = kFALSE;
             Bool_t LF_mu1 = kFALSE;
-            cout<<"pdg code 1° mu: "<<PDG_Mu0<<"pdg code 2° mu: "<<PDG_Mu1<<endl;
+            // cout<<"pdg code 1° mu: "<<PDG_Mu0<<"pdg code 2° mu: "<<PDG_Mu1<<endl;
 
             if ((TMath::Abs(PDG_Mu0) == 4) || (TMath::Abs(PDG_Mu0) > 400 && TMath::Abs(PDG_Mu0) < 500) || (TMath::Abs(PDG_Mu0) > 4000 && TMath::Abs(PDG_Mu0) < 5000))
             {
