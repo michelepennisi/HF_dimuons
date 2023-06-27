@@ -110,6 +110,11 @@ TH2F *h_PtM_DiMuon_Gen_DQcut[n_DiMuon_origin];
 TH2F *h_PtY_DiMuon_Gen_DQcut[n_DiMuon_origin];
 TH1F *h_Nperevent_DiMuon_Gen_DQcut[n_DiMuon_origin];
 
+TH2F *h_PtM_DiMuon_Gen_DQcut_Charm_corrected = new TH2F("h_PtM_DiMuon_Gen_DQcut_Charm_corrected", ";#it{p}_{T} (GeV/#it{c}) ; #it{m}_{#mu#mu} (GeV/#it{c}^{2})", 300, 0, 30.0, 260, 4, 30);
+TH2F *h_PtY_DiMuon_Gen_DQcut_Charm_corrected = new TH2F("h_PtY_DiMuon_Gen_DQcut_Charm_corrected", ";#it{p}_{T} (GeV/#it{c}) ; #it{y}", 300, 0, 30.0, 150, -4.0, -2.5);
+TH3F *h_Pdg1Pdg2Pt_DiMuon_Gen_DQcut_Charm_corrected;
+TH3F *h_Pdg1Pdg2Y_DiMuon_Gen_DQcut_Charm_corrected;
+TH3F *h_Pdg1Pdg2M_DiMuon_Gen_DQcut_Charm_corrected;
 //------Declaration Hist for Reconstructed Dimuons----------------//
 // TH3F *h_PtPdg1Pdg2_DiMuon_Rec[n_DiMuon_origin];
 // TH3F *h_YPdg1Pdg2_DiMuon_Rec[n_DiMuon_origin];
@@ -126,6 +131,13 @@ TString DiMuon_origin[n_DiMuon_origin];
 
 const Int_t n_PDG_selection = 31;
 Double_t PDG_Selection[n_PDG_selection] = {0, 23, 24, 200, 400, 410, 420, 430, 440, 450, 500, 510, 520, 530, 540, 550, 600, 4000, 4100, 4120, 4130, 4140, 4200, 4230, 4240, 4300, 5000, 5100, 5200, 5300, 6000};
+const Int_t n_charm_hadrons = 7;
+Int_t PDG_charm_hadrons[n_charm_hadrons] = {411, 421, 431, 443, 4122, 4132, 4232};
+Double_t BR_charm_hadrons2mu_PYTHIA[n_charm_hadrons] = {0.165, 0.0645, 0.075, 0.059, 0.045, 0.025, 0.035};
+Double_t BR_charm_hadrons2mu_MEAS[n_charm_hadrons] = {0.176, 0.0680, 0.0633, 0.0596, 0.0395, 0.025, 0.035};
+Double_t Frag_charm_hadrons_PYTHIA[n_charm_hadrons] = {0.293, 0.561, 0.0959, 0.004, 0.0038, 0.0049, 0.0049};
+Double_t Frag_charm_hadrons_MEAS[n_charm_hadrons] = {0.191, 0.382, 0.061, 0.0037, 0.168, 0.099, 0.096};
+
 void Set_Histograms()
 {
     // 0 for All sources, 1 for Charm, 2 for Beauty, 3 for LF, 4 for DY
@@ -184,6 +196,10 @@ void Set_Histograms()
     h_Pdg1Pdg2Pt_DiMuon_Gen_DQcut = new TH3F("h_Pdg1Pdg2Pt_DiMuon_Gen_DQcut", "; PDG code mum 1; PDG code mum 2; #it{p}_{T} (GeV/#it{c}) ", n_PDG_selection - 1, PDG_Selection, n_PDG_selection - 1, PDG_Selection, n_bin_pt, low_bin_pt);
     h_Pdg1Pdg2Y_DiMuon_Gen_DQcut = new TH3F("h_Pdg1Pdg2Y_DiMuon_Gen_DQcut", "; PDG code mum 1; PDG code mum 2; #it{y}) ", n_PDG_selection - 1, PDG_Selection, n_PDG_selection - 1, PDG_Selection, n_bin_Y_Rec, low_bin_Y_Rec);
     h_Pdg1Pdg2M_DiMuon_Gen_DQcut = new TH3F("h_Pdg1Pdg2M_DiMuon_Gen_DQcut", "; PDG code mum 1; PDG code mum 2; #it{m}_{#mu#mu} (GeV/#it{c}^{2}) ", n_PDG_selection - 1, PDG_Selection, n_PDG_selection - 1, PDG_Selection, n_bin_pt, low_bin_pt);
+
+    h_Pdg1Pdg2Pt_DiMuon_Gen_DQcut_Charm_corrected = new TH3F("h_Pdg1Pdg2Pt_DiMuon_Gen_DQcut_Charm_corrected", "; PDG code mum 1; PDG code mum 2; #it{p}_{T} (GeV/#it{c}) ", n_PDG_selection - 1, PDG_Selection, n_PDG_selection - 1, PDG_Selection, n_bin_pt, low_bin_pt);
+    h_Pdg1Pdg2Y_DiMuon_Gen_DQcut_Charm_corrected = new TH3F("h_Pdg1Pdg2Y_DiMuon_Gen_DQcut_Charm_corrected", "; PDG code mum 1; PDG code mum 2; #it{y}) ", n_PDG_selection - 1, PDG_Selection, n_PDG_selection - 1, PDG_Selection, n_bin_Y_Rec, low_bin_Y_Rec);
+    h_Pdg1Pdg2M_DiMuon_Gen_DQcut_Charm_corrected = new TH3F("h_Pdg1Pdg2M_DiMuon_Gen_DQcut_Charm_corrected", "; PDG code mum 1; PDG code mum 2; #it{m}_{#mu#mu} (GeV/#it{c}^{2}) ", n_PDG_selection - 1, PDG_Selection, n_PDG_selection - 1, PDG_Selection, n_bin_pt, low_bin_pt);
 
     h_Pdg1Pdg2Pt_DiMuon_Rec = new TH3F("h_Pdg1Pdg2Pt_DiMuon_Rec", "; PDG code mum 1; PDG code mum 2; #it{p}_{T} (GeV/#it{c}) ", n_PDG_selection - 1, PDG_Selection, n_PDG_selection - 1, PDG_Selection, n_bin_pt, low_bin_pt);
     h_Pdg1Pdg2Y_DiMuon_Rec = new TH3F("h_Pdg1Pdg2Y_DiMuon_Rec", "; PDG code mum 1; PDG code mum 2; #it{y}) ", n_PDG_selection - 1, PDG_Selection, n_PDG_selection - 1, PDG_Selection, n_bin_Y_Rec, low_bin_Y_Rec);

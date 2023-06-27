@@ -20,13 +20,13 @@ void save_mc_output(
     }
     else
     {
-        dir_fileIn.Form("/home/michele_pennisi/cernbox/output_HF_dimuons/mc_analysis_output/%s/%s", Task_Version.Data(), RunMode.Data());             // official with files saved locally
-        dir_fileOut.Form("/home/michele_pennisi/cernbox/output_HF_dimuons/mc_analysis_output/%s/%s/Analysis_MCsim", Task_Version.Data(), RunMode.Data()); // official with files saved locally
+        dir_fileIn.Form("/home/michele_pennisi/cernbox/output_HF_dimuons/mc_analysis_output/%s/%s", Task_Version.Data(), RunMode.Data());                 // official with files saved locally
+        dir_fileOut.Form("/home/michele_pennisi/cernbox/output_HF_dimuons/mc_analysis_output/%s/%s/save_mc_output", Task_Version.Data(), RunMode.Data()); // official with files saved locally
     }
-    
+
     if (test)
         dir_fileOut.Form("test");
-    
+
     TString filename;
     filename.Form("%s_MCDimuHFTree_%d.root", RunMode.Data(), RunNumber);
 
@@ -70,7 +70,7 @@ void save_mc_output(
     for (Int_t i_Event = 0; i_Event < total_entries; i_Event++)
     {
         h_Nevents->Fill(1);
-        if (i_Event % 10000 == 0)
+        if (i_Event % 250000 == 0)
         {
             progress_status(i_Event, total_entries);
         }
@@ -254,10 +254,25 @@ void save_mc_output(
             Bool_t LF_mu1 = kFALSE;
             // cout<<"pdg code 1° mu: "<<PDG_Mu0<<"pdg code 2° mu: "<<PDG_Mu1<<endl;
 
+            Double_t BR_times_frag_PYTHIA_Mu0 = 1.;
+            Double_t BR_times_frag_MEAS_Mu0 = 1.;
+
+            Double_t BR_times_frag_PYTHIA_Mu1 = 1.;
+            Double_t BR_times_frag_MEAS_Mu1 = 1.;
+
             if ((TMath::Abs(PDG_Mu0) == 4) || (TMath::Abs(PDG_Mu0) > 400 && TMath::Abs(PDG_Mu0) < 500) || (TMath::Abs(PDG_Mu0) > 4000 && TMath::Abs(PDG_Mu0) < 5000))
             {
                 HF_mu0 = kTRUE;
                 Charm_mu0 = kTRUE;
+
+                for (Int_t i_charm_hadron = 0; i_charm_hadron < n_charm_hadrons; i_charm_hadron++)
+                {
+                    if (TMath::Abs(PDG_Mu0) == PDG_charm_hadrons[i_charm_hadron])
+                    {
+                        BR_times_frag_PYTHIA_Mu0 = BR_charm_hadrons2mu_PYTHIA[i_charm_hadron] * Frag_charm_hadrons_PYTHIA[i_charm_hadron];
+                        BR_times_frag_MEAS_Mu0 = BR_charm_hadrons2mu_MEAS[i_charm_hadron] * Frag_charm_hadrons_MEAS[i_charm_hadron];
+                    }
+                }
             }
             else if ((TMath::Abs(PDG_Mu0) == 5) || (TMath::Abs(PDG_Mu0) > 500 && TMath::Abs(PDG_Mu0) < 600) || (TMath::Abs(PDG_Mu0) > 5000 && TMath::Abs(PDG_Mu0) < 6000))
             {
@@ -276,6 +291,14 @@ void save_mc_output(
             {
                 HF_mu1 = kTRUE;
                 Charm_mu1 = kTRUE;
+                for (Int_t i_charm_hadron = 0; i_charm_hadron < n_charm_hadrons; i_charm_hadron++)
+                {
+                    if (TMath::Abs(PDG_Mu1) == PDG_charm_hadrons[i_charm_hadron])
+                    {
+                        BR_times_frag_PYTHIA_Mu1 = BR_charm_hadrons2mu_PYTHIA[i_charm_hadron] * Frag_charm_hadrons_PYTHIA[i_charm_hadron];
+                        BR_times_frag_MEAS_Mu1 = BR_charm_hadrons2mu_MEAS[i_charm_hadron] * Frag_charm_hadrons_MEAS[i_charm_hadron];
+                    }
+                }
             }
             else if ((TMath::Abs(PDG_Mu1) == 5) || (TMath::Abs(PDG_Mu1) > 500 && TMath::Abs(PDG_Mu1) < 600) || (TMath::Abs(PDG_Mu1) > 5000 && TMath::Abs(PDG_Mu1) < 6000))
             {
@@ -318,25 +341,39 @@ void save_mc_output(
             if ((Y_DiMu > -4.0 && Y_DiMu < -2.5) && (Eta_Mu0 > -4.0 && Eta_Mu0 < -2.5) && (Eta_Mu1 > -4.0 && Eta_Mu1 < -2.5) && (Charge_DiMu == 0))
                 DQ_Dimuon = kTRUE;
 
+            Double_t charm_correction = (BR_times_frag_MEAS_Mu0 * BR_times_frag_MEAS_Mu1) / (BR_times_frag_PYTHIA_Mu0 * BR_times_frag_PYTHIA_Mu1);
+
             if (DQ_Dimuon)
             {
                 h_Pdg1Pdg2Pt_DiMuon_Gen_DQcut->Fill(TMath::Abs(PDG_Mu0), TMath::Abs(PDG_Mu1), Pt_DiMu);
                 h_Pdg1Pdg2Y_DiMuon_Gen_DQcut->Fill(TMath::Abs(PDG_Mu0), TMath::Abs(PDG_Mu1), Y_DiMu);
                 h_Pdg1Pdg2M_DiMuon_Gen_DQcut->Fill(TMath::Abs(PDG_Mu0), TMath::Abs(PDG_Mu1), M_DiMu);
+                std::cout<<"PDG_Mu0: "<<TMath::Abs(PDG_Mu0)<<" PDG_Mu1:"<<TMath::Abs(PDG_Mu1)<<endl;
+                std::cout << "BR_times_frag_MEAS_Mu0: " << BR_times_frag_MEAS_Mu0 << " BR_times_frag_MEAS_Mu1: " << BR_times_frag_MEAS_Mu1 << "BR_times_frag_PYTHIA_Mu0: " << BR_times_frag_PYTHIA_Mu0 << " BR_times_frag_PYTHIA_Mu1" << BR_times_frag_PYTHIA_Mu0 << endl;
+                h_Pdg1Pdg2Pt_DiMuon_Gen_DQcut_Charm_corrected->Fill(TMath::Abs(PDG_Mu0), TMath::Abs(PDG_Mu1), Pt_DiMu, charm_correction);
+                h_Pdg1Pdg2Y_DiMuon_Gen_DQcut_Charm_corrected->Fill(TMath::Abs(PDG_Mu0), TMath::Abs(PDG_Mu1), Y_DiMu, charm_correction);
+                h_Pdg1Pdg2M_DiMuon_Gen_DQcut_Charm_corrected->Fill(TMath::Abs(PDG_Mu0), TMath::Abs(PDG_Mu1), M_DiMu, charm_correction);
             }
 
             for (Int_t i_DiMuon_origin = 0; i_DiMuon_origin < n_DiMuon_origin; i_DiMuon_origin++)
             {
                 if (DiMu_origin_Selection[i_DiMuon_origin])
                 {
+                    // 0 for Charm, 1 for Beauty, 2 for HF Mixed, 3 for LF, 4 for LF-HF Mixed, 5 for DY
                     h_PtM_DiMuon_Gen[i_DiMuon_origin]->Fill(Pt_DiMu, M_DiMu);
                     h_PtY_DiMuon_Gen[i_DiMuon_origin]->Fill(Pt_DiMu, Y_DiMu);
                     n_DiMuon_Gen[i_DiMuon_origin]++;
                     if (DQ_Dimuon)
                     {
+
                         h_PtM_DiMuon_Gen_DQcut[i_DiMuon_origin]->Fill(Pt_DiMu, M_DiMu);
                         h_PtY_DiMuon_Gen_DQcut[i_DiMuon_origin]->Fill(Pt_DiMu, Y_DiMu);
                         n_DiMuon_Gen_DQcut[i_DiMuon_origin]++;
+                        if (i_DiMuon_origin == 0)
+                        {
+                            h_PtM_DiMuon_Gen_DQcut_Charm_corrected->Fill(Pt_DiMu, M_DiMu);
+                            h_PtY_DiMuon_Gen_DQcut_Charm_corrected->Fill(Pt_DiMu, Y_DiMu);
+                        }
                     }
                 }
             }
@@ -528,6 +565,10 @@ void save_mc_output(
     h_Pdg1Pdg2Y_DiMuon_Gen_DQcut->Write(0, 2, 0);
     h_Pdg1Pdg2M_DiMuon_Gen_DQcut->Write(0, 2, 0);
 
+    h_Pdg1Pdg2Pt_DiMuon_Gen_DQcut_Charm_corrected->Write(0, 2, 0);
+    h_Pdg1Pdg2Y_DiMuon_Gen_DQcut_Charm_corrected->Write(0, 2, 0);
+    h_Pdg1Pdg2M_DiMuon_Gen_DQcut_Charm_corrected->Write(0, 2, 0);
+
     if (!fOut.GetDirectory("DiMuon_Rec"))
         fOut.mkdir("DiMuon_Rec");
     fOut.cd("DiMuon_Rec");
@@ -546,6 +587,12 @@ void save_mc_output(
         h_PtM_DiMuon_Gen_DQcut[i_DiMuon_origin]->Write(0, 2, 0);
         h_PtY_DiMuon_Gen_DQcut[i_DiMuon_origin]->Write(0, 2, 0);
         h_Nperevent_DiMuon_Gen_DQcut[i_DiMuon_origin]->Write(0, 2, 0);
+
+        if (i_DiMuon_origin == 0)
+        {
+            h_PtM_DiMuon_Gen_DQcut_Charm_corrected->Write(0, 2, 0);
+            h_PtY_DiMuon_Gen_DQcut_Charm_corrected->Write(0, 2, 0);
+        }
 
         fOut.cd();
         fOut.cd("DiMuon_Rec");
