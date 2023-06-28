@@ -13,7 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id: AliAnalysisTaskDimuonHF.cxx $ */
+/* $Id: AliAnalysisTaskDimuonPowhegsim.cxx $ */
 
 //-----------------------------------------------------------------------------
 // Analysis task to create a tree containing MC embedding information
@@ -40,23 +40,23 @@
 #include "AliMultSelection.h"
 #include "AliMuonTrackCuts.h"
 
-#include "AliAnalysisTaskDimuonHF.h"
+#include "AliAnalysisTaskDimuonPowhegsim.h"
 
 Int_t IsPrompt(AliAODMCParticle *mcp_mumum, TClonesArray *mcarray);
 
-ClassImp(AliAnalysisTaskDimuonHF)
+ClassImp(AliAnalysisTaskDimuonPowhegsim)
     //__________________________________________________________________________
-    AliAnalysisTaskDimuonHF::AliAnalysisTaskDimuonHF() : AliAnalysisTaskSE(),
-                                                         fBeamEnergy(0.),
-                                                         fkAnalysisType(0x0),
-                                                         fPeriod(0x0),
-                                                         fAODEvent(0x0),
-                                                         fOutputTree(0x0),
-                                                         fMuonTrackCuts(0x0),
-                                                         fNMuons_gen(0x0),
-                                                         fNDimu_gen(0x0),
-                                                         fNMuons_rec(0x0),
-                                                         fPercentV0M(0x0)
+    AliAnalysisTaskDimuonPowhegsim::AliAnalysisTaskDimuonPowhegsim() : AliAnalysisTaskSE(),
+                                                                       fBeamEnergy(0.),
+                                                                       fkAnalysisType(0x0),
+                                                                       fPeriod(0x0),
+                                                                       fAODEvent(0x0),
+                                                                       fOutputTree(0x0),
+                                                                       fMuonTrackCuts(0x0),
+                                                                       fNMuons_gen(0x0),
+                                                                       fNDimu_gen(0x0),
+                                                                       fNMuons_rec(0x0),
+                                                                       fPercentV0M(0x0)
 
 {
     /// Default ctor.
@@ -130,23 +130,23 @@ ClassImp(AliAnalysisTaskDimuonHF)
 }
 
 //__________________________________________________________________________
-AliAnalysisTaskDimuonHF::AliAnalysisTaskDimuonHF(const char *name) : AliAnalysisTaskSE(name),
-                                                                     fBeamEnergy(0.),
-                                                                     fkAnalysisType(0x0),
-                                                                     fPeriod(0x0),
-                                                                     fAODEvent(0x0),
-                                                                     fOutputTree(0x0),
-                                                                     fMuonTrackCuts(0x0),
-                                                                     fNMuons_gen(0x0),
-                                                                     fNDimu_gen(0x0),
-                                                                     fNMuons_rec(0x0),
-                                                                     fPercentV0M(0x0)
+AliAnalysisTaskDimuonPowhegsim::AliAnalysisTaskDimuonPowhegsim(const char *name) : AliAnalysisTaskSE(name),
+                                                                                   fBeamEnergy(0.),
+                                                                                   fkAnalysisType(0x0),
+                                                                                   fPeriod(0x0),
+                                                                                   fAODEvent(0x0),
+                                                                                   fOutputTree(0x0),
+                                                                                   fMuonTrackCuts(0x0),
+                                                                                   fNMuons_gen(0x0),
+                                                                                   fNDimu_gen(0x0),
+                                                                                   fNMuons_rec(0x0),
+                                                                                   fPercentV0M(0x0)
 {
     //
     // Constructor. Initialization of Inputs and Outputs
     //
 
-    Info("AliAnalysisTaskDimuonHF", "Calling Constructor");
+    Info("AliAnalysisTaskDimuonPowhegsim", "Calling Constructor");
 
     printf("fMuons_dim %d\n", fMuons_dim);
     for (Int_t i = 0; i < fMuons_dim; i++)
@@ -218,7 +218,7 @@ AliAnalysisTaskDimuonHF::AliAnalysisTaskDimuonHF(const char *name) : AliAnalysis
 }
 
 //___________________________________________________________________________
-AliAnalysisTaskDimuonHF &AliAnalysisTaskDimuonHF::operator=(const AliAnalysisTaskDimuonHF &c)
+AliAnalysisTaskDimuonPowhegsim &AliAnalysisTaskDimuonPowhegsim::operator=(const AliAnalysisTaskDimuonPowhegsim &c)
 {
     //
     // Assignment operator
@@ -231,17 +231,17 @@ AliAnalysisTaskDimuonHF &AliAnalysisTaskDimuonHF::operator=(const AliAnalysisTas
 }
 
 //___________________________________________________________________________
-AliAnalysisTaskDimuonHF::AliAnalysisTaskDimuonHF(const AliAnalysisTaskDimuonHF &c) : AliAnalysisTaskSE(c),
-                                                                                     fBeamEnergy(c.fBeamEnergy),
-                                                                                     fkAnalysisType(c.fkAnalysisType),
-                                                                                     fPeriod(c.fPeriod),
-                                                                                     fAODEvent(c.fAODEvent),
-                                                                                     fOutputTree(c.fOutputTree),
-                                                                                     fMuonTrackCuts(c.fMuonTrackCuts),
-                                                                                     fNMuons_gen(c.fNMuons_gen),
-                                                                                     fNMuons_rec(c.fNMuons_rec),
-                                                                                     fNDimu_rec(c.fNDimu_rec),
-                                                                                     fPercentV0M(c.fPercentV0M)
+AliAnalysisTaskDimuonPowhegsim::AliAnalysisTaskDimuonPowhegsim(const AliAnalysisTaskDimuonPowhegsim &c) : AliAnalysisTaskSE(c),
+                                                                                                          fBeamEnergy(c.fBeamEnergy),
+                                                                                                          fkAnalysisType(c.fkAnalysisType),
+                                                                                                          fPeriod(c.fPeriod),
+                                                                                                          fAODEvent(c.fAODEvent),
+                                                                                                          fOutputTree(c.fOutputTree),
+                                                                                                          fMuonTrackCuts(c.fMuonTrackCuts),
+                                                                                                          fNMuons_gen(c.fNMuons_gen),
+                                                                                                          fNMuons_rec(c.fNMuons_rec),
+                                                                                                          fNDimu_rec(c.fNDimu_rec),
+                                                                                                          fPercentV0M(c.fPercentV0M)
 {
     //
     // Copy Constructor
@@ -249,24 +249,24 @@ AliAnalysisTaskDimuonHF::AliAnalysisTaskDimuonHF(const AliAnalysisTaskDimuonHF &
 }
 
 //___________________________________________________________________________
-AliAnalysisTaskDimuonHF::~AliAnalysisTaskDimuonHF()
+AliAnalysisTaskDimuonPowhegsim::~AliAnalysisTaskDimuonPowhegsim()
 {
     //
     // destructor
     //
-    Info("~AliAnalysisTaskDimuonHF", "Calling Destructor");
+    Info("~AliAnalysisTaskDimuonPowhegsim", "Calling Destructor");
     if (AliAnalysisManager::GetAnalysisManager()->GetAnalysisType() != AliAnalysisManager::kProofAnalysis)
         delete fOutputTree;
 }
 
 //___________________________________________________________________________
-void AliAnalysisTaskDimuonHF::NotifyRun()
+void AliAnalysisTaskDimuonPowhegsim::NotifyRun()
 {
     fMuonTrackCuts->SetRun(fInputHandler);
 }
 
 //___________________________________________________________________________
-void AliAnalysisTaskDimuonHF::UserCreateOutputObjects()
+void AliAnalysisTaskDimuonPowhegsim::UserCreateOutputObjects()
 {
 
     if (fOutputTree)
@@ -349,7 +349,7 @@ void AliAnalysisTaskDimuonHF::UserCreateOutputObjects()
 }
 
 //_________________________________________________
-void AliAnalysisTaskDimuonHF::UserExec(Option_t *)
+void AliAnalysisTaskDimuonPowhegsim::UserExec(Option_t *)
 {
 
     // printf("Entro in UserExec\n" );
@@ -461,7 +461,7 @@ void AliAnalysisTaskDimuonHF::UserExec(Option_t *)
     {
         AliAODMCParticle *MC_part0 = (AliAODMCParticle *)mcarray->At(i_nMCpart);
         Int_t PDG_MC_part0 = MC_part0->GetPdgCode();
-        if (MC_part0->Y() < -4.0 || MC_part0->Y() > -2.5)
+        if (MC_part0->Y() < -15.0 || MC_part0->Y() > 15.0)
             continue;
         if (TMath::Abs(PDG_MC_part0) != 13)
             continue;
@@ -493,14 +493,15 @@ void AliAnalysisTaskDimuonHF::UserExec(Option_t *)
             continue;
         Int_t round = 0;
         TString str = Form("nmu %d PDG particle gen %d [Pt %0.03f,Y %0.03f]==>> (round %d)PDG MUM particle gen %d[pos %d, Pt %0.3f, Y %0.03f]", i_nMCpart, PDG_MC_part0, MC_part0->Pt(), MC_part0->Y(), round, PDG_Mum_MC_part0, index_Mum_MC_part0, Mum_MC_part0->Pt(), Mum_MC_part0->Y());
-        Bool_t testing = kTRUE;
-        while (testing)
+        Bool_t testing_mu0 = kTRUE;
+        Int_t final_mom_mu0 = 999;
+        while (testing_mu0)
         {
             //        printf("Round %d | Index Muon Ancestor %d | PDG Muon Ancestor %d | \n",round,ancestor_mum0, PDGcode_ancestor0);
             round++;
             if (index_Mum_MC_part0 < 2)
             {
-                testing = kFALSE;
+                testing_mu0 = kFALSE;
                 break;
             }
 
@@ -520,12 +521,15 @@ void AliAnalysisTaskDimuonHF::UserExec(Option_t *)
                 str += Form(" ==>> (round %d)PDG MUM particle gen %d [pos %d,Pt %0.3f, Y %0.03f]", round, PDG_Mum_MC_part0, index_Mum_MC_part0, Mum_MC_part0->Pt(), Mum_MC_part0->Y());
                 if (TMath::Abs(PDG_Mum_MC_part0) != 13)
                 {
-                    fPDGmum_gen[nmu_gen] = PDG_Mum_MC_part0;
-                    testing = kFALSE;
+                    final_mom_mu0 = PDG_Mum_MC_part0;
+                    testing_mu0 = kFALSE;
                 }
             }
         }
-        // printf("%s\n", str.Data());
+        if (final_mom_mu0 != 23)
+            continue;
+        fPDGmum_gen[nmu_gen] = final_mom_mu0;
+        printf("%s\n", str.Data());
         nmu_gen++;
         for (Int_t j_nMCpart1 = i_nMCpart + 1; j_nMCpart1 < mcarray->GetEntries(); j_nMCpart1++)
         {
@@ -533,13 +537,48 @@ void AliAnalysisTaskDimuonHF::UserExec(Option_t *)
             Int_t PDG_MC_part1 = MC_part1->GetPdgCode();
             if (TMath::Abs(PDG_MC_part1) != 13)
                 continue;
-            if (MC_part1->Y() < -4.0 || MC_part1->Y() > -2.5)
+            if (MC_part1->Y() < -15.0 || MC_part1->Y() > 15.0)
                 continue;
 
             Int_t index_Mum_MC_part1 = MC_part1->GetMother();
             AliAODMCParticle *Mum_MC_part1 = (AliAODMCParticle *)mcarray->At(index_Mum_MC_part1);
             Int_t PDG_Mum_MC_part1 = Mum_MC_part1->GetPdgCode();
             if (TMath::Abs(PDG_Mum_MC_part1) == 13) // Remove muons formally produced by other muons (PYTHIA transport)
+                continue;
+            Int_t final_Mum_MC_part1 = 999;
+            Bool_t testing_mu1 = kTRUE;
+            while (testing_mu1)
+            {
+                //        printf("Round %d | Index Muon Ancestor %d | PDG Muon Ancestor %d | \n",round,ancestor_mum0, PDGcode_ancestor0);
+                round++;
+                if (index_Mum_MC_part1 < 2)
+                {
+                    testing_mu1 = kFALSE;
+                    break;
+                }
+
+                else
+                {
+                    index_Mum_MC_part1 = Mum_MC_part1->GetMother();
+                    if (index_Mum_MC_part1 > 0)
+                        Mum_MC_part1 = (AliAODMCParticle *)mcarray->At(index_Mum_MC_part1); // Salto gen Muone
+                    // else
+                    // {
+                    //     mcp0_mother = (AliAODMCParticle *)mcarray->At(mcp_mumum->GetMother());
+                    //     PDGcode_ancestor0 = mcp0_mother->GetPdgCode();
+                    //     testing = kFALSE;
+                    // }
+
+                    PDG_Mum_MC_part1 = Mum_MC_part1->GetPdgCode();
+                    // str += Form(" ==>> (round %d)PDG MUM particle gen %d [pos %d,Pt %0.3f, Y %0.03f]", round, PDG_Mum_MC_part1, index_Mum_MC_part1, Mum_MC_part1->Pt(), Mum_MC_part1->Y());
+                    if (TMath::Abs(PDG_Mum_MC_part1) != 13)
+                    {
+                        final_Mum_MC_part1 = PDG_Mum_MC_part1;
+                        testing_mu1 = kFALSE;
+                    }
+                }
+            }
+            if (final_Mum_MC_part1 != 23)
                 continue;
             TLorentzVector vector_mcp1;
             MC_part1->Momentum(vector_mcp1);
@@ -606,7 +645,7 @@ void AliAnalysisTaskDimuonHF::UserExec(Option_t *)
             continue;
         //        if(mctrack0->IsSecondaryFromMaterial()) continue;
 
-        if (Track0->Y() > -4.0 && Track0->Y() < -2.5)
+        if (Track0->Y() > -15.0 && Track0->Y() < 15.0)
             GoodMuon_rec[i_Track0] = kTRUE;
 
         if (!GoodMuon_rec[i_Track0])
@@ -640,14 +679,15 @@ void AliAnalysisTaskDimuonHF::UserExec(Option_t *)
 
         Int_t round = 0;
         TString str = Form("pos %d) PDG particle rec %d [Pt %0.03f,Y %0.03f]==>> (round %d)PDG MUM particle rec %d [pos %d, Pt %0.3f, Y %0.03f]", i_Track0, PDG_MCpart_Track0, MCpart_Track0->Pt(), MCpart_Track0->Y(), round, PDG_Mum_MCpart_Track0, index_Mum_MCpart_Track0, Mum_MCpart_Track0->Pt(), Mum_MCpart_Track0->Y());
-        Bool_t testing = kTRUE;
-        while (testing)
+        Bool_t testing_Track0 = kTRUE;
+        Int_t final_mum_Track0 = 999;
+        while (testing_Track0)
         {
             //        printf("Round %d | Index Muon Ancestor %d | PDG Muon Ancestor %d | \n",round,ancestor_mum0, PDGcode_ancestor0);
             round++;
             if (index_Mum_MCpart_Track0 < 2)
             {
-                testing = kFALSE;
+                testing_Track0 = kFALSE;
                 break;
             }
 
@@ -661,15 +701,19 @@ void AliAnalysisTaskDimuonHF::UserExec(Option_t *)
                 str += Form(" ==>> (round %d)PDG MUM particle rec %d [pos %d, Pt %0.3f, Y %0.03f]", round, PDG_Mum_MCpart_Track0, index_Mum_MCpart_Track0, Mum_MCpart_Track0->Pt(), Mum_MCpart_Track0->Y());
                 if (TMath::Abs(PDG_Mum_MCpart_Track0) != 13)
                 {
-                    fPDGmum_rec[nmu_rec] = PDG_Mum_MCpart_Track0;
-                    testing = kFALSE;
+                    final_mum_Track0 = PDG_Mum_MCpart_Track0;
+                    testing_Track0 = kFALSE;
                 }
             }
         }
-        printf("------------------------\n");
-        printf("%s\n", str.Data());
-        printf("Final PDG mum selected %d \n", PDG_Mum_MCpart_Track0);
-        printf("------------------------\n");
+        if (final_mum_Track0 != 23)
+            continue;
+
+        fPDGmum_rec[nmu_rec] = final_mum_Track0;
+        // printf("------------------------\n");
+        // printf("%s\n", str.Data());
+        // printf("Final PDG mum selected %d \n", PDG_Mum_MCpart_Track0);
+        // printf("------------------------\n");
         nmu_rec++;
 
         for (Int_t j_Track1 = i_Track0 + 1; j_Track1 < numtracks; j_Track1++)
@@ -681,10 +725,42 @@ void AliAnalysisTaskDimuonHF::UserExec(Option_t *)
             Int_t PDG_mctrack1 = MCpart_Track1->GetPdgCode();
             if (TMath::Abs(PDG_mctrack1) != 13)
                 continue;
-            if (Track1->Y() > -4.0 && Track1->Y() < -2.5)
+            if (Track1->Y() > -15.0 && Track1->Y() < 15.0)
                 GoodMuon_rec[j_Track1] = kTRUE;
 
             if (!GoodMuon_rec[j_Track1])
+                continue;
+            Int_t index_Mum_MCpart_Track1 = MCpart_Track1->GetMother();
+            AliAODMCParticle *Mum_MCpart_Track1 = (AliAODMCParticle *)mcarray->At(index_Mum_MCpart_Track1);
+            Int_t PDG_Mum_MCpart_Track1 = Mum_MCpart_Track1->GetPdgCode();
+
+            Int_t final_mum_Track1 = 999;
+            Bool_t testing_Track1 = kTRUE;
+            while (testing_Track1)
+            {
+                //        printf("Round %d | Index Muon Ancestor %d | PDG Muon Ancestor %d | \n",round,ancestor_mum0, PDGcode_ancestor0);
+                round++;
+                if (index_Mum_MCpart_Track1 < 2)
+                {
+                    testing_Track1 = kFALSE;
+                    break;
+                }
+
+                else
+                {
+                    index_Mum_MCpart_Track1 = Mum_MCpart_Track1->GetMother();
+                    if (index_Mum_MCpart_Track1 > 0)
+                        Mum_MCpart_Track1 = (AliAODMCParticle *)mcarray->At(index_Mum_MCpart_Track1); // Salto gen Muone
+
+                    PDG_Mum_MCpart_Track1 = Mum_MCpart_Track1->GetPdgCode();
+                    if (TMath::Abs(PDG_Mum_MCpart_Track1) != 13)
+                    {
+                        final_mum_Track1 = PDG_Mum_MCpart_Track1;
+                        testing_Track1 = kFALSE;
+                    }
+                }
+            }
+            if (final_mum_Track1 != 23)
                 continue;
 
             AliAODDimuon *dimu = new AliAODDimuon(Track0, Track1);
@@ -810,7 +886,7 @@ Int_t IsPrompt(AliAODMCParticle *mcp_mumum, TClonesArray *mcarray)
     return Final_PDG;
 }
 
-void AliAnalysisTaskDimuonHF::Terminate(Option_t *)
+void AliAnalysisTaskDimuonPowhegsim::Terminate(Option_t *)
 {
     printf("Terminate Task\n");
 }

@@ -45,7 +45,7 @@ AliAnalysisGrid *CreateAlienHandler_Grid(const char *runMode, TString GridDir, T
 
   // Define alien work directory where all files will be copied. Relative to alien $HOME.
   TString outdirname;
-  outdirname.Form("Powheg_%sSim_test/%d", MC_type.Data(), RunNumber);
+  outdirname.Form("%s_analysis/%d", MC_type.Data(), RunNumber);
   plugin->SetGridWorkingDir(outdirname.Data()); // NOTE: Change name here every new run!!!eclare alien output directory. Relative to working directory.
   // plugin->SetGridOutputDir("OutputTree");          // In this case will be $HOME/work/output
   plugin->SetOutputToRunNo(kFALSE); // we want the run number as output subdirectory
@@ -55,8 +55,8 @@ AliAnalysisGrid *CreateAlienHandler_Grid(const char *runMode, TString GridDir, T
   plugin->SetMergeViaJDL(gridMerge);
 
   // added by me
-  plugin->SetAnalysisSource("AliAnalysisTaskDimuonHF.cxx");
-  plugin->SetAdditionalLibs("AliAnalysisTaskDimuonHF.cxx AliAnalysisTaskDimuonHF.h AddTaskDimuonHF.C");
+  plugin->SetAnalysisSource("AliAnalysisTaskDimuonPowhegsim.cxx");
+  plugin->SetAdditionalLibs("AliAnalysisTaskDimuonPowhegsim.cxx AliAnalysisTaskDimuonPowhegsim.h AddTaskDimuonHF.C");
 
   // Declare the output file names separated by blanks.
   // (can be like: file.root or file.root@ALICE::Niham::File)

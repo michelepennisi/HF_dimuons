@@ -1,5 +1,5 @@
-#ifndef AliAnalysisTaskDimuonHF_H
-#define AliAnalysisTaskDimuonHF_H
+#ifndef AliAnalysisTaskDimuonPowhegsim_H
+#define AliAnalysisTaskDimuonPowhegsim_H
 
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
@@ -12,12 +12,12 @@ class AliAODEvent;
 class TLorentzVector;
 class AliMuonTrackCuts;
 
-class AliAnalysisTaskDimuonHF : public AliAnalysisTaskSE
+class AliAnalysisTaskDimuonPowhegsim : public AliAnalysisTaskSE
 {
 public:
-    AliAnalysisTaskDimuonHF();
-    AliAnalysisTaskDimuonHF(const char *name);
-    virtual ~AliAnalysisTaskDimuonHF();
+    AliAnalysisTaskDimuonPowhegsim();
+    AliAnalysisTaskDimuonPowhegsim(const char *name);
+    virtual ~AliAnalysisTaskDimuonPowhegsim();
 
     void UserCreateOutputObjects();
     void UserExec(Option_t *option);
@@ -29,8 +29,8 @@ public:
     void SetPeriod(TString period) { fPeriod = period; }
 
 private:
-    AliAnalysisTaskDimuonHF(const AliAnalysisTaskDimuonHF &);
-    AliAnalysisTaskDimuonHF &operator=(const AliAnalysisTaskDimuonHF &);
+    AliAnalysisTaskDimuonPowhegsim(const AliAnalysisTaskDimuonPowhegsim &);
+    AliAnalysisTaskDimuonPowhegsim &operator=(const AliAnalysisTaskDimuonPowhegsim &);
 
     // protected:
 
@@ -113,7 +113,7 @@ private:
     Double_t fDimuPhi_rec[fDimu_dim];   // rec dimuon phi
     Double_t fDimuTheta_rec[fDimu_dim]; // rec dimuon theta
 
-    ClassDef(AliAnalysisTaskDimuonHF, 1);
+    ClassDef(AliAnalysisTaskDimuonPowhegsim, 1);
 };
 
 #endif
