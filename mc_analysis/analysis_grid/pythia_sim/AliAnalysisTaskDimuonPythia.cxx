@@ -47,16 +47,16 @@ Int_t IsPrompt(AliAODMCParticle *mcp_mumum, TClonesArray *mcarray);
 ClassImp(AliAnalysisTaskDimuonPythia)
     //__________________________________________________________________________
     AliAnalysisTaskDimuonPythia::AliAnalysisTaskDimuonPythia() : AliAnalysisTaskSE(),
-                                                         fBeamEnergy(0.),
-                                                         fkAnalysisType(0x0),
-                                                         fPeriod(0x0),
-                                                         fAODEvent(0x0),
-                                                         fOutputTree(0x0),
-                                                         fMuonTrackCuts(0x0),
-                                                         fNMuons_gen(0x0),
-                                                         fNDimu_gen(0x0),
-                                                         fNMuons_rec(0x0),
-                                                         fPercentV0M(0x0)
+                                                                 fBeamEnergy(0.),
+                                                                 fkAnalysisType(0x0),
+                                                                 fPeriod(0x0),
+                                                                 fAODEvent(0x0),
+                                                                 fOutputTree(0x0),
+                                                                 fMuonTrackCuts(0x0),
+                                                                 fNMuons_gen(0x0),
+                                                                 fNDimu_gen(0x0),
+                                                                 fNMuons_rec(0x0),
+                                                                 fPercentV0M(0x0)
 
 {
     /// Default ctor.
@@ -131,16 +131,16 @@ ClassImp(AliAnalysisTaskDimuonPythia)
 
 //__________________________________________________________________________
 AliAnalysisTaskDimuonPythia::AliAnalysisTaskDimuonPythia(const char *name) : AliAnalysisTaskSE(name),
-                                                                     fBeamEnergy(0.),
-                                                                     fkAnalysisType(0x0),
-                                                                     fPeriod(0x0),
-                                                                     fAODEvent(0x0),
-                                                                     fOutputTree(0x0),
-                                                                     fMuonTrackCuts(0x0),
-                                                                     fNMuons_gen(0x0),
-                                                                     fNDimu_gen(0x0),
-                                                                     fNMuons_rec(0x0),
-                                                                     fPercentV0M(0x0)
+                                                                             fBeamEnergy(0.),
+                                                                             fkAnalysisType(0x0),
+                                                                             fPeriod(0x0),
+                                                                             fAODEvent(0x0),
+                                                                             fOutputTree(0x0),
+                                                                             fMuonTrackCuts(0x0),
+                                                                             fNMuons_gen(0x0),
+                                                                             fNDimu_gen(0x0),
+                                                                             fNMuons_rec(0x0),
+                                                                             fPercentV0M(0x0)
 {
     //
     // Constructor. Initialization of Inputs and Outputs
@@ -232,16 +232,16 @@ AliAnalysisTaskDimuonPythia &AliAnalysisTaskDimuonPythia::operator=(const AliAna
 
 //___________________________________________________________________________
 AliAnalysisTaskDimuonPythia::AliAnalysisTaskDimuonPythia(const AliAnalysisTaskDimuonPythia &c) : AliAnalysisTaskSE(c),
-                                                                                     fBeamEnergy(c.fBeamEnergy),
-                                                                                     fkAnalysisType(c.fkAnalysisType),
-                                                                                     fPeriod(c.fPeriod),
-                                                                                     fAODEvent(c.fAODEvent),
-                                                                                     fOutputTree(c.fOutputTree),
-                                                                                     fMuonTrackCuts(c.fMuonTrackCuts),
-                                                                                     fNMuons_gen(c.fNMuons_gen),
-                                                                                     fNMuons_rec(c.fNMuons_rec),
-                                                                                     fNDimu_rec(c.fNDimu_rec),
-                                                                                     fPercentV0M(c.fPercentV0M)
+                                                                                                 fBeamEnergy(c.fBeamEnergy),
+                                                                                                 fkAnalysisType(c.fkAnalysisType),
+                                                                                                 fPeriod(c.fPeriod),
+                                                                                                 fAODEvent(c.fAODEvent),
+                                                                                                 fOutputTree(c.fOutputTree),
+                                                                                                 fMuonTrackCuts(c.fMuonTrackCuts),
+                                                                                                 fNMuons_gen(c.fNMuons_gen),
+                                                                                                 fNMuons_rec(c.fNMuons_rec),
+                                                                                                 fNDimu_rec(c.fNDimu_rec),
+                                                                                                 fPercentV0M(c.fPercentV0M)
 {
     //
     // Copy Constructor
@@ -439,7 +439,7 @@ void AliAnalysisTaskDimuonPythia::UserExec(Option_t *)
 
     AliAODHeader *aodheader = dynamic_cast<AliAODHeader *>(fAODEvent->GetHeader());
     TString firedtrigger = aodheader->GetFiredTriggerClasses();
-    printf("%s\n",firedtrigger.Data());
+    printf("%s\n", firedtrigger.Data());
     // if (firedtrigger.Contains("CINT7-B-NOPF-MUFAST"))
     // {
     //     // TriggerSelected_CINT7_CENT = kTRUE;
@@ -461,8 +461,8 @@ void AliAnalysisTaskDimuonPythia::UserExec(Option_t *)
     {
         AliAODMCParticle *mcp0 = (AliAODMCParticle *)mcarray->At(i);
         Int_t PDG_mcp0 = mcp0->GetPdgCode();
-        if (mcp0->Y() < -4.0 || mcp0->Y() > -2.5)
-            continue;
+        // if (mcp0->Y() < -4.0 || mcp0->Y() > -2.5)
+        //     continue;
         if (TMath::Abs(mcp0->Y()) > 15.0)
             continue;
 
@@ -541,6 +541,8 @@ void AliAnalysisTaskDimuonPythia::UserExec(Option_t *)
         //            Int_t PDG_grandmum=mcp0_grandmother->GetPdgCode();
         //            printf("PDGcode grandmother: %d \n",PDG_grandmum);
         //        }
+        if ((PDG_mum != 23) && !(TMath::Abs(PDG_mum) > 400 && TMath::Abs(PDG_mum) < 500) && !(TMath::Abs(PDG_mum) > 4000 && TMath::Abs(PDG_mum) < 5000) && !(TMath::Abs(PDG_mum) > 500 && TMath::Abs(PDG_mum) < 600) && !(TMath::Abs(PDG_mum) > 5000 && TMath::Abs(PDG_mum) < 6000))
+            continue;
 
         if (TMath::Abs(PDG_mum) == 4)
         {
@@ -569,8 +571,13 @@ void AliAnalysisTaskDimuonPythia::UserExec(Option_t *)
                 continue;
             if (TMath::Abs(mcp1->Y()) > 15.0)
                 continue;
-            if (mcp1->Y() < -4.0 || mcp1->Y() > -2.5)
+            Int_t mum_mcp1 = mcp1->GetMother();
+            AliAODMCParticle *mcp1_mother = (AliAODMCParticle *)mcarray->At(mum_mcp1);
+            Int_t PDG_mum1 = mcp1_mother->GetPdgCode();
+            if ((PDG_mum1 != 23) && !(TMath::Abs(PDG_mum1) > 400 && TMath::Abs(PDG_mum1) < 500) && !(TMath::Abs(PDG_mum1) > 4000 && TMath::Abs(PDG_mum1) < 5000) && !(TMath::Abs(PDG_mum1) > 500 && TMath::Abs(PDG_mum1) < 600) && !(TMath::Abs(PDG_mum1) > 5000 && TMath::Abs(PDG_mum1) < 6000))
                 continue;
+            // if (mcp1->Y() < -4.0 || mcp1->Y() > -2.5)
+            //     continue;
             //            if(mcp1->IsSecondaryFromMaterial()) continue;
             TLorentzVector vector_mcp1;
             mcp1->Momentum(vector_mcp1);
@@ -677,6 +684,9 @@ void AliAnalysisTaskDimuonPythia::UserExec(Option_t *)
         Int_t mum_mctrack0 = mctrack0->GetMother();
         AliAODMCParticle *mctrack0_mother = (AliAODMCParticle *)mcarray->At(mum_mctrack0);
         Int_t PDG_mum_mctrack0 = mctrack0_mother->GetPdgCode();
+
+        if ((PDG_mum_mctrack0 != 23) && !(TMath::Abs(PDG_mum_mctrack0) > 400 && TMath::Abs(PDG_mum_mctrack0) < 500) && !(TMath::Abs(PDG_mum_mctrack0) > 4000 && TMath::Abs(PDG_mum_mctrack0) < 5000) && !(TMath::Abs(PDG_mum_mctrack0) > 500 && TMath::Abs(PDG_mum_mctrack0) < 600) && !(TMath::Abs(PDG_mum_mctrack0) > 5000 && TMath::Abs(PDG_mum_mctrack0) < 6000))
+            continue;
 
         if (TMath::Abs(PDG_mum_mctrack0) == 4)
         {
