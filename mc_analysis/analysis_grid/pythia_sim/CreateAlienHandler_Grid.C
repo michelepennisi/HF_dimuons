@@ -2,7 +2,7 @@
 #include "AliAnalysisAlien.h"
 #endif
 
-AliAnalysisGrid *CreateAlienHandler_Grid(const char *runMode, TString GridDir, TString MC_type, TString DataPattern, Int_t RunNumber, TString AliPhysicsVersion, Bool_t gridMerge)
+AliAnalysisGrid *CreateAlienHandler_Grid(const char *runMode, TString Version, TString GridDir, TString MC_type, TString DataPattern, Int_t RunNumber, TString AliPhysicsVersion, Bool_t gridMerge)
 {
   TString Period;
   if (MC_type.Contains("HF"))
@@ -23,7 +23,7 @@ AliAnalysisGrid *CreateAlienHandler_Grid(const char *runMode, TString GridDir, T
 
   AliAnalysisAlien *plugin = new AliAnalysisAlien();
 
-  // Set the run mode (can be "full", "test", "offline", "submit" or "terminate") 
+  // Set the run mode (can be "full", "test", "offline", "submit" or "terminate")
   plugin->SetRunMode(runMode);
 
   plugin->SetNtestFiles(1); // num of test files in "test" mode
@@ -44,19 +44,19 @@ AliAnalysisGrid *CreateAlienHandler_Grid(const char *runMode, TString GridDir, T
 
   // Define alien work directory where all files will be copied. Relative to alien $HOME.
   TString outdirname;
-  outdirname.Form("%s_MC_Analysis_nolabelmatch_HFcount_corr/%d", MC_type.Data(), RunNumber);
+  outdirname.Form("%s_MC_Analysis/%s/%d", MC_type.Data(), Version.Data(), RunNumber);
   // outdirname.Form("%s_MCAnalysis/%d", MC_type.Data(), RunNumber);
-  plugin->SetGridWorkingDir(outdirname.Data());           // NOTE: Change name here every new run!!!eclare alien output directory. Relative to working directory.
+  plugin->SetGridWorkingDir(outdirname.Data()); // NOTE: Change name here every new run!!!eclare alien output directory. Relative to working directory.
   // plugin->SetGridOutputDir("OutputTree");          // In this case will be $HOME/work/output
-  plugin->SetOutputToRunNo(kFALSE);                // we want the run number as output subdirectory
+  plugin->SetOutputToRunNo(kFALSE); // we want the run number as output subdirectory
   plugin->SetDefaultOutputs(kTRUE);
   // plugin->SetMergeExcludes("AliAOD.Muons.root");
 
   plugin->SetMergeViaJDL(gridMerge);
 
   // added by me
-  plugin->SetAnalysisSource("../AliAnalysisTaskDimuonPythia.cxx");
-  plugin->SetAdditionalLibs("../AliAnalysisTaskDimuonPythia.cxx ../AliAnalysisTaskDimuonPythia.h ../AddTaskDimuonPythia.C");
+  plugin->SetAnalysisSource("AliAnalysisTaskDimuonPythia.cxx");
+  plugin->SetAdditionalLibs("AliAnalysisTaskDimuonPythia.cxx AliAnalysisTaskDimuonPythia.h AddTaskDimuonPythia.C");
 
   // Declare the output file names separated by blanks.
   // (can be like: file.root or file.root@ALICE::Niham::File)
