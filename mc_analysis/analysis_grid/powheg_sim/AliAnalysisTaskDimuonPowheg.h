@@ -41,8 +41,9 @@ private:
     TTree *fOutputTree;         //! tree output
     AliMuonTrackCuts *fMuonTrackCuts;
 
-    Int_t fNMuons_gen; // gen muon in the event
-    Int_t fNDimu_gen;  // gen dimuons in the event
+    Int_t fNMuons_gen;     // gen muon in the event
+    Int_t fNHadrons_gen;     // gen muon in the event
+    Int_t fNDimu_gen;      // gen dimuons in the event
     Int_t fN_HFquarks_gen; // gen c/cbar or b/bar HFquarks in the event
 
     Int_t fNMuons_rec; // rec muon tracks in the event
@@ -52,12 +53,12 @@ private:
 
     Double_t fPercentV0M;
 
-    static const Int_t fMuons_dim = 500;
-    static const Int_t fDimu_dim = 500;
+    static const Int_t fMuons_dim = 250;
+    static const Int_t fDimu_dim = 250;
 
     Int_t fPDG_HFquark_rec[fMuons_dim];   // single rec c/cbar PDG mum
-    Double_t fPt_HFquark_rec[fMuons_dim];    // single rec c/cbar or b/bbar HFquark pT
-    Double_t fY_HFquark_rec[fMuons_dim];     // single rec c/cbar or b/bbar HFquark y
+    Double_t fPt_HFquark_rec[fMuons_dim]; // single rec c/cbar or b/bbar HFquark pT
+    Double_t fY_HFquark_rec[fMuons_dim];  // single rec c/cbar or b/bbar HFquark y
 
     Int_t fPDGmum_rec[fMuons_dim];           // single rec mu PDG mum
     Double_t fPt_rec[fMuons_dim];            // single rec mu pT
@@ -77,8 +78,8 @@ private:
     Double_t fTheta_rec[fMuons_dim];         // single rec mu theta
 
     Int_t fPDG_HFquark_gen[fMuons_dim];   // single gen c/cbar PDG mum
-    Double_t fPt_HFquark_gen[fMuons_dim];    // single gen c/cbar or b/bbar HFquark pT
-    Double_t fY_HFquark_gen[fMuons_dim];     // single gen c/cbar or b/bbar HFquark y
+    Double_t fPt_HFquark_gen[fMuons_dim]; // single gen c/cbar or b/bbar HFquark pT
+    Double_t fY_HFquark_gen[fMuons_dim];  // single gen c/cbar or b/bbar HFquark y
 
     Int_t fPDGmum_gen[fMuons_dim];   // single gen mu PDG mum
     Double_t fPt_gen[fMuons_dim];    // single gen mu pT
@@ -91,6 +92,16 @@ private:
     Int_t fCharge_gen[fMuons_dim];   // single gen mu charge
     Double_t fPhi_gen[fMuons_dim];   // single gen mu phi
     Double_t fTheta_gen[fMuons_dim]; // single gen mu theta
+
+    Int_t fPDGmum_Hadron_gen[fMuons_dim]; // gen Hadron PDG mum
+    Int_t fPDG_Hadron_gen[fMuons_dim];    // gen Hadron PDG
+    Double_t fPt_Hadron_gen[fMuons_dim];  // gen Hadron pT
+    Double_t fE_Hadron_gen[fMuons_dim];   // gen Hadron E
+    Double_t fPx_Hadron_gen[fMuons_dim];  // gen Hadron px
+    Double_t fPy_Hadron_gen[fMuons_dim];  // gen Hadron py
+    Double_t fPz_Hadron_gen[fMuons_dim];  // gen Hadron pz
+    Double_t fY_Hadron_gen[fMuons_dim];   // gen Hadron y
+    Double_t fEta_Hadron_gen[fMuons_dim]; // gen Hadron eta
 
     Int_t fDimuMu_gen[fDimu_dim][2];   // reference to single gen mus
     Double_t fDimuPt_gen[fDimu_dim];   // gen dimuon pT

@@ -54,6 +54,7 @@ ClassImp(AliAnalysisTaskDimuonPowheg)
                                                                  fOutputTree(0x0),
                                                                  fMuonTrackCuts(0x0),
                                                                  fNMuons_gen(0x0),
+                                                                 fNHadrons_gen(0x0),
                                                                  fNDimu_gen(0x0),
                                                                  fNMuons_rec(0x0),
                                                                  fPercentV0M(0x0)
@@ -82,6 +83,16 @@ ClassImp(AliAnalysisTaskDimuonPowheg)
         fEta_gen[i] = 999.;
         fPhi_gen[i] = 999.;
         fTheta_gen[i] = 999.;
+
+        fPDGmum_Hadron_gen[i] = 999; // gen Hadron PDG mum
+        fPDG_Hadron_gen[i] = 999;    // gen Hadron PDG
+        fPt_Hadron_gen[i] = 999;     // gen Hadron pT
+        fE_Hadron_gen[i] = 999;      // gen Hadron E
+        fPx_Hadron_gen[i] = 999;     // gen Hadron px
+        fPy_Hadron_gen[i] = 999;     // gen Hadron py
+        fPz_Hadron_gen[i] = 999;     // gen Hadron pz
+        fY_Hadron_gen[i] = 999;      // gen Hadron y
+        fEta_Hadron_gen[i] = 999;    // gen Hadron eta
 
         fPDGmum_rec[i] = 9999.;
         fPt_rec[i] = 999.;
@@ -138,6 +149,7 @@ AliAnalysisTaskDimuonPowheg::AliAnalysisTaskDimuonPowheg(const char *name) : Ali
                                                                              fOutputTree(0x0),
                                                                              fMuonTrackCuts(0x0),
                                                                              fNMuons_gen(0x0),
+                                                                             fNHadrons_gen(0x0),
                                                                              fNDimu_gen(0x0),
                                                                              fNMuons_rec(0x0),
                                                                              fPercentV0M(0x0)
@@ -169,6 +181,16 @@ AliAnalysisTaskDimuonPowheg::AliAnalysisTaskDimuonPowheg(const char *name) : Ali
         fEta_gen[i] = 999.;
         fPhi_gen[i] = 999.;
         fTheta_gen[i] = 999.;
+
+        fPDGmum_Hadron_gen[i] = 999; // gen Hadron PDG mum
+        fPDG_Hadron_gen[i] = 999;    // gen Hadron PDG
+        fPt_Hadron_gen[i] = 999;     // gen Hadron pT
+        fE_Hadron_gen[i] = 999;      // gen Hadron E
+        fPx_Hadron_gen[i] = 999;     // gen Hadron px
+        fPy_Hadron_gen[i] = 999;     // gen Hadron py
+        fPz_Hadron_gen[i] = 999;     // gen Hadron pz
+        fY_Hadron_gen[i] = 999;      // gen Hadron y
+        fEta_Hadron_gen[i] = 999;    // gen Hadron eta
 
         fPDGmum_rec[i] = 9999.;
         fPt_rec[i] = 999.;
@@ -239,6 +261,7 @@ AliAnalysisTaskDimuonPowheg::AliAnalysisTaskDimuonPowheg(const AliAnalysisTaskDi
                                                                                                  fOutputTree(c.fOutputTree),
                                                                                                  fMuonTrackCuts(c.fMuonTrackCuts),
                                                                                                  fNMuons_gen(c.fNMuons_gen),
+                                                                                                 fNHadrons_gen(c.fNHadrons_gen),
                                                                                                  fNMuons_rec(c.fNMuons_rec),
                                                                                                  fNDimu_rec(c.fNDimu_rec),
                                                                                                  fPercentV0M(c.fPercentV0M)
@@ -283,21 +306,16 @@ void AliAnalysisTaskDimuonPowheg::UserCreateOutputObjects()
     fOutputTree->Branch("Pt_HFquark_gen", fPt_HFquark_gen, "Pt_HFquark_gen[N_HFquarks_gen]/D");
     fOutputTree->Branch("Y_HFquark_gen", fY_HFquark_gen, "Y_HFquark_gen[N_HFquarks_gen]/D");
 
-    // fOutputTree->Branch("N_HFquarks_rec", &fN_HFquarks_rec, "N_HFquarks_rec/I");
-
-    // fOutputTree->Branch("PDG_HFquark_rec", fPDG_HFquark_rec, "PDG_HFquark_rec[N_HFquarks_rec]/I");
-    // fOutputTree->Branch("Pt_HFquark_rec", fPt_HFquark_rec, "Pt_HFquark_rec[N_HFquarks_rec]/D");
-    // fOutputTree->Branch("Y_HFquark_rec", fY_HFquark_rec, "Y_HFquark_rec[N_HFquarks_rec]/D");
-
-    fOutputTree->Branch("NDimu_gen", &fNDimu_gen, "NDimu_gen/I");
-    fOutputTree->Branch("DimuMu_gen", fDimuMu_gen, "DimuMu_gen[NDimu_gen][2]/I");
-    fOutputTree->Branch("DimuPt_gen", fDimuPt_gen, "DimuPt_gen[NDimu_gen]/D");
-    fOutputTree->Branch("DimuPx_gen", fDimuPx_gen, "DimuPx_gen[NDimu_gen]/D");
-    fOutputTree->Branch("DimuPy_gen", fDimuPy_gen, "DimuPy_gen[NDimu_gen]/D");
-    fOutputTree->Branch("DimuPz_gen", fDimuPz_gen, "DimuPz_gen[NDimu_gen]/D");
-    fOutputTree->Branch("DimuY_gen", fDimuY_gen, "DimuY_gen[NDimu_gen]/D");
-    fOutputTree->Branch("DimuMass_gen", fDimuMass_gen, "DimuMass_gen[NDimu_gen]/D");
-    fOutputTree->Branch("DimuCharge_gen", fDimuCharge_gen, "DimuCharge_gen[NDimu_gen]/I");
+    fOutputTree->Branch("NHadrons_gen", &fNHadrons_gen, "NHadrons_gen/I");
+    fOutputTree->Branch("PDGmum_Hadron_gen", fPDGmum_Hadron_gen, "PDGmum_Hadron_gen[NHadrons_gen]/I");
+    fOutputTree->Branch("PDG_Hadron_gen", fPDG_Hadron_gen, "PDG_Hadron_gen[NHadrons_gen]/I");
+    fOutputTree->Branch("Pt_Hadron_gen", fPt_Hadron_gen, "Pt_Hadron_gen[NHadrons_gen]/D");
+    fOutputTree->Branch("E_Hadron_gen", fE_Hadron_gen, "E_Hadron_gen[NHadrons_gen]/D");
+    fOutputTree->Branch("Px_Hadron_gen", fPx_Hadron_gen, "Px_Hadron_gen[NHadrons_gen]/D");
+    fOutputTree->Branch("Py_Hadron_gen", fPy_Hadron_gen, "Py_Hadron_gen[NHadrons_gen]/D");
+    fOutputTree->Branch("Pz_Hadron_gen", fPz_Hadron_gen, "Pz_Hadron_gen[NHadrons_gen]/D");
+    fOutputTree->Branch("Y_Hadron_gen", fY_Hadron_gen, "Y_Hadron_gen[NHadrons_gen]/D");
+    fOutputTree->Branch("Eta_Hadron_gen", fEta_Hadron_gen, "Eta_Hadron_gen[NHadrons_gen]/D");
 
     fOutputTree->Branch("NMuons_gen", &fNMuons_gen, "NMuons_gen/I");
     fOutputTree->Branch("PDGmum_gen", fPDGmum_gen, "PDGmum_gen[NMuons_gen]/I");
@@ -311,19 +329,6 @@ void AliAnalysisTaskDimuonPowheg::UserCreateOutputObjects()
     fOutputTree->Branch("Phi_gen", fPhi_gen, "Phi_gen[NMuons_gen]/D");
     fOutputTree->Branch("Theta_gen", fTheta_gen, "Theta_gen[NMuons_gen]/D");
     fOutputTree->Branch("Charge_gen", fCharge_gen, "Charge_gen[NMuons_gen]/I");
-
-    fOutputTree->Branch("NDimu_rec", &fNDimu_rec, "NDimu_rec/I");
-    fOutputTree->Branch("DimuMu_rec", fDimuMu_rec, "DimuMu_rec[NDimu_rec][2]/I");
-    fOutputTree->Branch("DimuPt_rec", fDimuPt_rec, "DimuPt_rec[NDimu_rec]/D");
-    fOutputTree->Branch("DimuPx_rec", fDimuPx_rec, "DimuPx_rec[NDimu_rec]/D");
-    fOutputTree->Branch("DimuPy_rec", fDimuPy_rec, "DimuPy_rec[NDimu_rec]/D");
-    fOutputTree->Branch("DimuPz_rec", fDimuPz_rec, "DimuPz_rec[NDimu_rec]/D");
-    fOutputTree->Branch("DimuY_rec", fDimuY_rec, "DimuY_rec[NDimu_rec]/D");
-    fOutputTree->Branch("DimuMass_rec", fDimuMass_rec, "DimuMass_rec[NDimu_rec]/D");
-    fOutputTree->Branch("DimuCharge_rec", fDimuCharge_rec, "DimuCharge_rec[NDimu_rec]/I");
-    fOutputTree->Branch("DimuMatch_rec", fDimuMatch_rec, "DimuMatch_rec[NDimu_rec]/I");
-    fOutputTree->Branch("DimuPhi_rec", fDimuPhi_rec, "DimuPhi_rec[NDimu_rec]/D");
-    fOutputTree->Branch("DimuTheta_rec", fDimuTheta_rec, "DimuTheta_rec[NDimu_rec]/D");
 
     fOutputTree->Branch("NMuons_rec", &fNMuons_rec, "NMuons_rec/I");
     fOutputTree->Branch("PDGmum_rec", fPDGmum_rec, "PDGmum_rec[NMuons_rec]/I");
@@ -343,6 +348,29 @@ void AliAnalysisTaskDimuonPowheg::UserCreateOutputObjects()
     fOutputTree->Branch("Phi_rec", fPhi_rec, "Phi_rec[NMuons_rec]/D");
     fOutputTree->Branch("Theta_rec", fTheta_rec, "Theta_rec[NMuons_rec]/D");
 
+    fOutputTree->Branch("NDimu_gen", &fNDimu_gen, "NDimu_gen/I");
+    fOutputTree->Branch("DimuMu_gen", fDimuMu_gen, "DimuMu_gen[NDimu_gen][2]/I");
+    fOutputTree->Branch("DimuPt_gen", fDimuPt_gen, "DimuPt_gen[NDimu_gen]/D");
+    fOutputTree->Branch("DimuPx_gen", fDimuPx_gen, "DimuPx_gen[NDimu_gen]/D");
+    fOutputTree->Branch("DimuPy_gen", fDimuPy_gen, "DimuPy_gen[NDimu_gen]/D");
+    fOutputTree->Branch("DimuPz_gen", fDimuPz_gen, "DimuPz_gen[NDimu_gen]/D");
+    fOutputTree->Branch("DimuY_gen", fDimuY_gen, "DimuY_gen[NDimu_gen]/D");
+    fOutputTree->Branch("DimuMass_gen", fDimuMass_gen, "DimuMass_gen[NDimu_gen]/D");
+    fOutputTree->Branch("DimuCharge_gen", fDimuCharge_gen, "DimuCharge_gen[NDimu_gen]/I");
+
+    fOutputTree->Branch("NDimu_rec", &fNDimu_rec, "NDimu_rec/I");
+    fOutputTree->Branch("DimuMu_rec", fDimuMu_rec, "DimuMu_rec[NDimu_rec][2]/I");
+    fOutputTree->Branch("DimuPt_rec", fDimuPt_rec, "DimuPt_rec[NDimu_rec]/D");
+    fOutputTree->Branch("DimuPx_rec", fDimuPx_rec, "DimuPx_rec[NDimu_rec]/D");
+    fOutputTree->Branch("DimuPy_rec", fDimuPy_rec, "DimuPy_rec[NDimu_rec]/D");
+    fOutputTree->Branch("DimuPz_rec", fDimuPz_rec, "DimuPz_rec[NDimu_rec]/D");
+    fOutputTree->Branch("DimuY_rec", fDimuY_rec, "DimuY_rec[NDimu_rec]/D");
+    fOutputTree->Branch("DimuMass_rec", fDimuMass_rec, "DimuMass_rec[NDimu_rec]/D");
+    fOutputTree->Branch("DimuCharge_rec", fDimuCharge_rec, "DimuCharge_rec[NDimu_rec]/I");
+    fOutputTree->Branch("DimuMatch_rec", fDimuMatch_rec, "DimuMatch_rec[NDimu_rec]/I");
+    fOutputTree->Branch("DimuPhi_rec", fDimuPhi_rec, "DimuPhi_rec[NDimu_rec]/D");
+    fOutputTree->Branch("DimuTheta_rec", fDimuTheta_rec, "DimuTheta_rec[NDimu_rec]/D");
+
     fOutputTree->ls();
 
     PostData(1, fOutputTree);
@@ -354,6 +382,7 @@ void AliAnalysisTaskDimuonPowheg::UserExec(Option_t *)
 
     // printf("Entro in UserExec\n" );
     fNMuons_gen = 0;
+    fNHadrons_gen = 0;
     fNDimu_gen = 0;
     fNMuons_rec = 0;
     fNDimu_rec = 0;
@@ -380,6 +409,16 @@ void AliAnalysisTaskDimuonPowheg::UserExec(Option_t *)
         fPhi_gen[i] = 999.;
         fTheta_gen[i] = 999.;
         fCharge_gen[i] = 999.;
+
+        fPDGmum_Hadron_gen[i] = 999; // gen Hadron PDG mum
+        fPDG_Hadron_gen[i] = 999;    // gen Hadron PDG
+        fPt_Hadron_gen[i] = 999;     // gen Hadron pT
+        fE_Hadron_gen[i] = 999;      // gen Hadron E
+        fPx_Hadron_gen[i] = 999;     // gen Hadron px
+        fPy_Hadron_gen[i] = 999;     // gen Hadron py
+        fPz_Hadron_gen[i] = 999;     // gen Hadron pz
+        fY_Hadron_gen[i] = 999;      // gen Hadron y
+        fEta_Hadron_gen[i] = 999;    // gen Hadron eta
 
         fPDGmum_rec[i] = 9999.;
         fPt_rec[i] = 999.;
@@ -436,103 +475,93 @@ void AliAnalysisTaskDimuonPowheg::UserExec(Option_t *)
     // loop on MC generated event
     //-----------------------------------------------
     TClonesArray *mcarray = dynamic_cast<TClonesArray *>(fAODEvent->FindListObject(AliAODMCParticle::StdBranchName()));
-    printf("Entro \n");
+    printf("BEAUTY SIM \n");
     AliAODHeader *aodheader = dynamic_cast<AliAODHeader *>(fAODEvent->GetHeader());
     TString firedtrigger = aodheader->GetFiredTriggerClasses();
     printf("%s\n", firedtrigger.Data());
-    // if (firedtrigger.Contains("CINT7-B-NOPF-MUFAST"))
-    // {
-    //     // TriggerSelected_CINT7_CENT = kTRUE;
-    //     printf("firedtrigger class %s\n", firedtrigger.Data());
-    // }
-    // AliMultSelection *MultSelection = (AliMultSelection * ) fAODEvent->FindListObject("MultSelection");
-    // fPercentV0M = (Double_t) MultSelection->GetMultiplicityPercentile("V0M");
 
     Int_t nHFquark_gen = 0;
-
     Int_t nmu_gen = 0;
+    Int_t nHadron_gen = 0;
     Int_t ndimu_gen = 0;
 
     Int_t LabelOld1[10000] = {999};
     Int_t LabelOld2[10000] = {999};
     Bool_t GoodMuon[10000] = {kFALSE};
-    printf("Numero part %0.0f \n", mcarray->GetEntries());
+
+    printf("Numero part %d \n", mcarray->GetEntries());
     for (Int_t i_nMCpart = 0; i_nMCpart < mcarray->GetEntries(); i_nMCpart++)
     {
         AliAODMCParticle *MC_part0 = (AliAODMCParticle *)mcarray->At(i_nMCpart);
         Int_t PDG_MC_part0 = MC_part0->GetPdgCode();
         if (MC_part0->Y() < -15.0 || MC_part0->Y() > 15.0)
             continue;
-        if (TMath::Abs(PDG_MC_part0) != 13)
+        Bool_t Muon = kFALSE;
+        Bool_t Charm_Hadron = kFALSE;
+        Bool_t Beauty_Hadron = kFALSE;
+
+        if (TMath::Abs(PDG_MC_part0) == 13)
+            Muon = kTRUE;
+        else if ((TMath::Abs(PDG_MC_part0) > 400 && TMath::Abs(PDG_MC_part0) < 500) || (TMath::Abs(PDG_MC_part0) > 4000 && TMath::Abs(PDG_MC_part0) < 5000))
+            Charm_Hadron = kTRUE;
+        else if ((TMath::Abs(PDG_MC_part0) > 500 && TMath::Abs(PDG_MC_part0) < 600) || (TMath::Abs(PDG_MC_part0) > 5000 && TMath::Abs(PDG_MC_part0) < 6000))
+            Beauty_Hadron = kTRUE;
+
+        if (!Muon && !Charm_Hadron && !Beauty_Hadron)
             continue;
-        printf("pdg_part: %d\n", PDG_MC_part0);
-
-        TLorentzVector vector_mcp0;
-        // printf("Find a Muon %d \n",PDG_mcp0);
-        fY_gen[nmu_gen] = MC_part0->Y();
-        fPt_gen[nmu_gen] = MC_part0->Pt();
-        fE_gen[nmu_gen] = MC_part0->E();
-        fPx_gen[nmu_gen] = MC_part0->Px();
-        fPy_gen[nmu_gen] = MC_part0->Py();
-        fPz_gen[nmu_gen] = MC_part0->Pz();
-        fEta_gen[nmu_gen] = MC_part0->Eta();
-        fPhi_gen[nmu_gen] = MC_part0->Phi();
-        fCharge_gen[nmu_gen] = -TMath::Sign(1, PDG_MC_part0); // Sign minus necessary
-        printf("Charge a mano: %d || Charge metodo: %d\n", -TMath::Sign(1, PDG_MC_part0), fCharge_gen[nmu_gen]);
-        // printf("PDG_mcp0 %d, TMath::Sign(-1,PDG_mcp0) %d \n",PDG_mcp0,fCharge_gen[nmu_gen]);
-        fTheta_gen[nmu_gen] = MC_part0->Theta();
-
-        MC_part0->Momentum(vector_mcp0);
-
-        // printf("nmu_gen %d) MCParticle Pt %0.1f, Px %0.1f, Py %0.1f, Pz %0.1f, Y %0.1f\n",nmu_gen,fPt_gen[nmu_gen],fPx_gen[nmu_gen],fPy_gen[nmu_gen],fPz_gen[nmu_gen],fY_gen[nmu_gen]);
-        // printf("Pippo Pt %0.1f, Px %0.1f, Py %0.1f, Pz %0.1f, Y %0.1f\n",vector_mcp0.Pt(),vector_mcp0.Px(),vector_mcp0.Py(),vector_mcp0.Pz(),vector_mcp0.Y());
 
         Int_t index_Mum_MC_part0 = MC_part0->GetMother();
         AliAODMCParticle *Mum_MC_part0 = (AliAODMCParticle *)mcarray->At(index_Mum_MC_part0);
+
         Int_t PDG_Mum_MC_part0 = Mum_MC_part0->GetPdgCode();
-        if (TMath::Abs(PDG_Mum_MC_part0) == 13) // Remove muons formally produced by other muons (PYTHIA transport)
+        if (TMath::Abs(PDG_Mum_MC_part0) == TMath::Abs(PDG_MC_part0)) // Remove particles formally produced by the same particle (PYTHIA transport)
             continue;
-        Int_t round = 0;
-        TString str = Form("nmu %d PDG particle gen %d [Pt %0.03f,Y %0.03f]==>> (round %d)PDG MUM particle gen %d[pos %d, Pt %0.3f, Y %0.03f]", i_nMCpart, PDG_MC_part0, MC_part0->Pt(), MC_part0->Y(), round, PDG_Mum_MC_part0, index_Mum_MC_part0, Mum_MC_part0->Pt(), Mum_MC_part0->Y());
-        Bool_t testing_mu0 = kTRUE;
-        Int_t final_mom_mu0 = 999;
-        while (testing_mu0)
+        TLorentzVector vector_mcp0;
+
+        if (Muon)
         {
-            //        printf("Round %d | Index Muon Ancestor %d | PDG Muon Ancestor %d | \n",round,ancestor_mum0, PDGcode_ancestor0);
-            round++;
-            if (index_Mum_MC_part0 < 2)
-            {
-                testing_mu0 = kFALSE;
-                break;
-            }
+            if ((PDG_Mum_MC_part0 != 23) && !(TMath::Abs(PDG_Mum_MC_part0) > 400 && TMath::Abs(PDG_Mum_MC_part0) < 500) && !(TMath::Abs(PDG_Mum_MC_part0) > 4000 && TMath::Abs(PDG_Mum_MC_part0) < 5000) && !(TMath::Abs(PDG_Mum_MC_part0) > 500 && TMath::Abs(PDG_Mum_MC_part0) < 600) && !(TMath::Abs(PDG_Mum_MC_part0) > 5000 && TMath::Abs(PDG_Mum_MC_part0) < 6000))
+                continue;
+            MC_part0->Print();
+            printf("i_nMCpart %d) PDG: %d | MCParticle Pt %0.1f | Px %0.1f | Py %0.1f | Pz %0.1f | Y %0.1f || Mother %d , PDG Mother %d \n", i_nMCpart, PDG_MC_part0, MC_part0->Pt(), MC_part0->Px(), MC_part0->Py(), MC_part0->Pz(), MC_part0->Y(), index_Mum_MC_part0, PDG_Mum_MC_part0);
+            fY_gen[nmu_gen] = MC_part0->Y();
+            fPt_gen[nmu_gen] = MC_part0->Pt();
+            fE_gen[nmu_gen] = MC_part0->E();
+            fPx_gen[nmu_gen] = MC_part0->Px();
+            fPy_gen[nmu_gen] = MC_part0->Py();
+            fPz_gen[nmu_gen] = MC_part0->Pz();
+            fEta_gen[nmu_gen] = MC_part0->Eta();
+            fPhi_gen[nmu_gen] = MC_part0->Phi();
+            fCharge_gen[nmu_gen] = -TMath::Sign(1, PDG_MC_part0); // Sign minus necessary
+            fTheta_gen[nmu_gen] = MC_part0->Theta();
+            MC_part0->Momentum(vector_mcp0);
 
-            else
-            {
-                index_Mum_MC_part0 = Mum_MC_part0->GetMother();
-                if (index_Mum_MC_part0 > 0)
-                    Mum_MC_part0 = (AliAODMCParticle *)mcarray->At(index_Mum_MC_part0); // Salto gen Muone
-                // else
-                // {
-                //     mcp0_mother = (AliAODMCParticle *)mcarray->At(mcp_mumum->GetMother());
-                //     PDGcode_ancestor0 = mcp0_mother->GetPdgCode();
-                //     testing = kFALSE;
-                // }
-
-                PDG_Mum_MC_part0 = Mum_MC_part0->GetPdgCode();
-                str += Form(" ==>> (round %d)PDG MUM particle gen %d [pos %d,Pt %0.3f, Y %0.03f]", round, PDG_Mum_MC_part0, index_Mum_MC_part0, Mum_MC_part0->Pt(), Mum_MC_part0->Y());
-                if (TMath::Abs(PDG_Mum_MC_part0) != 13)
-                {
-                    final_mom_mu0 = PDG_Mum_MC_part0;
-                    testing_mu0 = kFALSE;
-                }
-            }
+            Int_t final_mom_mu0 = IsPrompt(Mum_MC_part0, mcarray);
+            printf("Final Muon mother: %d\n", final_mom_mu0);
+            fPDGmum_gen[nmu_gen] = final_mom_mu0;
+            nmu_gen++;
+        }
+        else if (Charm_Hadron || Beauty_Hadron)
+        {
+            MC_part0->Print();
+            printf("i_nMCpart %d) PDG: %d | MCParticle Pt %0.1f | Px %0.1f | Py %0.1f | Pz %0.1f | Y %0.1f || Mother %d , PDG Mother %d \n", i_nMCpart, PDG_MC_part0, MC_part0->Pt(), MC_part0->Px(), MC_part0->Py(), MC_part0->Pz(), MC_part0->Y(), index_Mum_MC_part0, PDG_Mum_MC_part0);
+            Int_t final_mom_mu0 = IsPrompt(Mum_MC_part0, mcarray);
+            printf("Final Hadron mother: %d\n", final_mom_mu0);
+            fPDGmum_Hadron_gen[nHadron_gen] = final_mom_mu0; // gen Hadron PDG mum
+            fPDG_Hadron_gen[nHadron_gen] = PDG_MC_part0;     // gen Hadron PDG
+            fPt_Hadron_gen[nHadron_gen] = MC_part0->Pt();
+            fE_Hadron_gen[nHadron_gen] = MC_part0->E();
+            fPx_Hadron_gen[nHadron_gen] = MC_part0->Px();
+            fPy_Hadron_gen[nHadron_gen] = MC_part0->Py();
+            fPz_Hadron_gen[nHadron_gen] = MC_part0->Pz();
+            fY_Hadron_gen[nHadron_gen] = MC_part0->Y();
+            fEta_Hadron_gen[nHadron_gen] = MC_part0->Eta();
+            nHadron_gen++;
         }
 
-        if ((final_mom_mu0 != 23) && !(TMath::Abs(final_mom_mu0) > 400 && TMath::Abs(final_mom_mu0) < 500) && !(TMath::Abs(final_mom_mu0) > 4000 && TMath::Abs(final_mom_mu0) < 5000))
+        if (TMath::Abs(PDG_MC_part0) != 13)
             continue;
-        fPDGmum_gen[nmu_gen] = final_mom_mu0;
-        printf("%s\n", str.Data());
-        nmu_gen++;
+
         for (Int_t j_nMCpart1 = i_nMCpart + 1; j_nMCpart1 < mcarray->GetEntries(); j_nMCpart1++)
         {
             AliAODMCParticle *MC_part1 = (AliAODMCParticle *)mcarray->At(j_nMCpart1);
@@ -545,48 +574,16 @@ void AliAnalysisTaskDimuonPowheg::UserExec(Option_t *)
             Int_t index_Mum_MC_part1 = MC_part1->GetMother();
             AliAODMCParticle *Mum_MC_part1 = (AliAODMCParticle *)mcarray->At(index_Mum_MC_part1);
             Int_t PDG_Mum_MC_part1 = Mum_MC_part1->GetPdgCode();
-            if (TMath::Abs(PDG_Mum_MC_part1) == 13) // Remove muons formally produced by other muons (PYTHIA transport)
+            if (TMath::Abs(PDG_MC_part1) == TMath::Abs(PDG_Mum_MC_part1)) // Remove particles formally produced by the same particle (PYTHIA transport)
                 continue;
-            Int_t final_Mum_MC_part1 = 999;
-            Bool_t testing_mu1 = kTRUE;
-            while (testing_mu1)
-            {
-                //        printf("Round %d | Index Muon Ancestor %d | PDG Muon Ancestor %d | \n",round,ancestor_mum0, PDGcode_ancestor0);
-                round++;
-                if (index_Mum_MC_part1 < 2)
-                {
-                    testing_mu1 = kFALSE;
-                    break;
-                }
 
-                else
-                {
-                    index_Mum_MC_part1 = Mum_MC_part1->GetMother();
-                    if (index_Mum_MC_part1 > 0)
-                        Mum_MC_part1 = (AliAODMCParticle *)mcarray->At(index_Mum_MC_part1); // Salto gen Muone
-                    // else
-                    // {
-                    //     mcp0_mother = (AliAODMCParticle *)mcarray->At(mcp_mumum->GetMother());
-                    //     PDGcode_ancestor0 = mcp0_mother->GetPdgCode();
-                    //     testing = kFALSE;
-                    // }
+            Int_t final_Mum_MC_part1 = PDG_Mum_MC_part1;
 
-                    PDG_Mum_MC_part1 = Mum_MC_part1->GetPdgCode();
-                    // str += Form(" ==>> (round %d)PDG MUM particle gen %d [pos %d,Pt %0.3f, Y %0.03f]", round, PDG_Mum_MC_part1, index_Mum_MC_part1, Mum_MC_part1->Pt(), Mum_MC_part1->Y());
-                    if (TMath::Abs(PDG_Mum_MC_part1) != 13)
-                    {
-                        final_Mum_MC_part1 = PDG_Mum_MC_part1;
-                        testing_mu1 = kFALSE;
-                    }
-                }
-            }
-            if ((final_Mum_MC_part1 != 23) && !(TMath::Abs(final_Mum_MC_part1) > 400 && TMath::Abs(final_Mum_MC_part1) < 500) && !(TMath::Abs(final_Mum_MC_part1) > 4000 && TMath::Abs(final_Mum_MC_part1) < 5000))
+            if ((PDG_Mum_MC_part1 != 23) && !(TMath::Abs(PDG_Mum_MC_part1) > 400 && TMath::Abs(PDG_Mum_MC_part1) < 500) && !(TMath::Abs(PDG_Mum_MC_part1) > 4000 && TMath::Abs(PDG_Mum_MC_part1) < 5000))
                 continue;
+            printf("Find A DIMUON");
             TLorentzVector vector_mcp1;
             MC_part1->Momentum(vector_mcp1);
-
-            // printf("j %d) MCParticle Pt %0.1f, Px %0.1f, Py %0.1f, Pz %0.1f, Y %0.1f\n",j,mcp1->Pt(),mcp1->Px(),mcp1->Py(),mcp1->Pz(),mcp0->Y());
-            // printf("vector_mcp1, %0.1f, Px %0.1f, Py %0.1f, Pz %0.1f, Y %0.1f\n",vector_mcp1.Pt(),vector_mcp1.Px(),vector_mcp1.Py(),vector_mcp1.Pz(),vector_mcp1.Y());
 
             TLorentzVector dimu = vector_mcp0 + vector_mcp1;
 
@@ -597,7 +594,6 @@ void AliAnalysisTaskDimuonPowheg::UserExec(Option_t *)
             fDimuY_gen[ndimu_gen] = dimu.Rapidity();
             fDimuMass_gen[ndimu_gen] = dimu.M();
             fDimuCharge_gen[ndimu_gen] = -(TMath::Sign(1, PDG_MC_part0) + TMath::Sign(1, PDG_MC_part1));
-            // printf("PDG_mcp0 %d | TMath::Sign(-1,PDG_mcp0) %d | PDG_mcp1 %d | TMath::Sign(-1,PDG_mcp0) %d | fDimuCharge_gen[ndimu_gen] %d\n",PDG_mcp0,-TMath::Sign(1,PDG_mcp0),PDG_mcp0,-TMath::Sign(1,PDG_mcp1),fDimuCharge_gen[ndimu_gen]);
             LabelOld1[ndimu_gen] = i_nMCpart;
             LabelOld2[ndimu_gen] = j_nMCpart1;
             GoodMuon[i_nMCpart] = kTRUE;
@@ -609,6 +605,7 @@ void AliAnalysisTaskDimuonPowheg::UserExec(Option_t *)
     printf("NUMERO DI HF quark per evento %d\n", nHFquark_gen);
     fN_HFquarks_gen = nHFquark_gen;
     fNMuons_gen = nmu_gen;
+    fNHadrons_gen = nHadron_gen;
     fNDimu_gen = ndimu_gen;
 
     for (Int_t i_nDimu_Gen = 0; i_nDimu_Gen < ndimu_gen; i_nDimu_Gen++)
@@ -659,6 +656,15 @@ void AliAnalysisTaskDimuonPowheg::UserExec(Option_t *)
         if (TMath::Abs(PDG_MCpart_Track0) != 13)
             continue;
 
+        Int_t index_Mum_MCpart_Track0 = MCpart_Track0->GetMother();
+        AliAODMCParticle *Mum_MCpart_Track0 = (AliAODMCParticle *)mcarray->At(index_Mum_MCpart_Track0);
+        Int_t PDG_Mum_MCpart_Track0 = Mum_MCpart_Track0->GetPdgCode();
+
+        if ((PDG_Mum_MCpart_Track0 != 23) && !(TMath::Abs(PDG_Mum_MCpart_Track0) > 400 && TMath::Abs(PDG_Mum_MCpart_Track0) < 500) && !(TMath::Abs(PDG_Mum_MCpart_Track0) > 4000 && TMath::Abs(PDG_Mum_MCpart_Track0) < 5000) && !(TMath::Abs(PDG_Mum_MCpart_Track0) > 500 && TMath::Abs(PDG_Mum_MCpart_Track0) < 600) && !(TMath::Abs(PDG_Mum_MCpart_Track0) > 5000 && TMath::Abs(PDG_Mum_MCpart_Track0) < 6000))
+            continue;
+
+        MCpart_Track0->Print();
+        
         fPt_rec[nmu_rec] = Track0->Pt();
         fPx_rec[nmu_rec] = Track0->Px();
         fPy_rec[nmu_rec] = Track0->Py();
@@ -674,48 +680,7 @@ void AliAnalysisTaskDimuonPowheg::UserExec(Option_t *)
         fPhi_rec[nmu_rec] = Track0->Phi();
         fTheta_rec[nmu_rec] = Track0->Theta();
         fCharge_rec[nmu_rec] = Track0->Charge();
-
-        Int_t index_Mum_MCpart_Track0 = MCpart_Track0->GetMother();
-        AliAODMCParticle *Mum_MCpart_Track0 = (AliAODMCParticle *)mcarray->At(index_Mum_MCpart_Track0);
-        Int_t PDG_Mum_MCpart_Track0 = Mum_MCpart_Track0->GetPdgCode();
-
-        Int_t round = 0;
-        TString str = Form("pos %d) PDG particle rec %d [Pt %0.03f,Y %0.03f]==>> (round %d)PDG MUM particle rec %d [pos %d, Pt %0.3f, Y %0.03f]", i_Track0, PDG_MCpart_Track0, MCpart_Track0->Pt(), MCpart_Track0->Y(), round, PDG_Mum_MCpart_Track0, index_Mum_MCpart_Track0, Mum_MCpart_Track0->Pt(), Mum_MCpart_Track0->Y());
-        Bool_t testing_Track0 = kTRUE;
-        Int_t final_mum_Track0 = 999;
-        while (testing_Track0)
-        {
-            //        printf("Round %d | Index Muon Ancestor %d | PDG Muon Ancestor %d | \n",round,ancestor_mum0, PDGcode_ancestor0);
-            round++;
-            if (index_Mum_MCpart_Track0 < 2)
-            {
-                testing_Track0 = kFALSE;
-                break;
-            }
-
-            else
-            {
-                index_Mum_MCpart_Track0 = Mum_MCpart_Track0->GetMother();
-                if (index_Mum_MCpart_Track0 > 0)
-                    Mum_MCpart_Track0 = (AliAODMCParticle *)mcarray->At(index_Mum_MCpart_Track0); // Salto gen Muone
-
-                PDG_Mum_MCpart_Track0 = Mum_MCpart_Track0->GetPdgCode();
-                str += Form(" ==>> (round %d)PDG MUM particle rec %d [pos %d, Pt %0.3f, Y %0.03f]", round, PDG_Mum_MCpart_Track0, index_Mum_MCpart_Track0, Mum_MCpart_Track0->Pt(), Mum_MCpart_Track0->Y());
-                if (TMath::Abs(PDG_Mum_MCpart_Track0) != 13)
-                {
-                    final_mum_Track0 = PDG_Mum_MCpart_Track0;
-                    testing_Track0 = kFALSE;
-                }
-            }
-        }
-        if ((final_mum_Track0 != 23) && !(TMath::Abs(final_mum_Track0) > 400 && TMath::Abs(final_mum_Track0) < 500) && !(TMath::Abs(final_mum_Track0) > 4000 && TMath::Abs(final_mum_Track0) < 5000))
-            continue;
-
-        fPDGmum_rec[nmu_rec] = final_mum_Track0;
-        // printf("------------------------\n");
-        // printf("%s\n", str.Data());
-        // printf("Final PDG mum selected %d \n", PDG_Mum_MCpart_Track0);
-        // printf("------------------------\n");
+        fPDGmum_rec[nmu_rec] = IsPrompt(Mum_MCpart_Track0, mcarray);;
         nmu_rec++;
 
         for (Int_t j_Track1 = i_Track0 + 1; j_Track1 < numtracks; j_Track1++)
@@ -736,37 +701,9 @@ void AliAnalysisTaskDimuonPowheg::UserExec(Option_t *)
             AliAODMCParticle *Mum_MCpart_Track1 = (AliAODMCParticle *)mcarray->At(index_Mum_MCpart_Track1);
             Int_t PDG_Mum_MCpart_Track1 = Mum_MCpart_Track1->GetPdgCode();
 
-            Int_t final_mum_Track1 = 999;
-            Bool_t testing_Track1 = kTRUE;
-            while (testing_Track1)
-            {
-                //        printf("Round %d | Index Muon Ancestor %d | PDG Muon Ancestor %d | \n",round,ancestor_mum0, PDGcode_ancestor0);
-                round++;
-                if (index_Mum_MCpart_Track1 < 2)
-                {
-                    testing_Track1 = kFALSE;
-                    break;
-                }
-
-                else
-                {
-                    index_Mum_MCpart_Track1 = Mum_MCpart_Track1->GetMother();
-                    if (index_Mum_MCpart_Track1 > 0)
-                        Mum_MCpart_Track1 = (AliAODMCParticle *)mcarray->At(index_Mum_MCpart_Track1); // Salto gen Muone
-
-                    PDG_Mum_MCpart_Track1 = Mum_MCpart_Track1->GetPdgCode();
-                    if (TMath::Abs(PDG_Mum_MCpart_Track1) != 13)
-                    {
-                        final_mum_Track1 = PDG_Mum_MCpart_Track1;
-                        testing_Track1 = kFALSE;
-                    }
-                }
-            }
-            if ((final_mum_Track1 != 23) && !(TMath::Abs(final_mum_Track1) > 400 && TMath::Abs(final_mum_Track1) < 500) && !(TMath::Abs(final_mum_Track1) > 4000 && TMath::Abs(final_mum_Track1) < 5000))
+            if ((PDG_Mum_MCpart_Track1 != 23) && !(TMath::Abs(PDG_Mum_MCpart_Track1) > 400 && TMath::Abs(PDG_Mum_MCpart_Track1) < 500) && !(TMath::Abs(PDG_Mum_MCpart_Track1) > 4000 && TMath::Abs(PDG_Mum_MCpart_Track1) < 5000))
                 continue;
-            // if (final_mum_Track1 != 23)
-            //     continue;
-
+            
             AliAODDimuon *dimu = new AliAODDimuon(Track0, Track1);
             fDimuMass_rec[ndimu_rec] = dimu->Mass();
             fDimuPt_rec[ndimu_rec] = dimu->Pt();
@@ -822,18 +759,15 @@ void AliAnalysisTaskDimuonPowheg::UserExec(Option_t *)
 
 Int_t IsPrompt(AliAODMCParticle *mcp_mumum, TClonesArray *mcarray)
 {
-
+    Bool_t Verbosity = kTRUE;
     Int_t Final_PDG = mcp_mumum->GetPdgCode();
-    //    printf("Canditate Muon from Charm Particle \n");
-    //    printf("Index Muon Mum %d | PDG Muon Mum %d | \n",mcp_mu_charm_canditate->GetPdgCode());
-    //    mcp_mumum->Print();
-
     Int_t ancestor_mum0 = mcp_mumum->GetMother();
     if (ancestor_mum0 == -1)
         return Final_PDG;
     AliAODMCParticle *mcp_ancestor0 = (AliAODMCParticle *)mcarray->At(ancestor_mum0); // Definizione Antenato Muone
     Int_t PDGcode_ancestor0 = mcp_ancestor0->GetPdgCode();
-    //    printf("Index Muon Ancestor %d | PDG Muon Ancestor %d | \n",ancestor_mum0, PDGcode_ancestor0);
+    if (Verbosity)
+        printf("Index Muon Ancestor %d | PDG Muon Ancestor %d | \n", ancestor_mum0, PDGcode_ancestor0);
 
     Int_t round = 0;
     Bool_t Prompt = kTRUE;
@@ -841,7 +775,8 @@ Int_t IsPrompt(AliAODMCParticle *mcp_mumum, TClonesArray *mcarray)
 
     while (testing)
     {
-        //        printf("Round %d | Index Muon Ancestor %d | PDG Muon Ancestor %d | \n",round,ancestor_mum0, PDGcode_ancestor0);
+        if (Verbosity)
+            printf("Round %d | Index Muon Ancestor %d | PDG Muon Ancestor %d | \n", round, ancestor_mum0, PDGcode_ancestor0);
         round++;
         if (ancestor_mum0 < 2)
         {
@@ -850,7 +785,8 @@ Int_t IsPrompt(AliAODMCParticle *mcp_mumum, TClonesArray *mcarray)
         }
         else if (TMath::Abs(PDGcode_ancestor0) == 5)
         {
-            //            printf("Muon from Beauty Quark \n");
+            if (Verbosity)
+                printf("Muon from Beauty Quark \n");
             Final_PDG = PDGcode_ancestor0;
             testing = kFALSE;
             Prompt = kFALSE;
@@ -858,7 +794,8 @@ Int_t IsPrompt(AliAODMCParticle *mcp_mumum, TClonesArray *mcarray)
         }
         else if (TMath::Abs(PDGcode_ancestor0) > 500 && TMath::Abs(PDGcode_ancestor0) < 600)
         {
-            //            printf("Muon from Beauty Meson \n");
+            if (Verbosity)
+                printf("Muon from Beauty Meson \n");
             Final_PDG = PDGcode_ancestor0;
             testing = kFALSE;
             Prompt = kFALSE;
@@ -866,7 +803,8 @@ Int_t IsPrompt(AliAODMCParticle *mcp_mumum, TClonesArray *mcarray)
         }
         else if (TMath::Abs(PDGcode_ancestor0) > 5000 && TMath::Abs(PDGcode_ancestor0) < 6000)
         {
-            //            printf("Muon from Beauty Barion \n");
+            if (Verbosity)
+                printf("Muon from Beauty Barion \n");
             Final_PDG = PDGcode_ancestor0;
             testing = kFALSE;
             Prompt = kFALSE;
