@@ -475,7 +475,7 @@ void AliAnalysisTaskDimuonPythia::UserExec(Option_t *)
     // loop on MC generated event
     //-----------------------------------------------
     TClonesArray *mcarray = dynamic_cast<TClonesArray *>(fAODEvent->FindListObject(AliAODMCParticle::StdBranchName()));
-    printf("BEAUTY SIM \n");
+    
     AliAODHeader *aodheader = dynamic_cast<AliAODHeader *>(fAODEvent->GetHeader());
     TString firedtrigger = aodheader->GetFiredTriggerClasses();
     printf("%s\n", firedtrigger.Data());
@@ -489,7 +489,6 @@ void AliAnalysisTaskDimuonPythia::UserExec(Option_t *)
     Int_t LabelOld2[10000] = {999};
     Bool_t GoodMuon[10000] = {kFALSE};
 
-    printf("Numero part %d \n", mcarray->GetEntries());
     for (Int_t i_nMCpart = 0; i_nMCpart < mcarray->GetEntries(); i_nMCpart++)
     {
         AliAODMCParticle *MC_part0 = (AliAODMCParticle *)mcarray->At(i_nMCpart);
@@ -509,11 +508,21 @@ void AliAnalysisTaskDimuonPythia::UserExec(Option_t *)
 
         if (!Muon && !Charm_Hadron && !Beauty_Hadron)
             continue;
-
+        MC_part0->Print();
         Int_t index_Mum_MC_part0 = MC_part0->GetMother();
-        AliAODMCParticle *Mum_MC_part0 = (AliAODMCParticle *)mcarray->At(index_Mum_MC_part0);
-
-        Int_t PDG_Mum_MC_part0 = Mum_MC_part0->GetPdgCode();
+        AliAODMCParticle *Mum_MC_part0;
+        Int_t PDG_Mum_MC_part0 = 999;
+        if (index_Mum_MC_part0 < 0)
+        {
+            Mum_MC_part0 = nullptr;
+            PDG_Mum_MC_part0 = 0;
+        }
+        else
+        {
+            Mum_MC_part0 = (AliAODMCParticle *)mcarray->At(index_Mum_MC_part0);
+            PDG_Mum_MC_part0 = Mum_MC_part0->GetPdgCode();
+        }
+        // printf("i_nMCpart %d) PDG: %d | MCParticle Pt %0.1f | Px %0.1f | Py %0.1f | Pz %0.1f | Y %0.1f || Mother %d , PDG Mother %d \n", i_nMCpart, PDG_MC_part0, MC_part0->Pt(), MC_part0->Px(), MC_part0->Py(), MC_part0->Pz(), MC_part0->Y(), index_Mum_MC_part0, PDG_Mum_MC_part0);
         if (TMath::Abs(PDG_Mum_MC_part0) == TMath::Abs(PDG_MC_part0)) // Remove particles formally produced by the same particle (PYTHIA transport)
             continue;
         TLorentzVector vector_mcp0;
@@ -522,8 +531,7 @@ void AliAnalysisTaskDimuonPythia::UserExec(Option_t *)
         {
             if ((PDG_Mum_MC_part0 != 23) && !(TMath::Abs(PDG_Mum_MC_part0) > 400 && TMath::Abs(PDG_Mum_MC_part0) < 500) && !(TMath::Abs(PDG_Mum_MC_part0) > 4000 && TMath::Abs(PDG_Mum_MC_part0) < 5000) && !(TMath::Abs(PDG_Mum_MC_part0) > 500 && TMath::Abs(PDG_Mum_MC_part0) < 600) && !(TMath::Abs(PDG_Mum_MC_part0) > 5000 && TMath::Abs(PDG_Mum_MC_part0) < 6000))
                 continue;
-            // MC_part0->Print();
-            // printf("i_nMCpart %d) PDG: %d | MCParticle Pt %0.1f | Px %0.1f | Py %0.1f | Pz %0.1f | Y %0.1f || Mother %d , PDG Mother %d \n", i_nMCpart, PDG_MC_part0, MC_part0->Pt(), MC_part0->Px(), MC_part0->Py(), MC_part0->Pz(), MC_part0->Y(), index_Mum_MC_part0, PDG_Mum_MC_part0);
+
             fY_gen[nmu_gen] = MC_part0->Y();
             fPt_gen[nmu_gen] = MC_part0->Pt();
             fE_gen[nmu_gen] = MC_part0->E();
@@ -548,10 +556,11 @@ void AliAnalysisTaskDimuonPythia::UserExec(Option_t *)
         {
             // MC_part0->Print();
             // printf("i_nMCpart %d) PDG: %d | MCParticle Pt %0.1f | Px %0.1f | Py %0.1f | Pz %0.1f | Y %0.1f || Mother %d , PDG Mother %d \n", i_nMCpart, PDG_MC_part0, MC_part0->Pt(), MC_part0->Px(), MC_part0->Py(), MC_part0->Pz(), MC_part0->Y(), index_Mum_MC_part0, PDG_Mum_MC_part0);
-            Int_t final_mom_mu0 = IsPrompt(Mum_MC_part0, mcarray);
-            // printf("Final Hadron mother: %d\n", final_mom_mu0);
-            fPDGmum_Hadron_gen[nHadron_gen] = final_mom_mu0; // gen Hadron PDG mum
-            fPDG_Hadron_gen[nHadron_gen] = PDG_MC_part0;     // gen Hadron PDG
+            if (index_Mum_MC_part0 < 0)
+                fPDGmum_Hadron_gen[nHadron_gen] = PDG_Mum_MC_part0;
+            else
+                fPDGmum_Hadron_gen[nHadron_gen] = IsPrompt(Mum_MC_part0, mcarray); // gen Hadron PDG mum
+            fPDG_Hadron_gen[nHadron_gen] = PDG_MC_part0; // gen Hadron PDG
             fPt_Hadron_gen[nHadron_gen] = MC_part0->Pt();
             fE_Hadron_gen[nHadron_gen] = MC_part0->E();
             fPx_Hadron_gen[nHadron_gen] = MC_part0->Px();
