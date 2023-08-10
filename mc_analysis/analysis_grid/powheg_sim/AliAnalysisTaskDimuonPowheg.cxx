@@ -485,13 +485,20 @@ void AliAnalysisTaskDimuonPowheg::UserExec(Option_t *)
     Int_t nHadron_gen = 0;
     Int_t ndimu_gen = 0;
 
-    Int_t LabelOld1[10000] = {999};
-    Int_t LabelOld2[10000] = {999};
-    Bool_t GoodMuon[10000] = {kFALSE};
-
-    printf("Numero part %d \n", mcarray->GetEntries());
-    for (Int_t i_nMCpart = 0; i_nMCpart < mcarray->GetEntries(); i_nMCpart++)
+    Int_t n_MC_part = mcarray->GetEntries();
+    Int_t *LabelOld1 = new Int_t[n_MC_part];
+    Int_t *LabelOld2 = new Int_t[n_MC_part];
+    Bool_t *GoodMuon = new Bool_t[n_MC_part];
+    for (Int_t i_nMCpart = 0; i_nMCpart < n_MC_part; i_nMCpart++)
     {
+        LabelOld1[i_nMCpart] = 999;
+        LabelOld2[i_nMCpart] = 999;
+        GoodMuon[i_nMCpart] = kFALSE;
+    }
+
+    for (Int_t i_nMCpart = 0; i_nMCpart < n_MC_part; i_nMCpart++)
+    {
+
         AliAODMCParticle *MC_part0 = (AliAODMCParticle *)mcarray->At(i_nMCpart);
         Int_t PDG_MC_part0 = MC_part0->GetPdgCode();
         if (MC_part0->Y() < -15.0 || MC_part0->Y() > 15.0)
@@ -509,11 +516,22 @@ void AliAnalysisTaskDimuonPowheg::UserExec(Option_t *)
 
         if (!Muon && !Charm_Hadron && !Beauty_Hadron)
             continue;
-
+        // MC_part0->Print();
         Int_t index_Mum_MC_part0 = MC_part0->GetMother();
-        AliAODMCParticle *Mum_MC_part0 = (AliAODMCParticle *)mcarray->At(index_Mum_MC_part0);
+        AliAODMCParticle *Mum_MC_part0;
+        Int_t PDG_Mum_MC_part0 = 999;
+        Int_t final_mom_mu0 = 999;
 
-        Int_t PDG_Mum_MC_part0 = Mum_MC_part0->GetPdgCode();
+        if (Charm_Hadron && index_Mum_MC_part0 == -1)
+            PDG_Mum_MC_part0 = -TMath::Sign(1, PDG_MC_part0) * 4;
+        else if (Beauty_Hadron && index_Mum_MC_part0 == -1)
+            PDG_Mum_MC_part0 = -TMath::Sign(1, PDG_MC_part0) * 5;
+        else
+        {
+            Mum_MC_part0 = (AliAODMCParticle *)mcarray->At(index_Mum_MC_part0);
+            PDG_Mum_MC_part0 = Mum_MC_part0->GetPdgCode();
+        }
+
         if (TMath::Abs(PDG_Mum_MC_part0) == TMath::Abs(PDG_MC_part0)) // Remove particles formally produced by the same particle (Powheg transport)
             continue;
         TLorentzVector vector_mcp0;
@@ -522,7 +540,7 @@ void AliAnalysisTaskDimuonPowheg::UserExec(Option_t *)
         {
             if ((PDG_Mum_MC_part0 != 23) && !(TMath::Abs(PDG_Mum_MC_part0) > 400 && TMath::Abs(PDG_Mum_MC_part0) < 500) && !(TMath::Abs(PDG_Mum_MC_part0) > 4000 && TMath::Abs(PDG_Mum_MC_part0) < 5000) && !(TMath::Abs(PDG_Mum_MC_part0) > 500 && TMath::Abs(PDG_Mum_MC_part0) < 600) && !(TMath::Abs(PDG_Mum_MC_part0) > 5000 && TMath::Abs(PDG_Mum_MC_part0) < 6000))
                 continue;
-            // MC_part0->Print();
+
             // printf("i_nMCpart %d) PDG: %d | MCParticle Pt %0.1f | Px %0.1f | Py %0.1f | Pz %0.1f | Y %0.1f || Mother %d , PDG Mother %d \n", i_nMCpart, PDG_MC_part0, MC_part0->Pt(), MC_part0->Px(), MC_part0->Py(), MC_part0->Pz(), MC_part0->Y(), index_Mum_MC_part0, PDG_Mum_MC_part0);
             fY_gen[nmu_gen] = MC_part0->Y();
             fPt_gen[nmu_gen] = MC_part0->Pt();
@@ -548,8 +566,12 @@ void AliAnalysisTaskDimuonPowheg::UserExec(Option_t *)
         {
             // MC_part0->Print();
             // printf("i_nMCpart %d) PDG: %d | MCParticle Pt %0.1f | Px %0.1f | Py %0.1f | Pz %0.1f | Y %0.1f || Mother %d , PDG Mother %d \n", i_nMCpart, PDG_MC_part0, MC_part0->Pt(), MC_part0->Px(), MC_part0->Py(), MC_part0->Pz(), MC_part0->Y(), index_Mum_MC_part0, PDG_Mum_MC_part0);
-            Int_t final_mom_mu0 = IsPrompt(Mum_MC_part0, mcarray);
-            // printf("Final Hadron mother: %d\n", final_mom_mu0);
+
+            if (Charm_Hadron && TMath::Abs(PDG_Mum_MC_part0) != 4)
+                final_mom_mu0 = IsPrompt(Mum_MC_part0, mcarray);
+            else
+                final_mom_mu0 = PDG_Mum_MC_part0;
+            // printf("final mum %i \n", final_mom_mu0);
             fPDGmum_Hadron_gen[nHadron_gen] = final_mom_mu0; // gen Hadron PDG mum
             fPDG_Hadron_gen[nHadron_gen] = PDG_MC_part0;     // gen Hadron PDG
             fPt_Hadron_gen[nHadron_gen] = MC_part0->Pt();
@@ -564,8 +586,7 @@ void AliAnalysisTaskDimuonPowheg::UserExec(Option_t *)
 
         if (TMath::Abs(PDG_MC_part0) != 13)
             continue;
-
-        for (Int_t j_nMCpart1 = i_nMCpart + 1; j_nMCpart1 < mcarray->GetEntries(); j_nMCpart1++)
+        for (Int_t j_nMCpart1 = i_nMCpart + 1; j_nMCpart1 < n_MC_part; j_nMCpart1++)
         {
             AliAODMCParticle *MC_part1 = (AliAODMCParticle *)mcarray->At(j_nMCpart1);
             Int_t PDG_MC_part1 = MC_part1->GetPdgCode();
@@ -573,16 +594,13 @@ void AliAnalysisTaskDimuonPowheg::UserExec(Option_t *)
                 continue;
             if (MC_part1->Y() < -15.0 || MC_part1->Y() > 15.0)
                 continue;
-
             Int_t index_Mum_MC_part1 = MC_part1->GetMother();
             AliAODMCParticle *Mum_MC_part1 = (AliAODMCParticle *)mcarray->At(index_Mum_MC_part1);
             Int_t PDG_Mum_MC_part1 = Mum_MC_part1->GetPdgCode();
-
             Int_t final_Mum_MC_part1 = PDG_Mum_MC_part1;
 
             if ((PDG_Mum_MC_part1 != 23) && !(TMath::Abs(PDG_Mum_MC_part1) > 400 && TMath::Abs(PDG_Mum_MC_part1) < 500) && !(TMath::Abs(PDG_Mum_MC_part1) > 4000 && TMath::Abs(PDG_Mum_MC_part1) < 5000) && !(TMath::Abs(PDG_Mum_MC_part1) > 500 && TMath::Abs(PDG_Mum_MC_part1) < 600) && !(TMath::Abs(PDG_Mum_MC_part1) > 5000 && TMath::Abs(PDG_Mum_MC_part1) < 6000))
                 continue;
-            printf("Find A DIMUON");
             TLorentzVector vector_mcp1;
             MC_part1->Momentum(vector_mcp1);
 
@@ -607,7 +625,6 @@ void AliAnalysisTaskDimuonPowheg::UserExec(Option_t *)
     fNMuons_gen = nmu_gen;
     fNHadrons_gen = nHadron_gen;
     fNDimu_gen = ndimu_gen;
-
     for (Int_t i_nDimu_Gen = 0; i_nDimu_Gen < ndimu_gen; i_nDimu_Gen++)
     {
         Int_t LabelNew1 = 0;
@@ -633,37 +650,81 @@ void AliAnalysisTaskDimuonPowheg::UserExec(Option_t *)
     Int_t nmu_rec = 0;
     Int_t ndimu_rec = 0;
 
-    Int_t LabelOld1_rec[10000] = {999};
-    Int_t LabelOld2_rec[10000] = {999};
-    Int_t GoodMuon_rec[10000] = {kFALSE};
+    Int_t *LabelOld1_rec = new Int_t[numtracks];
+    Int_t *LabelOld2_rec = new Int_t[numtracks];
+    Bool_t *GoodMuon_rec = new Bool_t[numtracks];
 
     for (Int_t i_Track0 = 0; i_Track0 < numtracks; i_Track0++)
     {
+        LabelOld1_rec[i_Track0] = 999;
+        LabelOld2_rec[i_Track0] = 999;
+        GoodMuon_rec[i_Track0] = kFALSE;
+    }
+
+    for (Int_t i_Track0 = 0; i_Track0 < numtracks; i_Track0++)
+    {
+        GoodMuon_rec[i_Track0] = kFALSE;
         AliAODTrack *Track0 = (AliAODTrack *)fAODEvent->GetTrack(i_Track0);
-        if (Track0->GetLabel() == -1)
+
+        if (Track0->GetLabel() < 0) // Condition on label of MC particle
             continue;
-        //        if(mctrack0->IsSecondaryFromMaterial()) continue;
 
-        if (Track0->Y() > -15.0 && Track0->Y() < 15.0)
-            GoodMuon_rec[i_Track0] = kTRUE;
-
-        if (!GoodMuon_rec[i_Track0])
+        if (Track0->Eta() < -4.5 || Track0->Eta() > -2.0) // Condition on muon acceptance
             continue;
 
         AliAODMCParticle *MCpart_Track0 = (AliAODMCParticle *)mcarray->At(Track0->GetLabel());
         Int_t PDG_MCpart_Track0 = MCpart_Track0->GetPdgCode();
 
-        if (TMath::Abs(PDG_MCpart_Track0) != 13)
+        if (TMath::Abs(PDG_MCpart_Track0) != 13) // request of a muon
             continue;
 
         Int_t index_Mum_MCpart_Track0 = MCpart_Track0->GetMother();
         AliAODMCParticle *Mum_MCpart_Track0 = (AliAODMCParticle *)mcarray->At(index_Mum_MCpart_Track0);
         Int_t PDG_Mum_MCpart_Track0 = Mum_MCpart_Track0->GetPdgCode();
 
-        if ((PDG_Mum_MCpart_Track0 != 23) && !(TMath::Abs(PDG_Mum_MCpart_Track0) > 400 && TMath::Abs(PDG_Mum_MCpart_Track0) < 500) && !(TMath::Abs(PDG_Mum_MCpart_Track0) > 4000 && TMath::Abs(PDG_Mum_MCpart_Track0) < 5000) && !(TMath::Abs(PDG_Mum_MCpart_Track0) > 500 && TMath::Abs(PDG_Mum_MCpart_Track0) < 600) && !(TMath::Abs(PDG_Mum_MCpart_Track0) > 5000 && TMath::Abs(PDG_Mum_MCpart_Track0) < 6000))
-            continue;
+        // MCpart_Track0->Print();
 
-        MCpart_Track0->Print();
+        // Int_t round = 0;
+        // TString str = Form("pos %d) PDG particle rec %d [Pt %0.03f,Y %0.03f]==>> (round %d)PDG MUM particle rec %d [pos %d, Pt %0.3f, Y %0.03f]", i_Track0, PDG_MCpart_Track0, MCpart_Track0->Pt(), MCpart_Track0->Y(), round, PDG_Mum_MCpart_Track0, index_Mum_MCpart_Track0, Mum_MCpart_Track0->Pt(), Mum_MCpart_Track0->Y());
+
+        if (TMath::Abs(PDG_Mum_MCpart_Track0) == TMath::Abs(PDG_MCpart_Track0))
+            continue;
+        // if (TMath::Abs(PDG_Mum_MCpart_Track0) == TMath::Abs(PDG_MCpart_Track0))
+        // {
+        //     Bool_t testing_Track0 = kTRUE;
+        //     Int_t final_mum_Track0 = 999;
+        //     while (testing_Track0)
+        //     {
+        //         //        printf("Round %d | Index Muon Ancestor %d | PDG Muon Ancestor %d | \n",round,ancestor_mum0, PDGcode_ancestor0);
+        //         round++;
+        //         if (index_Mum_MCpart_Track0 < 2)
+        //         {
+        //             testing_Track0 = kFALSE;
+        //             break;
+        //         }
+
+        //         else
+        //         {
+        //             index_Mum_MCpart_Track0 = Mum_MCpart_Track0->GetMother();
+        //             if (index_Mum_MCpart_Track0 > 0)
+        //                 Mum_MCpart_Track0 = (AliAODMCParticle *)mcarray->At(index_Mum_MCpart_Track0); // Salto gen Muone
+
+        //             final_mum_Track0 = Mum_MCpart_Track0->GetPdgCode();
+        //             str += Form(" ==>> (round %d)PDG MUM particle rec %d [pos %d, Pt %0.3f, Y %0.03f]", round, PDG_Mum_MCpart_Track0, index_Mum_MCpart_Track0, Mum_MCpart_Track0->Pt(), Mum_MCpart_Track0->Y());
+        //             if (TMath::Abs(final_mum_Track0) != 13)
+        //             {
+        //                 PDG_Mum_MCpart_Track0 = final_mum_Track0;
+        //                 testing_Track0 = kFALSE;
+        //             }
+        //         }
+        //     }
+        // } // Remove particles formally produced by the same particle (Powheg transport)
+        // printf("%s\n", str.Data());
+        if ((PDG_Mum_MCpart_Track0 == 23) || (TMath::Abs(PDG_Mum_MCpart_Track0) > 400 && TMath::Abs(PDG_Mum_MCpart_Track0) < 500) || (TMath::Abs(PDG_Mum_MCpart_Track0) > 4000 && TMath::Abs(PDG_Mum_MCpart_Track0) < 5000) || (TMath::Abs(PDG_Mum_MCpart_Track0) > 500 && TMath::Abs(PDG_Mum_MCpart_Track0) < 600) || (TMath::Abs(PDG_Mum_MCpart_Track0) > 5000 && TMath::Abs(PDG_Mum_MCpart_Track0) < 6000))
+            GoodMuon_rec[i_Track0] = kTRUE;
+
+        if (!GoodMuon_rec[i_Track0])
+            continue;
 
         fPt_rec[nmu_rec] = Track0->Pt();
         fPx_rec[nmu_rec] = Track0->Px();
@@ -672,39 +733,76 @@ void AliAnalysisTaskDimuonPowheg::UserExec(Option_t *)
         fY_rec[nmu_rec] = Track0->Y();
         fEta_rec[nmu_rec] = Track0->Eta();
         fE_rec[nmu_rec] = Track0->E();
-        fMatchTrig_rec[nmu_rec] = Track0->GetMatchTrigger();
-        fMatchTrigChi2_rec[nmu_rec] = Track0->GetChi2MatchTrigger();
-        fRAtAbsEnd_rec[nmu_rec] = Track0->GetRAtAbsorberEnd();
-        if (fMuonTrackCuts->IsSelected(Track0))
-            fpDCA_rec[nmu_rec] = 1;
         fPhi_rec[nmu_rec] = Track0->Phi();
         fTheta_rec[nmu_rec] = Track0->Theta();
         fCharge_rec[nmu_rec] = Track0->Charge();
-        fPDGmum_rec[nmu_rec] = IsPrompt(Mum_MCpart_Track0, mcarray);
-        ;
-        nmu_rec++;
+        fMatchTrig_rec[nmu_rec] = Track0->GetMatchTrigger();
+        fMatchTrigChi2_rec[nmu_rec] = Track0->GetChi2MatchTrigger();
+        fRAtAbsEnd_rec[nmu_rec] = Track0->GetRAtAbsorberEnd();
 
+        if ((TMath::Abs(PDG_Mum_MCpart_Track0) > 400 && TMath::Abs(PDG_Mum_MCpart_Track0) < 500) || (TMath::Abs(PDG_Mum_MCpart_Track0) > 4000 && TMath::Abs(PDG_Mum_MCpart_Track0) < 5000))
+        {
+            fPDGmum_gen[nmu_rec] = IsPrompt(Mum_MCpart_Track0, mcarray);
+        }
+        else
+            fPDGmum_rec[nmu_rec] = PDG_Mum_MCpart_Track0;
+
+        if (fMuonTrackCuts->IsSelected(Track0))
+            fpDCA_rec[nmu_rec] = 1;
+
+        nmu_rec++;
         for (Int_t j_Track1 = i_Track0 + 1; j_Track1 < numtracks; j_Track1++)
         {
             AliAODTrack *Track1 = (AliAODTrack *)fAODEvent->GetTrack(j_Track1);
-            if (Track1->GetLabel() == -1)
+            if (Track1->GetLabel() < 0)
                 continue;
             AliAODMCParticle *MCpart_Track1 = (AliAODMCParticle *)mcarray->At(Track1->GetLabel());
             Int_t PDG_mctrack1 = MCpart_Track1->GetPdgCode();
             if (TMath::Abs(PDG_mctrack1) != 13)
                 continue;
-            if (Track1->Y() > -15.0 && Track1->Y() < 15.0)
+            if (Track1->Eta() < -4.5 || Track1->Eta() > -2.0)
+                continue;
+
+            Int_t index_Mum_MCpart_Track1 = MCpart_Track1->GetMother();
+            AliAODMCParticle *Mum_MCpart_Track1 = (AliAODMCParticle *)mcarray->At(index_Mum_MCpart_Track1);
+            Int_t PDG_Mum_MCpart_Track1 = Mum_MCpart_Track1->GetPdgCode();
+            if (TMath::Abs(PDG_Mum_MCpart_Track1) == TMath::Abs(PDG_mctrack1))
+                continue;
+            // if (TMath::Abs(PDG_Mum_MCpart_Track1) == TMath::Abs(PDG_mctrack1))
+            // {
+            //     Int_t final_mum_Track1 = 999;
+            //     Bool_t testing_Track1 = kTRUE;
+            //     while (testing_Track1)
+            //     {
+            //         //        printf("Round %d | Index Muon Ancestor %d | PDG Muon Ancestor %d | \n",round,ancestor_mum0, PDGcode_ancestor0);
+            //         round++;
+            //         if (index_Mum_MCpart_Track1 < 2)
+            //         {
+            //             testing_Track1 = kFALSE;
+            //             break;
+            //         }
+
+            //         else
+            //         {
+            //             index_Mum_MCpart_Track1 = Mum_MCpart_Track1->GetMother();
+            //             if (index_Mum_MCpart_Track1 > 0)
+            //                 Mum_MCpart_Track1 = (AliAODMCParticle *)mcarray->At(index_Mum_MCpart_Track1); // Salto gen Muone
+
+            //             final_mum_Track1 = Mum_MCpart_Track1->GetPdgCode();
+            //             if (TMath::Abs(final_mum_Track1) != 13)
+            //             {
+            //                 PDG_Mum_MCpart_Track1 = final_mum_Track1;
+            //                 testing_Track1 = kFALSE;
+            //             }
+            //         }
+            //     }
+            // } // Remove particles formally produced by the same particle (Powheg transport)
+
+            if ((PDG_Mum_MCpart_Track1 == 23) || (TMath::Abs(PDG_Mum_MCpart_Track1) > 400 && TMath::Abs(PDG_Mum_MCpart_Track1) < 500) || (TMath::Abs(PDG_Mum_MCpart_Track1) > 4000 && TMath::Abs(PDG_Mum_MCpart_Track1) < 5000) || (TMath::Abs(PDG_Mum_MCpart_Track1) > 500 && TMath::Abs(PDG_Mum_MCpart_Track1) < 600) || (TMath::Abs(PDG_Mum_MCpart_Track1) > 5000 && TMath::Abs(PDG_Mum_MCpart_Track1) < 6000))
                 GoodMuon_rec[j_Track1] = kTRUE;
 
             if (!GoodMuon_rec[j_Track1])
                 continue;
-            Int_t index_Mum_MCpart_Track1 = MCpart_Track1->GetMother();
-            AliAODMCParticle *Mum_MCpart_Track1 = (AliAODMCParticle *)mcarray->At(index_Mum_MCpart_Track1);
-            Int_t PDG_Mum_MCpart_Track1 = Mum_MCpart_Track1->GetPdgCode();
-
-            if ((PDG_Mum_MCpart_Track1 != 23) && !(TMath::Abs(PDG_Mum_MCpart_Track1) > 400 && TMath::Abs(PDG_Mum_MCpart_Track1) < 500) && !(TMath::Abs(PDG_Mum_MCpart_Track1) > 4000 && TMath::Abs(PDG_Mum_MCpart_Track1) < 5000) && !(TMath::Abs(PDG_Mum_MCpart_Track1) > 500 && TMath::Abs(PDG_Mum_MCpart_Track1) < 600) && !(TMath::Abs(PDG_Mum_MCpart_Track1) > 5000 && TMath::Abs(PDG_Mum_MCpart_Track1) < 6000))
-                continue;
-
             AliAODDimuon *dimu = new AliAODDimuon(Track0, Track1);
             fDimuMass_rec[ndimu_rec] = dimu->Mass();
             fDimuPt_rec[ndimu_rec] = dimu->Pt();
@@ -724,28 +822,26 @@ void AliAnalysisTaskDimuonPowheg::UserExec(Option_t *)
 
             LabelOld1_rec[ndimu_rec] = i_Track0;
             LabelOld2_rec[ndimu_rec] = j_Track1;
-
             delete dimu;
             ndimu_rec++;
         }
     }
     fN_HFquarks_rec = nHFquark_rec;
-
     fNMuons_rec = nmu_rec;
     fNDimu_rec = ndimu_rec;
-
     for (Int_t i = 0; i < ndimu_rec; i++)
     {
         Int_t LabelNew1 = 0;
         Int_t LabelNew2 = 0;
-        for (int j = 0; j < LabelOld1_rec[i]; j++)
+
+        for (Int_t j = 0; j < LabelOld1_rec[i]; j++)
         {
             if (GoodMuon_rec[j])
                 LabelNew1++;
         }
-        for (int j = 0; j < LabelOld2_rec[i]; j++)
+        for (Int_t j_LabelOld2_rec = 0; j_LabelOld2_rec < LabelOld2_rec[i]; j_LabelOld2_rec++)
         {
-            if (GoodMuon_rec[j])
+            if (GoodMuon_rec[j_LabelOld2_rec])
                 LabelNew2++;
         }
         fDimuMu_rec[i][0] = LabelNew1;
