@@ -1,0 +1,82 @@
+#if !defined(__CINT__) || defined(__MAKECINT__)
+#include "AliAnalysisAlien.h"
+#endif
+
+AliAnalysisGrid *CreateAlienHandler_HighMass(const char *runMode, TString Version, TString GridDir, TString MC_type, TString DataPattern, Int_t RunNumber, TString AliPhysicsVersion, Bool_t gridMerge)
+{
+  // TString MC_type;
+  // if (MC_type.Contains("HF"))
+  // {
+  //   Period.Form("LHC22b3");
+  // }
+  // else if (MC_type.Contains("MB"))
+  // {
+  //   Period.Form("LHC22c1");
+  // }
+  // else if (MC_type.Contains("Run2"))
+  // {
+  //   Period.Form("LHC22l4");
+  // }
+  // Check if user has a valid token, otherwise make one. This has limitations.
+  // One can always follow the standard procedure of calling alien-token-init then
+  //   source /tmp/gcli ent_env_$UID in the current shell.
+
+  AliAnalysisAlien *plugin = new AliAnalysisAlien();
+
+  // Set the run mode (can be "full", "test", "offline", "submit" or "terminate")
+  plugin->SetRunMode(runMode);
+
+  plugin->SetNtestFiles(1); // num of test files in "test" mode
+
+  // Set versions of used packages
+  plugin->SetAliPhysicsVersion(AliPhysicsVersion.Data());
+
+  plugin->AddIncludePath("-I$ALICE_ROOT/include -I$ALICE_PHYSICS/include");
+
+  plugin->SetDataPattern(DataPattern.Data());
+  printf("OOOOOOOOOO: %s\n", Form("%s", GridDir.Data()));
+  plugin->SetGridDataDir(GridDir); // Data
+  // plugin->SetGridDataDir(GridDir.Data()); // Data
+
+  // plugin->SetRunPrefix("000");
+
+  /* alternatively provide run number */
+  plugin->AddRunNumber(RunNumber);
+  // Alternatively use run range
+  //  plugin->SetRunRange(138653, 138666);
+
+  // Define alien work directory where all files will be copied. Relative to alien $HOME.
+  TString outdirname;
+  outdirname.Form("%s_analysis/%s/%d", MC_type.Data(), Version.Data(), RunNumber);
+  plugin->SetGridWorkingDir(outdirname.Data()); // NOTE: Change name here every new run!!!eclare alien output directory. Relative to working directory.
+  // plugin->SetGridOutputDir("OutputTree");          // In this case will be $HOME/work/output
+  plugin->SetOutputToRunNo(kFALSE); // we want the run number as output subdirectory
+  plugin->SetDefaultOutputs(kTRUE);
+  // plugin->SetMergeExcludes("AliAOD.Muons.root");
+
+  plugin->SetMergeViaJDL(gridMerge);
+
+  // added by me
+  plugin->SetAnalysisSource("AliAnalysisTaskDimuon_HighMass.cxx");
+  plugin->SetAdditionalLibs("AliAnalysisTaskDimuon_HighMass.cxx AliAnalysisTaskDimuon_HighMass.h AddTaskDimuon_HighMass.C");
+
+  // Declare the output file names separated by blanks.
+  // (can be like: file.root or file.root@ALICE::Niham::File)
+  plugin->SetOverwriteMode(kFALSE);
+
+  plugin->SetDropToShell(kFALSE); // to automatically exit alien shell
+
+  // Optionally set maximum number of input files/subjob (default 100, put 0 to ignore)
+  Int_t nNoOfInputFiles = 30; // default is usually 0
+  if (nNoOfInputFiles != 0)
+    plugin->SetSplitMaxInputFileNumber(nNoOfInputFiles);
+  // Optionally set number of failed jobs that will trigger killing waiting sub-jobs.
+  //   plugin->SetMaxInitFailed(15);
+  // Optionally resubmit threshold.
+  plugin->SetMasterResubmitThreshold(90);
+  // Optionally set time to live (default 30000 sec)
+  plugin->SetTTL(60000); // default was 18000
+  // Optionally set input format (default xml-single)
+  plugin->SetInputFormat("xml-single");
+  return plugin;
+}
