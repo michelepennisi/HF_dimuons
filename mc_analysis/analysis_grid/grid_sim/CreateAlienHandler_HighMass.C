@@ -33,9 +33,11 @@ AliAnalysisGrid *CreateAlienHandler_HighMass(const char *runMode, TString Versio
 
   plugin->AddIncludePath("-I$ALICE_ROOT/include -I$ALICE_PHYSICS/include");
 
-  plugin->SetDataPattern(DataPattern.Data());
+  plugin->SetDataPattern(DataPattern);
   printf("OOOOOOOOOO: %s\n", Form("%s", GridDir.Data()));
-  plugin->SetGridDataDir(GridDir); // Data
+
+  plugin->SetGridDataDir(Form("%s/%s", GridDir.Data(), MC_type.Data())); // Data
+
   // plugin->SetGridDataDir(GridDir.Data()); // Data
 
   // plugin->SetRunPrefix("000");
