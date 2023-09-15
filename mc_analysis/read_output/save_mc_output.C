@@ -1,43 +1,14 @@
 #include "save_mc_output.h"
 
 void save_mc_output(
-    // TString RunMode = "powheg_DY_mass_3_35",
-    TString RunMode = "new_muon_powheg_jdl_sub_test",
-    // TString RunMode = "standard_powheg_jdl_sub_test",
-    // TString RunMode = "aliaod_muons_powheg_jdl_sub_test",
+    TString RunMode = "LHC22b3",
+    // TString dir_fileIn = "/home/michele_pennisi/cernbox/output_HF_dimuons/mc_analysis_output/DY_sim_100k/Version1_AOD",
+    TString dir_fileIn = "test",
+    TString dir_fileOut = "test",
     Int_t RunNumber = 294009,
-    TString Task_Version = "Version3",
-    Bool_t test = kTRUE,
+    Bool_t Sim_for_Z = kFALSE,
     TString prefix_filename = "MCDimuHFTree")
 {
-
-    TString dir_fileOut;
-    TString dir_fileIn;
-    if (RunMode.Contains("powheg"))
-    {
-        dir_fileIn.Form("/home/michele_pennisi/cernbox/output_HF_dimuons/mc_analysis_output/Powheg_Sim/%s/%s", RunMode.Data(), Task_Version.Data());                 // official with files saved locally
-        dir_fileOut.Form("/home/michele_pennisi/cernbox/output_HF_dimuons/mc_analysis_output/Powheg_Sim/%s/%s/save_mc_output", RunMode.Data(), Task_Version.Data()); // official with files saved locally
-    }
-    else
-    {
-        // dir_fileIn.Form("/home/michele_pennisi/cernbox/output_HF_dimuons/mc_analysis_output/%s/%s", Task_Version.Data(), RunMode.Data());//official with files saved locally
-        dir_fileIn.Form("/home/michele_pennisi/cernbox/output_HF_dimuons/mc_analysis_output/Pythia_Sim/%s/%s", RunMode.Data(), Task_Version.Data()); // official with files saved locally
-        cout << dir_fileIn.Data() << endl;
-
-        dir_fileOut.Form("/home/michele_pennisi/cernbox/output_HF_dimuons/mc_analysis_output/Pythia_Sim/%s/%s/save_mc_output", RunMode.Data(), Task_Version.Data()); // official with files saved locally
-    }
-
-    if (test)
-    {
-        dir_fileIn.Form("/home/michele_pennisi/cernbox/HF_dimuons/mc_analysis/analysis_grid/powheg_sim/jdl_sim");
-        dir_fileOut.Form("test");
-    }
-    Bool_t Sim_for_Z = kFALSE;
-    if (RunMode.Contains("powheg_Z"))
-    {
-        printf("Sim_forZ\n");
-        Sim_for_Z = kTRUE;
-    }
 
     Set_Histograms(Sim_for_Z);
 
@@ -46,31 +17,30 @@ void save_mc_output(
 
     TString file_out;
     file_out.Form("%s_MC_output_Hist_%d.root", RunMode.Data(), RunNumber);
+    // file_out.Form("old_%s_MC_output_Hist_%d.root", RunMode.Data(), RunNumber);
 
     TString file_out_tree;
     file_out_tree.Form("%s_MC_output_Tree_%d.root", RunMode.Data(), RunNumber);
 
     printf("%s/%s\n", dir_fileOut.Data(), file_out.Data());
-    TTree *rec_tree_mucharm;
-    TTree *rec_tree_muDY;
+    printf("%s/%s\n", dir_fileOut.Data(), file_out_tree.Data());
 
-    Double_t *pt_dimu_DY = new Double_t;
-    Double_t *m_dimu_DY = new Double_t;
-    rec_tree_muDY = new TTree("rec_tree_muDY", "Tree pt dimuon from DY with 11<M<30");
-    rec_tree_muDY->Branch("pt", pt_dimu_DY, "pt/D");
-    rec_tree_muDY->Branch("m", m_dimu_DY, "m/D");
-    if (RunMode.Contains("powheg"))
+    // TTree *Tree_DiMuon_Rec[n_DiMuon_origin];
+    // Double_t Pt_Dimu_Rec[n_DiMuon_origin];
+    // Double_t M_Dimu_Rec[n_DiMuon_origin];
+
+    Double_t Pt_Dimu_Rec[n_DiMuon_origin];
+    Double_t M_Dimu_Rec[n_DiMuon_origin];
+
+    TTree *Tree_DiMuon_Rec = new TTree("Tree_DiMuon_Rec", "Tree_DiMuon_Rec");
+    for (Int_t i_DiMuon_origin = 0; i_DiMuon_origin < n_DiMuon_origin; i_DiMuon_origin++)
     {
-    }
-    else
-    {
-        rec_tree_mucharm = new TTree("rec_tree_mucharm", "Tree pt dimuon charm with 4<M<30");
+        Tree_DiMuon_Rec->Branch(Form("m_%s", DiMuon_origin[i_DiMuon_origin].Data()), &M_Dimu_Rec[i_DiMuon_origin], Form("m_%s/D", DiMuon_origin[i_DiMuon_origin].Data()));
     }
 
     printf("Input File: %s\n", filename.Data());
     printf("Saving in dir: %s \nFile: %s\n", dir_fileOut.Data(), file_out.Data());
 
-    // TChain *input_tree = Importing_Tree(Form("/home/michele_pennisi/cernbox/output_HF_dimuons/mc_analysis_output/%s/%s", Task_Version.Data(), RunMode.Data()), filename);
     TChain *input_tree = Importing_Tree(dir_fileIn, filename);
     input_tree->ls();
 
@@ -507,17 +477,17 @@ void save_mc_output(
             Double_t pDCA_Mu1 = pDCA_rec[DimuMu_rec[i_NDimu_rec][1]];
             Double_t Eta_Mu1 = Eta_rec[DimuMu_rec[i_NDimu_rec][1]];
             Double_t Phi_Mu1 = Phi_rec[DimuMu_rec[i_NDimu_rec][1]];
+            /*
+            printf("PDG_Mu0 %0.2f\n", Eta_Mu0);
+            printf("DimuMu_rec[i_NDimu_rec][0] %i\n", DimuMu_rec[i_NDimu_rec][0]);
 
-            printf("PDG_Mu0 %0.2f\n",Eta_Mu0);
-            printf("DimuMu_rec[i_NDimu_rec][0] %i\n",DimuMu_rec[i_NDimu_rec][0]);
-            
             if ((Charge_DiMu == 0) && (Y_DiMu > -4.0 && Y_DiMu < -2.5))
             {
 
-                printf("PDG_Mu0 %i (DimuMu_rec[i_NDimu_rec][0] %i) || PDG_Mu1 %i || Y_DiMu %0.2f || Eta_Mu0 %0.2f\n", PDG_Mu0,DimuMu_rec[i_NDimu_rec][0], PDG_Mu1, Y_DiMu,Eta_Mu0);
+                printf("PDG_Mu0 %i (DimuMu_rec[i_NDimu_rec][0] %i) || PDG_Mu1 %i || Y_DiMu %0.2f || Eta_Mu0 %0.2f\n", PDG_Mu0, DimuMu_rec[i_NDimu_rec][0], PDG_Mu1, Y_DiMu, Eta_Mu0);
                 counter_test++;
             }
-
+            */
             Bool_t DQ_Dimuon = kFALSE;
             if (pDCA_Mu0 == 1 && pDCA_Mu1 == 1 && (Charge_DiMu == 0))
 
@@ -626,13 +596,18 @@ void save_mc_output(
 
             for (Int_t i_DiMuon_origin = 0; i_DiMuon_origin < n_DiMuon_origin; i_DiMuon_origin++)
             {
+                Pt_Dimu_Rec[i_DiMuon_origin] = 999;
+                M_Dimu_Rec[i_DiMuon_origin] = 999;
                 if (DiMu_origin_Selection[i_DiMuon_origin])
                 {
+                    Pt_Dimu_Rec[i_DiMuon_origin] = Pt_DiMu;
+                    M_Dimu_Rec[i_DiMuon_origin] = M_DiMu;
                     h_PtM_DiMuon_Rec[i_DiMuon_origin]->Fill(Pt_DiMu, M_DiMu);
                     h_PtY_DiMuon_Rec[i_DiMuon_origin]->Fill(Pt_DiMu, Y_DiMu);
                     n_DiMuon_Rec[i_DiMuon_origin]++;
                 }
             }
+            Tree_DiMuon_Rec->Fill();
         }
 
         for (Int_t i_Dimuon_Origin = 0; i_Dimuon_Origin < n_DiMuon_origin; i_Dimuon_Origin++)
@@ -640,16 +615,28 @@ void save_mc_output(
     }
     printf("counter_test %i\n", counter_test);
     Int_t starting_Muon_origin = 999;
-    if (RunMode.Contains("DY"))
+
+    if (Sim_for_Z)
         starting_Muon_origin = n_Muon_origin - 1;
     else
         starting_Muon_origin = 0;
 
     Int_t startingDiMuon_origin = 999;
-    if (RunMode.Contains("DY"))
-        startingDiMuon_origin = n_Muon_origin - 1;
+
+    if (Sim_for_Z)
+        startingDiMuon_origin = n_DiMuon_origin - 1;
     else
         startingDiMuon_origin = 0;
+
+    TFile fOut_Tree(Form("%s/%s", dir_fileOut.Data(), file_out_tree.Data()), "RECREATE");
+    fOut_Tree.cd();
+    h_Nevents->Write();
+    // for (Int_t i_Dimuon_origin = 0; i_Dimuon_origin < n_DiMuon_origin; i_Dimuon_origin++)
+    // {
+    //     Tree_DiMuon_Rec[i_Dimuon_origin]->Write(0, 2, 0);
+    // }
+    Tree_DiMuon_Rec->Write(0, 2, 0);
+    fOut_Tree.Close();
 
     TFile fOut(Form("%s/%s", dir_fileOut.Data(), file_out.Data()), "RECREATE");
     fOut.cd();
@@ -748,28 +735,30 @@ void save_mc_output(
         h_PtM_DiMuon_Rec_Z_ptmucut20->Write(0, 2, 0);
         h_PtY_DiMuon_Rec_Z_ptmucut20->Write(0, 2, 0);
     }
+    else
+    {
+        fOut.cd();
+        if (!fOut.GetDirectory("DiMuon_Charm_corrected"))
+            fOut.mkdir("DiMuon_Charm_corrected");
+        fOut.cd("DiMuon_Charm_corrected");
 
-    fOut.cd();
-    if (!fOut.GetDirectory("DiMuon_Charm_corrected"))
-        fOut.mkdir("DiMuon_Charm_corrected");
-    fOut.cd("DiMuon_Charm_corrected");
+        h_Pdg1Pdg2Pt_DiMuon_Gen_DQcut_Charm_corrected->Write(0, 2, 0);
+        h_Pdg1Pdg2Y_DiMuon_Gen_DQcut_Charm_corrected->Write(0, 2, 0);
+        h_Pdg1Pdg2M_DiMuon_Gen_DQcut_Charm_corrected->Write(0, 2, 0);
+        h_PtM_DiMuon_Gen_DQcut_Charm_corrected->Write(0, 2, 0);
+        h_PtY_DiMuon_Gen_DQcut_Charm_corrected->Write(0, 2, 0);
 
-    h_Pdg1Pdg2Pt_DiMuon_Gen_DQcut_Charm_corrected->Write(0, 2, 0);
-    h_Pdg1Pdg2Y_DiMuon_Gen_DQcut_Charm_corrected->Write(0, 2, 0);
-    h_Pdg1Pdg2M_DiMuon_Gen_DQcut_Charm_corrected->Write(0, 2, 0);
-    h_PtM_DiMuon_Gen_DQcut_Charm_corrected->Write(0, 2, 0);
-    h_PtY_DiMuon_Gen_DQcut_Charm_corrected->Write(0, 2, 0);
-
-    fOut.cd();
-    if (!fOut.GetDirectory("HF_Hadron"))
-        fOut.mkdir("HF_Hadron");
-    fOut.cd("HF_Hadron");
-    h_PdgPtY_HFHadron_prompt->Write(0, 2, 0);
-    h_PdgPtY_HFHadron_notprompt->Write(0, 2, 0);
-    h_PdgPt_HFHadron_prompt->Write(0, 2, 0);
-    h_PdgY_HFHadron_prompt->Write(0, 2, 0);
-    h_PdgPt_HFHadron_notprompt->Write(0, 2, 0);
-    h_PdgY_HFHadron_notprompt->Write(0, 2, 0);
+        fOut.cd();
+        if (!fOut.GetDirectory("HF_Hadron"))
+            fOut.mkdir("HF_Hadron");
+        fOut.cd("HF_Hadron");
+        h_PdgPtY_HFHadron_prompt->Write(0, 2, 0);
+        h_PdgPtY_HFHadron_notprompt->Write(0, 2, 0);
+        h_PdgPt_HFHadron_prompt->Write(0, 2, 0);
+        h_PdgY_HFHadron_prompt->Write(0, 2, 0);
+        h_PdgPt_HFHadron_notprompt->Write(0, 2, 0);
+        h_PdgY_HFHadron_notprompt->Write(0, 2, 0);
+    }
 
     fOut.Close();
     return;

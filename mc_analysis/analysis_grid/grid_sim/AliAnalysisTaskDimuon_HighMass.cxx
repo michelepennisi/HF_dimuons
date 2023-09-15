@@ -49,6 +49,7 @@ ClassImp(AliAnalysisTaskDimuon_HighMass)
                                                                        fMuonTrackCuts(0x0),
                                                                        fNMuons_gen(0x0),
                                                                        fNHadrons_gen(0x0),
+                                                                       fN_gamma(0x0),
                                                                        fNDimu_gen(0x0),
                                                                        fNMuons_rec(0x0),
                                                                        fPercentV0M(0x0)
@@ -66,6 +67,10 @@ ClassImp(AliAnalysisTaskDimuon_HighMass)
         fPDG_HFquark_gen[i] = 9999.;
         fPt_HFquark_gen[i] = 9999.;
         fY_HFquark_gen[i] = 9999.;
+
+        fPt_gamma[i] = 9999.;
+        fM_gamma[i] = 9999.;
+        fY_gamma[i] = 9999.;
 
         fPDGmum_gen[i] = 9999.;
         fPt_gen[i] = 999.;
@@ -144,6 +149,7 @@ AliAnalysisTaskDimuon_HighMass::AliAnalysisTaskDimuon_HighMass(const char *name)
                                                                                    fMuonTrackCuts(0x0),
                                                                                    fNMuons_gen(0x0),
                                                                                    fNHadrons_gen(0x0),
+                                                                                   fN_gamma(0x0),
                                                                                    fNDimu_gen(0x0),
                                                                                    fNMuons_rec(0x0),
                                                                                    fPercentV0M(0x0)
@@ -164,6 +170,10 @@ AliAnalysisTaskDimuon_HighMass::AliAnalysisTaskDimuon_HighMass(const char *name)
         fPDG_HFquark_gen[i] = 9999.;
         fPt_HFquark_gen[i] = 9999.;
         fY_HFquark_gen[i] = 9999.;
+
+        fPt_gamma[i] = 9999.;
+        fM_gamma[i] = 9999.;
+        fY_gamma[i] = 9999.;
 
         fPDGmum_gen[i] = 9999.;
         fPt_gen[i] = 999.;
@@ -300,6 +310,11 @@ void AliAnalysisTaskDimuon_HighMass::UserCreateOutputObjects()
     fOutputTree->Branch("Pt_HFquark_gen", fPt_HFquark_gen, "Pt_HFquark_gen[N_HFquarks_gen]/D");
     fOutputTree->Branch("Y_HFquark_gen", fY_HFquark_gen, "Y_HFquark_gen[N_HFquarks_gen]/D");
 
+    fOutputTree->Branch("N_gamma_gen", &fN_gamma, "N_gamma_gen/I");
+    fOutputTree->Branch("Pt_gamma_gen", fPt_gamma, "Pt_gamma_gen[N_gamma_gen]/D");
+    fOutputTree->Branch("M_gamma_gen", fM_gamma, "M_gamma_gen[N_gamma_gen]/D");
+    fOutputTree->Branch("Y_gamma_gen", fY_gamma, "Y_gamma_gen[N_gamma_gen]/D");
+
     fOutputTree->Branch("NHadrons_gen", &fNHadrons_gen, "NHadrons_gen/I");
     fOutputTree->Branch("PDGmum_Hadron_gen", fPDGmum_Hadron_gen, "PDGmum_Hadron_gen[NHadrons_gen]/I");
     fOutputTree->Branch("PDG_Hadron_gen", fPDG_Hadron_gen, "PDG_Hadron_gen[NHadrons_gen]/I");
@@ -377,6 +392,7 @@ void AliAnalysisTaskDimuon_HighMass::UserExec(Option_t *)
     // printf("Entro in UserExec\n" );
     fNMuons_gen = 0;
     fNHadrons_gen = 0;
+    fN_gamma = 0;
     fNDimu_gen = 0;
     fNMuons_rec = 0;
     fNDimu_rec = 0;
@@ -391,6 +407,10 @@ void AliAnalysisTaskDimuon_HighMass::UserExec(Option_t *)
         fPDG_HFquark_gen[i] = 9999.;
         fPt_HFquark_gen[i] = 9999.;
         fY_HFquark_gen[i] = 9999.;
+
+        fPt_gamma[i] = 9999.;
+        fM_gamma[i] = 9999.;
+        fY_gamma[i] = 9999.;
 
         fPDGmum_gen[i] = 9999.;
         fPt_gen[i] = 999.;
@@ -469,7 +489,6 @@ void AliAnalysisTaskDimuon_HighMass::UserExec(Option_t *)
     // loop on MC generated event
     //-----------------------------------------------
     TClonesArray *mcarray = dynamic_cast<TClonesArray *>(fAODEvent->FindListObject(AliAODMCParticle::StdBranchName()));
-    printf("BEAUTY SIM \n");
     AliAODHeader *aodheader = dynamic_cast<AliAODHeader *>(fAODEvent->GetHeader());
     TString firedtrigger = aodheader->GetFiredTriggerClasses();
     printf("%s\n", firedtrigger.Data());
@@ -478,6 +497,7 @@ void AliAnalysisTaskDimuon_HighMass::UserExec(Option_t *)
     Int_t nmu_gen = 0;
     Int_t nHadron_gen = 0;
     Int_t ndimu_gen = 0;
+    Int_t n_gamma = 0;
 
     Int_t n_MC_part = mcarray->GetEntries();
     Int_t *LabelOld1 = new Int_t[n_MC_part];
@@ -497,20 +517,27 @@ void AliAnalysisTaskDimuon_HighMass::UserExec(Option_t *)
         Int_t PDG_MC_part0 = MC_part0->GetPdgCode();
         if (MC_part0->Y() < -15.0 || MC_part0->Y() > 15.0)
             continue;
+
         Bool_t Muon = kFALSE;
+        Bool_t Gamma_star = kFALSE;
+        Bool_t HF_quark = kFALSE;
         Bool_t Charm_Hadron = kFALSE;
         Bool_t Beauty_Hadron = kFALSE;
 
         if (TMath::Abs(PDG_MC_part0) == 13)
             Muon = kTRUE;
+        else if (TMath::Abs(PDG_MC_part0) == 4 || TMath::Abs(PDG_MC_part0) == 5)
+            HF_quark = kTRUE;
+        else if (TMath::Abs(PDG_MC_part0) == 23)
+            Gamma_star = kTRUE;
         else if ((TMath::Abs(PDG_MC_part0) > 400 && TMath::Abs(PDG_MC_part0) < 500) || (TMath::Abs(PDG_MC_part0) > 4000 && TMath::Abs(PDG_MC_part0) < 5000))
             Charm_Hadron = kTRUE;
         else if ((TMath::Abs(PDG_MC_part0) > 500 && TMath::Abs(PDG_MC_part0) < 600) || (TMath::Abs(PDG_MC_part0) > 5000 && TMath::Abs(PDG_MC_part0) < 6000))
             Beauty_Hadron = kTRUE;
 
-        if (!Muon && !Charm_Hadron && !Beauty_Hadron)
+        if (!Muon && !Charm_Hadron && !Beauty_Hadron && !HF_quark & !Gamma_star)
             continue;
-        // MC_part0->Print();
+        printf("\nP index %d", i_nMCpart);
         Int_t index_Mum_MC_part0 = MC_part0->GetMother();
         AliAODMCParticle *Mum_MC_part0;
         Int_t PDG_Mum_MC_part0 = 999;
@@ -520,6 +547,10 @@ void AliAnalysisTaskDimuon_HighMass::UserExec(Option_t *)
             PDG_Mum_MC_part0 = -TMath::Sign(1, PDG_MC_part0) * 4;
         else if (Beauty_Hadron && index_Mum_MC_part0 == -1)
             PDG_Mum_MC_part0 = -TMath::Sign(1, PDG_MC_part0) * 5;
+        else if (HF_quark && index_Mum_MC_part0 == -1)
+            PDG_Mum_MC_part0 = 999;
+        else if (Gamma_star && index_Mum_MC_part0 == -1)
+            PDG_Mum_MC_part0 = 999;
         else
         {
             Mum_MC_part0 = (AliAODMCParticle *)mcarray->At(index_Mum_MC_part0);
@@ -557,6 +588,26 @@ void AliAnalysisTaskDimuon_HighMass::UserExec(Option_t *)
             // printf("Final Muon mother: %d\n", fPDGmum_gen[nmu_gen]);
             nmu_gen++;
         }
+        else if (Gamma_star)
+        {
+            printf("i_nMCpart %d) PDG: %d | MCParticle Pt %0.1f | Px %0.1f | Py %0.1f | Pz %0.1f | Y %0.1f || Mother %d , PDG Mother %d \n", i_nMCpart, PDG_MC_part0, MC_part0->Pt(), MC_part0->Px(), MC_part0->Py(), MC_part0->Pz(), MC_part0->Y(), index_Mum_MC_part0, PDG_Mum_MC_part0);
+            fPt_gamma[n_gamma] = MC_part0->Pt();
+            fM_gamma[n_gamma] = MC_part0->GetCalcMass();
+            fY_gamma[n_gamma] = MC_part0->Y();
+
+            n_gamma++;
+        }
+        else if (HF_quark)
+        {
+            printf("i_nMCpart %d) PDG: %d | MCParticle Pt %0.1f | Px %0.1f | Py %0.1f | Pz %0.1f | Y %0.1f || Mother %d , PDG Mother %d \n", i_nMCpart, PDG_MC_part0, MC_part0->Pt(), MC_part0->Px(), MC_part0->Py(), MC_part0->Pz(), MC_part0->Y(), index_Mum_MC_part0, PDG_Mum_MC_part0);
+
+            fPDG_HFquark_gen[nHFquark_gen] = PDG_MC_part0;
+            fPt_HFquark_gen[nHFquark_gen] = MC_part0->Pt();
+            fY_HFquark_gen[nHFquark_gen] = MC_part0->Y();
+
+            nHFquark_gen++;
+        }
+
         else if (Charm_Hadron || Beauty_Hadron)
         {
             // MC_part0->Print();
@@ -615,7 +666,7 @@ void AliAnalysisTaskDimuon_HighMass::UserExec(Option_t *)
             ndimu_gen++;
         }
     }
-
+    fN_gamma = n_gamma;
     fN_HFquarks_gen = nHFquark_gen;
     fNMuons_gen = nmu_gen;
     fNHadrons_gen = nHadron_gen;
@@ -639,7 +690,7 @@ void AliAnalysisTaskDimuon_HighMass::UserExec(Option_t *)
     }
 
     Int_t numtracks = fAODEvent->GetNumberOfTracks();
-    printf("Number of tracks per event %i\n",numtracks);
+    printf("Number of tracks per event %i\n", numtracks);
     Int_t nHFquark_rec = 0;
 
     Int_t nmu_rec = 0;
@@ -759,7 +810,7 @@ void AliAnalysisTaskDimuon_HighMass::UserExec(Option_t *)
             Int_t index_Mum_MCpart_Track1 = MCpart_Track1->GetMother();
             AliAODMCParticle *Mum_MCpart_Track1 = (AliAODMCParticle *)mcarray->At(index_Mum_MCpart_Track1);
             Int_t PDG_Mum_MCpart_Track1 = Mum_MCpart_Track1->GetPdgCode();
-            
+
             if (TMath::Abs(PDG_Mum_MCpart_Track1) == TMath::Abs(PDG_mctrack1))
             {
                 Int_t final_mum_Track1 = 999;
