@@ -9,5 +9,6 @@ Same code for both, adding the hadron selection and the prompt/not-prompt separa
 -> grid sim: general task for analyzing pythia and powheg simulations
 
 Version1: corrected reconstructed dimuons labels for matching single muons
+Version2: Add saving for gamma and HF quark kinematics
 
 
