@@ -4,22 +4,6 @@
 
 AliAnalysisGrid *CreateAlienHandler_HighMass(const char *runMode, TString Version, TString GridDir, TString MC_type, TString DataPattern, Int_t RunNumber, TString AliPhysicsVersion, Bool_t gridMerge)
 {
-  // TString MC_type;
-  // if (MC_type.Contains("HF"))
-  // {
-  //   Period.Form("LHC22b3");
-  // }
-  // else if (MC_type.Contains("MB"))
-  // {
-  //   Period.Form("LHC22c1");
-  // }
-  // else if (MC_type.Contains("Run2"))
-  // {
-  //   Period.Form("LHC22l4");
-  // }
-  // Check if user has a valid token, otherwise make one. This has limitations.
-  // One can always follow the standard procedure of calling alien-token-init then
-  //   source /tmp/gcli ent_env_$UID in the current shell.
 
   AliAnalysisAlien *plugin = new AliAnalysisAlien();
 
@@ -34,8 +18,7 @@ AliAnalysisGrid *CreateAlienHandler_HighMass(const char *runMode, TString Versio
   plugin->AddIncludePath("-I$ALICE_ROOT/include -I$ALICE_PHYSICS/include");
 
   plugin->SetDataPattern(DataPattern);
-  printf("OOOOOOOOOO: %s\n", Form("%s", GridDir.Data()));
-
+  
   plugin->SetGridDataDir(Form("%s/%s", GridDir.Data(), MC_type.Data())); // Data
 
   // plugin->SetGridDataDir(GridDir.Data()); // Data
@@ -49,7 +32,7 @@ AliAnalysisGrid *CreateAlienHandler_HighMass(const char *runMode, TString Versio
 
   // Define alien work directory where all files will be copied. Relative to alien $HOME.
   TString outdirname;
-  outdirname.Form("%s_analysis/%s/%d", MC_type.Data(), Version.Data(), RunNumber);
+  outdirname.Form("test_%s_analysis/%s/%d", MC_type.Data(), Version.Data(), RunNumber);
   plugin->SetGridWorkingDir(outdirname.Data()); // NOTE: Change name here every new run!!!eclare alien output directory. Relative to working directory.
   // plugin->SetGridOutputDir("OutputTree");          // In this case will be $HOME/work/output
   plugin->SetOutputToRunNo(kFALSE); // we want the run number as output subdirectory

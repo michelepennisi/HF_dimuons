@@ -11,14 +11,16 @@
 #include "AliAnalysisTaskDimuon_HighMass.h"
 #endif
 /// alice/sim/2022/LHC22b3/294925/AOD/
-///alice/cern.ch/user/m/mpennisi/powheg_jdl_sub_test/LHC18p
+/// alice/cern.ch/user/m/mpennisi/powheg_jdl_sub_test/LHC18p
 void ReadMCDimuon_HighMass(
     const char *RunMode = "test",
-    Int_t RunNumber = 294925,
-    TString Version = "Version_1_AOD",
+    Int_t RunNumber = 294009,
+    TString Version = "Version_3_AOD",
     TString MC_type = "LHC22b3",
     TString GridDir = "/alice/sim/2022",
+    // TString GridDir = "/alice/cern.ch/user/m/mpennisi/jira_test_charm",
     // TString GridDir = "/alice/cern.ch/user/m/mpennisi",
+    TString AOD_origin = "Pythia",
     Bool_t usePhysicsSelection = kFALSE,
     TString DataPattern = "/AOD/*/AliAOD.root",
     TString AliPhysicsVersion = "vAN-20220204_ROOT6-1",
@@ -54,7 +56,7 @@ void ReadMCDimuon_HighMass(
 
   gInterpreter->LoadMacro("../CreateAlienHandler_HighMass.C");
 
-  AliAnalysisGrid *alienHandler = reinterpret_cast<AliAnalysisGrid *>(gInterpreter->ProcessLine(Form("CreateAlienHandler_HighMass(\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",%d,\"%s\",%d)", RunMode, Version.Data(), GridDir.Data(), MC_type.Data(), DataPattern.Data(), RunNumber, AliPhysicsVersion.Data(), gridMerge)));
+  AliAnalysisAlien *alienHandler = reinterpret_cast<AliAnalysisAlien *>(gInterpreter->ProcessLine(Form("CreateAlienHandler_HighMass(\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",%d,\"%s\",%d)", RunMode, Version.Data(), GridDir.Data(), MC_type.Data(), DataPattern.Data(), RunNumber, AliPhysicsVersion.Data(), gridMerge)));
   if (!alienHandler)
     return;
   mgr->SetGridHandler(alienHandler);
@@ -67,6 +69,8 @@ void ReadMCDimuon_HighMass(
   //------------------------------------------------------------------------------------
   gROOT->LoadMacro("AliAnalysisTaskDimuon_HighMass.cxx++g");
   AliAnalysisTaskDimuon_HighMass *MCTask = reinterpret_cast<AliAnalysisTaskDimuon_HighMass *>(gInterpreter->ProcessLine(Form(".x %s(\"%s\",%d)", "../AddTaskDimuon_HighMass.C", MC_type.Data(), RunNumber))); // I set by hand usePhysicsSelection=kTRUE
+  MCTask->SetSaving_opt(AliAnalysisTaskDimuon_HighMass::kSaveHF);
+  MCTask->SetAOD_origin(AOD_origin);
   mgr->AddTask(MCTask);
   if (usePhysicsSelection)
   {

@@ -25,6 +25,7 @@ AliAnalysisTaskDimuon_HighMass *AddTaskDimuon_HighMass(TString MC_type, Int_t Ru
    AliAnalysisTaskDimuon_HighMass *MC_DiMu = new AliAnalysisTaskDimuon_HighMass("AliAnalysisTaskDimuHFTreeMC");
 
    mgr->AddTask(MC_DiMu);
+   
    mgr->ConnectInput(MC_DiMu, 0, mgr->GetCommonInputContainer());
    mgr->ConnectOutput(MC_DiMu, 1, coutput1);
 
