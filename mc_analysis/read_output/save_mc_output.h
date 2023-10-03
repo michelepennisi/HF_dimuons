@@ -6,6 +6,7 @@ Int_t NHadrons_gen; // gen muon in the event
 Int_t NDimu_gen;    // gen dimuons in the event
 Int_t NMuons_rec;   // rec muon tracks in the event
 Int_t NDimu_rec;    // rec dimuons in the event
+Int_t fN_gamma;     // gen gamma* in the event
 
 const Int_t fMuons_dim = 1000;
 const Int_t fDimu_dim = 1000;
@@ -26,22 +27,28 @@ Double_t RAtAbsEnd_rec[fMuons_dim];     // single rec mu distance from beam cent
 Int_t pDCA_rec[fMuons_dim];             // single rec mu charge
 Double_t Phi_rec[fMuons_dim];           // single rec mu phi
 Double_t Theta_rec[fMuons_dim];         // single rec mu theta
+Int_t fFrom_Powheg_rec[fMuons_dim];     // check muon gen origin
 
 Int_t PDG_HFquark_gen[fMuons_dim];   // single gen c/cbar PDG mum
 Double_t Pt_HFquark_gen[fMuons_dim]; // single gen c/cbar or b/bbar HFquark pT
 Double_t Y_HFquark_gen[fMuons_dim];  // single gen c/cbar or b/bbar HFquark y
 
-Int_t PDGmum_gen[fMuons_dim];   // single gen mu PDG mum
-Double_t Pt_gen[fMuons_dim];    // single gen mu pT
-Double_t E_gen[fMuons_dim];     // single gen mu E
-Double_t Px_gen[fMuons_dim];    // single gen mu px
-Double_t Py_gen[fMuons_dim];    // single gen mu py
-Double_t Pz_gen[fMuons_dim];    // single gen mu pz
-Double_t Y_gen[fMuons_dim];     // single gen mu y
-Double_t Eta_gen[fMuons_dim];   // single gen mu eta
-Double_t Phi_gen[fMuons_dim];   // single gen mu phi
-Double_t Theta_gen[fMuons_dim]; // single gen mu theta
-Int_t Charge_gen[fMuons_dim];   // single gen mu theta
+Double_t fPt_gamma[fMuons_dim]; // Gamma star pt
+Double_t fM_gamma[fMuons_dim];  // Gamma star M
+Double_t fY_gamma[fMuons_dim];  // Gamma star Y
+
+Int_t PDGmum_gen[fMuons_dim];       // single gen mu PDG mum
+Double_t Pt_gen[fMuons_dim];        // single gen mu pT
+Double_t E_gen[fMuons_dim];         // single gen mu E
+Double_t Px_gen[fMuons_dim];        // single gen mu px
+Double_t Py_gen[fMuons_dim];        // single gen mu py
+Double_t Pz_gen[fMuons_dim];        // single gen mu pz
+Double_t Y_gen[fMuons_dim];         // single gen mu y
+Double_t Eta_gen[fMuons_dim];       // single gen mu eta
+Double_t Phi_gen[fMuons_dim];       // single gen mu phi
+Double_t Theta_gen[fMuons_dim];     // single gen mu theta
+Int_t Charge_gen[fMuons_dim];       // single gen mu theta
+Int_t fFrom_Powheg_gen[fMuons_dim]; // check muon gen origin
 
 Int_t DimuMu_gen[fDimu_dim][2];   // reference to single gen mus
 Double_t DimuPt_gen[fDimu_dim];   // gen dimuon pT
@@ -64,15 +71,16 @@ Int_t DimuMatch_rec[fDimu_dim];    // rec dimuon match
 Double_t DimuPhi_rec[fDimu_dim];   // rec dimuon phi
 Double_t DimuTheta_rec[fDimu_dim]; // rec dimuon theta
 
-Int_t PDGmum_Hadron_gen[fMuons_dim]; // gen Hadron PDG mum
-Int_t PDG_Hadron_gen[fMuons_dim];    // gen Hadron PDG
-Double_t Pt_Hadron_gen[fMuons_dim];  // gen Hadron pT
-Double_t E_Hadron_gen[fMuons_dim];   // gen Hadron E
-Double_t Px_Hadron_gen[fMuons_dim];  // gen Hadron px
-Double_t Py_Hadron_gen[fMuons_dim];  // gen Hadron py
-Double_t Pz_Hadron_gen[fMuons_dim];  // gen Hadron pz
-Double_t Y_Hadron_gen[fMuons_dim];   // gen Hadron y
-Double_t Eta_Hadron_gen[fMuons_dim]; // gen Hadron eta
+Int_t PDGmum_Hadron_gen[fMuons_dim];      // gen Hadron PDG mum
+Int_t PDG_Hadron_gen[fMuons_dim];         // gen Hadron PDG
+Double_t Pt_Hadron_gen[fMuons_dim];       // gen Hadron pT
+Double_t E_Hadron_gen[fMuons_dim];        // gen Hadron E
+Double_t Px_Hadron_gen[fMuons_dim];       // gen Hadron px
+Double_t Py_Hadron_gen[fMuons_dim];       // gen Hadron py
+Double_t Pz_Hadron_gen[fMuons_dim];       // gen Hadron pz
+Double_t Y_Hadron_gen[fMuons_dim];        // gen Hadron y
+Double_t Eta_Hadron_gen[fMuons_dim];      // gen Hadron eta
+Int_t fHadronFrom_Powheg_gen[fMuons_dim]; // check muon gen origin
 
 TH1D *h_Nevents = new TH1D("h_Nevents", "h_Nevents", 2, 0, 2);
 
@@ -88,20 +96,34 @@ TH2F *h_PtPdg_Muon_Gen_DQcut;
 TH2F *h_YPdg_Muon_Gen_DQcut;
 TH2F *h_PtY_Muon_Gen_DQcut[n_Muon_origin];
 TH1F *h_Nperevent_Muon_Gen_DQcut[n_Muon_origin];
+//------ "" from powheg only -----------//
+TH2F *h_PtPdg_Muon_Gen_PowhegOnly;
+TH2F *h_YPdg_Muon_Gen_PowhegOnly;
+TH2F *h_PtY_Muon_Gen_PowhegOnly[n_Muon_origin];
+TH1F *h_Nperevent_Muon_Gen_PowhegOnly[n_Muon_origin];
+
+TH2F *h_PtPdg_Muon_Gen_DQcut_PowhegOnly;
+TH2F *h_YPdg_Muon_Gen_DQcut_PowhegOnly;
+TH2F *h_PtY_Muon_Gen_DQcut_PowhegOnly[n_Muon_origin];
+TH1F *h_Nperevent_Muon_Gen_DQcut_PowhegOnly[n_Muon_origin];
+
 //------Declaration Hist for Reconstructed Muons----------------//
 TH2F *h_PtPdg_Muon_Rec;
 TH2F *h_YPdg_Muon_Rec;
 TH2F *h_PtY_Muon_Rec[n_Muon_origin];
 TH1F *h_Nperevent_Muon_Rec[n_Muon_origin];
+//------ "" from powheg only -----------//
+TH2F *h_PtPdg_Muon_Rec_PowhegOnly;
+TH2F *h_YPdg_Muon_Rec_PowhegOnly;
+TH2F *h_PtY_Muon_Rec_PowhegOnly[n_Muon_origin];
+TH1F *h_Nperevent_Muon_Rec_PowhegOnly[n_Muon_origin];
 
 TString Muon_origin[n_Muon_origin];
 
 const Int_t n_DiMuon_origin = 6; // 0 for Charm, 1 for Beauty, 2 for HF Mixed, 3 for LF, 4 for LF-HF Mixed, 5 for DY
 
 //------Declaration Hist for Generated Dimuons----------------//
-// TH3F *h_PtPdg1Pdg2_DiMuon_Gen[n_DiMuon_origin];
-// TH3F *h_YPdg1Pdg2_DiMuon_Gen[n_DiMuon_origin];
-// TH3F *h_MPdg1Pdg2_DiMuon_Gen[n_DiMuon_origin];
+
 TH3F *h_Pdg1Pdg2Pt_DiMuon_Gen;
 TH3F *h_Pdg1Pdg2Y_DiMuon_Gen;
 TH3F *h_Pdg1Pdg2M_DiMuon_Gen;
@@ -110,6 +132,57 @@ TH2F *h_PtM_DiMuon_Gen[n_DiMuon_origin];
 TH2F *h_PtY_DiMuon_Gen[n_DiMuon_origin];
 TH1F *h_Nperevent_DiMuon_Gen[n_DiMuon_origin];
 
+TH3F *h_Pdg1Pdg2Pt_DiMuon_Gen_DQcut;
+TH3F *h_Pdg1Pdg2Y_DiMuon_Gen_DQcut;
+TH3F *h_Pdg1Pdg2M_DiMuon_Gen_DQcut;
+
+TH2F *h_PtM_DiMuon_Gen_DQcut[n_DiMuon_origin];
+TH2F *h_PtY_DiMuon_Gen_DQcut[n_DiMuon_origin];
+TH1F *h_Nperevent_DiMuon_Gen_DQcut[n_DiMuon_origin];
+
+TH2F *h_PtM_DiMuon_Gen_DQcut_Charm_corrected = new TH2F("h_PtM_DiMuon_Gen_DQcut_Charm_corrected", ";#it{p}_{T} (GeV/#it{c}) ; #it{m}_{#mu#mu} (GeV/#it{c}^{2})", 300, 0, 30.0, 300, 0, 30);
+TH2F *h_PtY_DiMuon_Gen_DQcut_Charm_corrected = new TH2F("h_PtY_DiMuon_Gen_DQcut_Charm_corrected", ";#it{p}_{T} (GeV/#it{c}) ; #it{y}", 300, 0, 30.0, 150, -4.0, -2.5);
+TH3F *h_Pdg1Pdg2Pt_DiMuon_Gen_DQcut_Charm_corrected;
+TH3F *h_Pdg1Pdg2Y_DiMuon_Gen_DQcut_Charm_corrected;
+TH3F *h_Pdg1Pdg2M_DiMuon_Gen_DQcut_Charm_corrected;
+
+//------ "" from powheg only -----------//
+
+TH3F *h_Pdg1Pdg2Pt_DiMuon_Gen_PowhegOnly;
+TH3F *h_Pdg1Pdg2Y_DiMuon_Gen_PowhegOnly;
+TH3F *h_Pdg1Pdg2M_DiMuon_Gen_PowhegOnly;
+
+TH2F *h_PtM_DiMuon_Gen_PowhegOnly[n_DiMuon_origin];
+TH2F *h_PtY_DiMuon_Gen_PowhegOnly[n_DiMuon_origin];
+TH1F *h_Nperevent_DiMuon_Gen_PowhegOnly[n_DiMuon_origin];
+
+TH3F *h_Pdg1Pdg2Pt_DiMuon_Gen_DQcut_PowhegOnly;
+TH3F *h_Pdg1Pdg2Y_DiMuon_Gen_DQcut_PowhegOnly;
+TH3F *h_Pdg1Pdg2M_DiMuon_Gen_DQcut_PowhegOnly;
+
+TH2F *h_PtM_DiMuon_Gen_DQcut_PowhegOnly[n_DiMuon_origin];
+TH2F *h_PtY_DiMuon_Gen_DQcut_PowhegOnly[n_DiMuon_origin];
+TH1F *h_Nperevent_DiMuon_Gen_DQcut_PowhegOnly[n_DiMuon_origin];
+
+//------Declaration Hist for Reconstructed Dimuons----------------//
+
+TH3F *h_Pdg1Pdg2Pt_DiMuon_Rec;
+TH3F *h_Pdg1Pdg2Y_DiMuon_Rec;
+TH3F *h_Pdg1Pdg2M_DiMuon_Rec;
+
+TH2F *h_PtM_DiMuon_Rec[n_DiMuon_origin];
+TH2F *h_PtY_DiMuon_Rec[n_DiMuon_origin];
+TH1F *h_Nperevent_DiMuon_Rec[n_DiMuon_origin];
+
+TH3F *h_Pdg1Pdg2Pt_DiMuon_Rec_PowhegOnly;
+TH3F *h_Pdg1Pdg2Y_DiMuon_Rec_PowhegOnly;
+TH3F *h_Pdg1Pdg2M_DiMuon_Rec_PowhegOnly;
+
+TH2F *h_PtM_DiMuon_Rec_PowhegOnly[n_DiMuon_origin];
+TH2F *h_PtY_DiMuon_Rec_PowhegOnly[n_DiMuon_origin];
+TH1F *h_Nperevent_DiMuon_Rec_PowhegOnly[n_DiMuon_origin];
+
+//------ old staff for Z analysis on the fly -----------//
 TH2F *h_PtM_DiMuon_Gen_Z_ptmucut09;
 TH2F *h_PtY_DiMuon_Gen_Z_ptmucut09;
 TH1F *h_Nperevent_DiMuon_Gen_Z_ptmucut09;
@@ -121,17 +194,6 @@ TH1F *h_Nperevent_DiMuon_Gen_Z_ptmucut10;
 TH2F *h_PtM_DiMuon_Gen_Z_ptmucut20;
 TH2F *h_PtY_DiMuon_Gen_Z_ptmucut20;
 TH1F *h_Nperevent_DiMuon_Gen_Z_ptmucut20;
-
-// TH3F *h_PtPdg1Pdg2_DiMuon_Gen_DQcut[n_DiMuon_origin];
-// TH3F *h_YPdg1Pdg2_DiMuon_Gen_DQcut[n_DiMuon_origin];
-// TH3F *h_MPdg1Pdg2_DiMuon_Gen_DQcut[n_DiMuon_origin];
-TH3F *h_Pdg1Pdg2Pt_DiMuon_Gen_DQcut;
-TH3F *h_Pdg1Pdg2Y_DiMuon_Gen_DQcut;
-TH3F *h_Pdg1Pdg2M_DiMuon_Gen_DQcut;
-
-TH2F *h_PtM_DiMuon_Gen_DQcut[n_DiMuon_origin];
-TH2F *h_PtY_DiMuon_Gen_DQcut[n_DiMuon_origin];
-TH1F *h_Nperevent_DiMuon_Gen_DQcut[n_DiMuon_origin];
 
 TH2F *h_PtM_DiMuon_Gen_Z_DQcut_ptmucut09;
 TH2F *h_PtY_DiMuon_Gen_Z_DQcut_ptmucut09;
@@ -145,23 +207,6 @@ TH2F *h_PtM_DiMuon_Gen_Z_DQcut_ptmucut20;
 TH2F *h_PtY_DiMuon_Gen_Z_DQcut_ptmucut20;
 TH1F *h_Nperevent_DiMuon_Gen_Z_DQcut_ptmucut20;
 
-TH2F *h_PtM_DiMuon_Gen_DQcut_Charm_corrected = new TH2F("h_PtM_DiMuon_Gen_DQcut_Charm_corrected", ";#it{p}_{T} (GeV/#it{c}) ; #it{m}_{#mu#mu} (GeV/#it{c}^{2})", 300, 0, 30.0, 300, 0, 30);
-TH2F *h_PtY_DiMuon_Gen_DQcut_Charm_corrected = new TH2F("h_PtY_DiMuon_Gen_DQcut_Charm_corrected", ";#it{p}_{T} (GeV/#it{c}) ; #it{y}", 300, 0, 30.0, 150, -4.0, -2.5);
-TH3F *h_Pdg1Pdg2Pt_DiMuon_Gen_DQcut_Charm_corrected;
-TH3F *h_Pdg1Pdg2Y_DiMuon_Gen_DQcut_Charm_corrected;
-TH3F *h_Pdg1Pdg2M_DiMuon_Gen_DQcut_Charm_corrected;
-//------Declaration Hist for Reconstructed Dimuons----------------//
-// TH3F *h_PtPdg1Pdg2_DiMuon_Rec[n_DiMuon_origin];
-// TH3F *h_YPdg1Pdg2_DiMuon_Rec[n_DiMuon_origin];
-// TH3F *h_MPdg1Pdg2_DiMuon_Rec[n_DiMuon_origin];
-TH3F *h_Pdg1Pdg2Pt_DiMuon_Rec;
-TH3F *h_Pdg1Pdg2Y_DiMuon_Rec;
-TH3F *h_Pdg1Pdg2M_DiMuon_Rec;
-
-TH2F *h_PtM_DiMuon_Rec[n_DiMuon_origin];
-TH2F *h_PtY_DiMuon_Rec[n_DiMuon_origin];
-TH1F *h_Nperevent_DiMuon_Rec[n_DiMuon_origin];
-
 TH2F *h_PtM_DiMuon_Rec_Z_ptmucut09;
 TH2F *h_PtY_DiMuon_Rec_Z_ptmucut09;
 TH1F *h_Nperevent_DiMuon_Rec_Z_ptmucut09;
@@ -174,6 +219,8 @@ TH2F *h_PtM_DiMuon_Rec_Z_ptmucut20;
 TH2F *h_PtY_DiMuon_Rec_Z_ptmucut20;
 TH1F *h_Nperevent_DiMuon_Rec_Z_ptmucut20;
 
+//---------------------------------//
+
 TString DiMuon_origin[n_DiMuon_origin];
 
 const Int_t n_PDG_selection = 31;
@@ -181,11 +228,13 @@ Double_t PDG_Selection[n_PDG_selection] = {0, 23, 24, 200, 400, 410, 420, 430, 4
 const Int_t n_charm_hadrons = 7;
 Int_t PDG_charm_hadrons[n_charm_hadrons] = {411, 421, 431, 443, 4122, 4132, 4232};
 
-Double_t BR_charm_hadrons2mu_PYTHIA[n_charm_hadrons] = {16.5, 6.45, 7.5, 5.9, 4.5, 2.5, 3.5};
+Double_t BR_charm_hadrons2mu_PYTHIA8_Monash[n_charm_hadrons] = {16.5, 6.45, 7.5, 5.9, 4.5, 2.5, 3.5};
 Double_t BR_charm_hadrons2mu_MEAS[n_charm_hadrons] = {17.6, 6.80, 6.33, 5.96, 3.95, 2.5, 3.5};
 
-Double_t Frag_charm_hadrons_PYTHIA[n_charm_hadrons] = {29.3, 56.1, 9.59, 0.4, 3.8, 0.49, 0.49};
+Double_t Frag_charm_hadrons_PYTHIA8_Monash[n_charm_hadrons] = {29.3, 56.1, 9.59, 0.4, 3.8, 0.49, 0.49};
 Double_t Frag_charm_hadrons_MEAS[n_charm_hadrons] = {19.1, 38.2, 6.1, 0.37, 16.8, 9.9, 9.6};
+
+//---- Declarion hist for Hadrons --------//
 
 TH2F *h_PdgPt_HFHadron_prompt;
 TH2F *h_PdgPt_HFHadron_notprompt;
@@ -194,17 +243,31 @@ TH2F *h_PdgY_HFHadron_notprompt;
 
 TH3F *h_PdgPtY_HFHadron_prompt;
 TH3F *h_PdgPtY_HFHadron_notprompt;
-void Set_Histograms(Bool_t forZ_sim = kFALSE)
+
+//----- "" for powheg only ------------//
+
+TH2F *h_PdgPt_HFHadron_prompt_PowhegOnly;
+TH2F *h_PdgPt_HFHadron_notprompt_PowhegOnly;
+TH2F *h_PdgY_HFHadron_prompt_PowhegOnly;
+TH2F *h_PdgY_HFHadron_notprompt_PowhegOnly;
+TH3F *h_PdgPtY_HFHadron_prompt_PowhegOnly;
+TH3F *h_PdgPtY_HFHadron_notprompt_PowhegOnly;
+
+TH2F *h_PtM_Gamma;
+TH2F *h_PtY_Gamma;
+
+TH2F *h_YGamma_YDimuon;
+void Set_Histograms(TString Generator)
 {
-    // 0 for All sources, 1 for Charm, 2 for Beauty, 3 for LF, 4 for DY
-    Muon_origin[0].Form("All");
-    Muon_origin[1].Form("Charm");
-    Muon_origin[2].Form("Beauty");
-    Muon_origin[3].Form("LF");
-    Muon_origin[4].Form("DY");
+    // Histograms for saving Gamma star kinematics
+    h_PtM_Gamma = new TH2F("h_PtM_Gamma", "; #it{p}_{T,#gamma^{*}} (GeV/#it{c}); #it{m}_{#gamma^{*}} (GeV/#it{c}^{2})", 400, 0, 40.0, 400, 0, 40.0);
+    h_PtY_Gamma = new TH2F("h_PtY_Gamma", "; #it{p}_{T,#gamma^{*}} (GeV/#it{c}); #it{y}_{#gamma^{*}}", 400, 0, 40.0, 160, -8, 8);
+    h_YGamma_YDimuon = new TH2F("h_YGamma_YDimuon", "; #it{y}_{#gamma^{*}}; #it{y}_{#mu#mu}", 160, -8, 8, 160, -8, 8);
+
+    // Saving Generated Muons kinematic/PDG ancestor correlation
 
     h_PtPdg_Muon_Gen = new TH2F("h_PtPdg_Muon_Gen", "; #it{p}_{T} (GeV/#it{c}) ; PDG code", 400, 0, 40.0, 12000, -6000, 6000);
-    h_YPdg_Muon_Gen = new TH2F("h_YPdg_Muon_Gen", "; #it{y} ; PDG code", 1600, -8.0, 8.0, 12000, -6000, 6000);
+    h_YPdg_Muon_Gen = new TH2F("h_YPdg_Muon_Gen", "; #it{y} ; PDG code", 160, -8.0, 8.0, 12000, -6000, 6000);
 
     h_PtPdg_Muon_Gen_DQcut = new TH2F("h_PtPdg_Muon_Gen_DQcut", "; #it{p}_{T} (GeV/#it{c}) ; PDG code", 400, 0, 40.0, 12000, -6000, 6000);
     h_YPdg_Muon_Gen_DQcut = new TH2F("h_YPdg_Muon_Gen_DQcut", "; #it{y} ; PDG code", 150, -4.0, -2.5, 12000, -6000, 6000);
@@ -212,33 +275,49 @@ void Set_Histograms(Bool_t forZ_sim = kFALSE)
     h_PtPdg_Muon_Rec = new TH2F("h_PtPdg_Muon_Rec", "; #it{p}_{T} (GeV/#it{c}) ; PDG code", 400, 0, 40.0, 12000, -6000, 6000);
     h_YPdg_Muon_Rec = new TH2F("h_YPdg_Muon_Rec", "; #it{y} ; PDG code", 150, -4.0, -2.5, 12000, -6000, 6000);
 
-    Int_t limit_mu_origin = n_Muon_origin;
-    if (forZ_sim)
-        limit_mu_origin = n_Muon_origin - 1;
-
-    for (Int_t i_Muon_origin = 0; i_Muon_origin < limit_mu_origin; i_Muon_origin++)
+    if (Generator.Contains("Powheg"))
     {
-        h_PtY_Muon_Gen[i_Muon_origin] = new TH2F(Form("h_PtY_Muon_Gen_%s", Muon_origin[i_Muon_origin].Data()), ";#it{p}_{T} (GeV/#it{c}) ;#it{y}", 400, 0, 40, 900, -8.0, 8.0);
+
+        h_PtPdg_Muon_Gen_PowhegOnly = new TH2F("h_PtPdg_Muon_Gen_PowhegOnly", "; #it{p}_{T} (GeV/#it{c}) ; PDG code", 400, 0, 40.0, 12000, -6000, 6000);
+        h_YPdg_Muon_Gen_PowhegOnly = new TH2F("h_YPdg_Muon_Gen_PowhegOnly", "; #it{y} ; PDG code", 160, -8.0, 8.0, 12000, -6000, 6000);
+
+        h_PtPdg_Muon_Gen_DQcut_PowhegOnly = new TH2F("h_PtPdg_Muon_Gen_DQcut_PowhegOnly", "; #it{p}_{T} (GeV/#it{c}) ; PDG code", 400, 0, 40.0, 12000, -6000, 6000);
+        h_YPdg_Muon_Gen_DQcut_PowhegOnly = new TH2F("h_YPdg_Muon_Gen_DQcut_PowhegOnly", "; #it{y} ; PDG code", 150, -4.0, -2.5, 12000, -6000, 6000);
+
+        h_PtPdg_Muon_Rec_PowhegOnly = new TH2F("h_PtPdg_Muon_Rec_PowhegOnly", "; #it{p}_{T} (GeV/#it{c}) ; PDG code", 400, 0, 40.0, 12000, -6000, 6000);
+        h_YPdg_Muon_Rec_PowhegOnly = new TH2F("h_YPdg_Muon_Rec_PowhegOnly", "; #it{y} ; PDG code", 150, -4.0, -2.5, 12000, -6000, 6000);
+    }
+
+    // 0 for All sources, 1 for Charm, 2 for Beauty, 3 for LF, 4 for DY
+
+    Muon_origin[0].Form("All");
+    Muon_origin[1].Form("Charm");
+    Muon_origin[2].Form("Beauty");
+    Muon_origin[3].Form("LF");
+    Muon_origin[4].Form("DY");
+
+    for (Int_t i_Muon_origin = 0; i_Muon_origin < n_Muon_origin; i_Muon_origin++)
+    {
+        h_PtY_Muon_Gen[i_Muon_origin] = new TH2F(Form("h_PtY_Muon_Gen_%s", Muon_origin[i_Muon_origin].Data()), ";#it{p}_{T} (GeV/#it{c}) ;#it{y}", 500, 0, 100, 900, -8.0, 8.0);
         h_Nperevent_Muon_Gen[i_Muon_origin] = new TH1F(Form("h_Nperevent_Muon_Gen_%s", Muon_origin[i_Muon_origin].Data()), "; #mu x ev", 10, -0.5, 9.5);
 
-        h_PtY_Muon_Gen_DQcut[i_Muon_origin] = new TH2F(Form("h_PtY_Muon_Gen_DQcut_%s", Muon_origin[i_Muon_origin].Data()), ";#it{p}_{T} (GeV/#it{c}) ;#it{y}", 400, 0, 40, 150, -4.0, -2.5);
+        h_PtY_Muon_Gen_DQcut[i_Muon_origin] = new TH2F(Form("h_PtY_Muon_Gen_DQcut_%s", Muon_origin[i_Muon_origin].Data()), ";#it{p}_{T} (GeV/#it{c}) ;#it{y}", 500, 0, 100, 150, -4.0, -2.5);
         h_Nperevent_Muon_Gen_DQcut[i_Muon_origin] = new TH1F(Form("h_Nperevent_Muon_Gen_DQcut_%s", Muon_origin[i_Muon_origin].Data()), "; #mu x ev", 10, -0.5, 9.5);
 
-        h_PtY_Muon_Rec[i_Muon_origin] = new TH2F(Form("h_PtY_Muon_Rec_%s", Muon_origin[i_Muon_origin].Data()), ";#it{p}_{T} (GeV/#it{c}) ;#it{y}", 400, 0, 40, 150, -4.0, -2.5);
+        h_PtY_Muon_Rec[i_Muon_origin] = new TH2F(Form("h_PtY_Muon_Rec_%s", Muon_origin[i_Muon_origin].Data()), ";#it{p}_{T} (GeV/#it{c}) ;#it{y}", 500, 0, 100, 150, -4.0, -2.5);
         h_Nperevent_Muon_Rec[i_Muon_origin] = new TH1F(Form("h_Nperevent_Muon_Rec_%s", Muon_origin[i_Muon_origin].Data()), "; #mu x ev", 10, -0.5, 9.5);
+
+        if (Generator.Contains("Powheg"))
+        {
+            h_PtY_Muon_Gen_PowhegOnly[i_Muon_origin] = (TH2F *)h_PtY_Muon_Gen[i_Muon_origin]->Clone(Form("%s_PowhegOnly", h_PtY_Muon_Gen[i_Muon_origin]->GetName()));
+            h_Nperevent_Muon_Gen_PowhegOnly[i_Muon_origin] = (TH1F *)h_Nperevent_Muon_Gen[i_Muon_origin]->Clone(Form("%s_PowhegOnly", h_Nperevent_Muon_Gen[i_Muon_origin]->GetName()));
+            h_PtY_Muon_Gen_DQcut_PowhegOnly[i_Muon_origin] = (TH2F *)h_PtY_Muon_Gen_DQcut[i_Muon_origin]->Clone(Form("%s_PowhegOnly", h_PtY_Muon_Gen_DQcut[i_Muon_origin]->GetName()));
+            h_Nperevent_Muon_Gen_DQcut_PowhegOnly[i_Muon_origin] = (TH1F *)h_Nperevent_Muon_Gen_DQcut[i_Muon_origin]->Clone(Form("%s_PowhegOnly", h_Nperevent_Muon_Gen_DQcut[i_Muon_origin]->GetName()));
+            h_PtY_Muon_Rec_PowhegOnly[i_Muon_origin] = (TH2F *)h_PtY_Muon_Rec[i_Muon_origin]->Clone(Form("%s_PowhegOnly", h_PtY_Muon_Rec[i_Muon_origin]->GetName()));
+            h_Nperevent_Muon_Rec_PowhegOnly[i_Muon_origin] = (TH1F *)h_Nperevent_Muon_Rec[i_Muon_origin]->Clone(Form("%s_PowhegOnly", h_Nperevent_Muon_Rec[i_Muon_origin]->GetName()));
+        }
     }
 
-    if (forZ_sim)
-    {
-        h_PtY_Muon_Gen[limit_mu_origin] = new TH2F(Form("h_PtY_Muon_Gen_%s", Muon_origin[limit_mu_origin].Data()), ";#it{p}_{T} (GeV/#it{c}) ;#it{y}", 600, 0, 120, 900, -8.0, 8.0);
-        h_Nperevent_Muon_Gen[limit_mu_origin] = new TH1F(Form("h_Nperevent_Muon_Gen_%s", Muon_origin[limit_mu_origin].Data()), "; #mu x ev", 10, -0.5, 9.5);
-
-        h_PtY_Muon_Gen_DQcut[limit_mu_origin] = new TH2F(Form("h_PtY_Muon_Gen_DQcut_%s", Muon_origin[limit_mu_origin].Data()), ";#it{p}_{T} (GeV/#it{c}) ;#it{y}", 600, 0, 120, 150, -4.0, -2.5);
-        h_Nperevent_Muon_Gen_DQcut[limit_mu_origin] = new TH1F(Form("h_Nperevent_Muon_Gen_DQcut_%s", Muon_origin[limit_mu_origin].Data()), "; #mu x ev", 10, -0.5, 9.5);
-
-        h_PtY_Muon_Rec[limit_mu_origin] = new TH2F(Form("h_PtY_Muon_Rec_%s", Muon_origin[limit_mu_origin].Data()), ";#it{p}_{T} (GeV/#it{c}) ;#it{y}", 600, 0, 120, 150, -4.0, -2.5);
-        h_Nperevent_Muon_Rec[limit_mu_origin] = new TH1F(Form("h_Nperevent_Muon_Rec_%s", Muon_origin[limit_mu_origin].Data()), "; #mu x ev", 10, -0.5, 9.5);
-    }
     Int_t n_bin_pt = h_PtPdg_Muon_Gen_DQcut->GetXaxis()->GetNbins();
     Double_t low_bin_pt[n_bin_pt + 1];
     for (Int_t i_lowpt = 0; i_lowpt <= (Int_t)n_bin_pt; i_lowpt++)
@@ -262,16 +341,6 @@ void Set_Histograms(Bool_t forZ_sim = kFALSE)
     DiMuon_origin[4].Form("LF_HF_Mixed");
     DiMuon_origin[5].Form("DY");
 
-    h_PdgPtY_HFHadron_prompt = new TH3F("h_PdgPtY_HFHadron_prompt", "; PDG hadron; #it{p}_{T} (GeV/#it{c}) ; #it{y}", n_PDG_selection - 1, PDG_Selection, n_bin_pt, low_bin_pt, n_bin_Y_Gen, low_bin_Y_Gen);
-
-    h_PdgPtY_HFHadron_notprompt = new TH3F("h_PdgPtY_HFHadron_notprompt", "; PDG hadron; #it{p}_{T} (GeV/#it{c}) ; #it{y}", n_PDG_selection - 1, PDG_Selection, n_bin_pt, low_bin_pt, n_bin_Y_Gen, low_bin_Y_Gen);
-
-    h_PdgPt_HFHadron_prompt = new TH2F("h_PdgPt_HFHadron_prompt", "; PDG hadron; #it{p}_{T} (GeV/#it{c})", n_PDG_selection - 1, PDG_Selection, n_bin_pt, low_bin_pt);
-    h_PdgY_HFHadron_prompt = new TH2F("h_PdgY_HFHadron_prompt", "; PDG hadron; #it{y}", n_PDG_selection - 1, PDG_Selection, n_bin_Y_Gen, low_bin_Y_Gen);
-
-    h_PdgPt_HFHadron_notprompt = new TH2F("h_PdgPt_HFHadron_notprompt", "; PDG hadron; #it{p}_{T} (GeV/#it{c})", n_PDG_selection - 1, PDG_Selection, n_bin_pt, low_bin_pt);
-    h_PdgY_HFHadron_notprompt = new TH2F("h_PdgY_HFHadron_notprompt", "; PDG hadron; #it{y}", n_PDG_selection - 1, PDG_Selection, n_bin_Y_Gen, low_bin_Y_Gen);
-
     h_Pdg1Pdg2Pt_DiMuon_Gen = new TH3F("h_Pdg1Pdg2Pt_DiMuon_Gen", "; PDG code mum 1; PDG code mum 2; #it{p}_{T} (GeV/#it{c}) ", n_PDG_selection - 1, PDG_Selection, n_PDG_selection - 1, PDG_Selection, n_bin_pt, low_bin_pt);
     h_Pdg1Pdg2Y_DiMuon_Gen = new TH3F("h_Pdg1Pdg2Y_DiMuon_Gen", "; PDG code mum 1; PDG code mum 2; #it{y}) ", n_PDG_selection - 1, PDG_Selection, n_PDG_selection - 1, PDG_Selection, n_bin_Y_Gen, low_bin_Y_Gen);
     h_Pdg1Pdg2M_DiMuon_Gen = new TH3F("h_Pdg1Pdg2M_DiMuon_Gen", "; PDG code mum 1; PDG code mum 2; #it{m}_{#mu#mu} (GeV/#it{c}^{2}) ", n_PDG_selection - 1, PDG_Selection, n_PDG_selection - 1, PDG_Selection, n_bin_pt, low_bin_pt);
@@ -288,94 +357,152 @@ void Set_Histograms(Bool_t forZ_sim = kFALSE)
     h_Pdg1Pdg2Y_DiMuon_Rec = new TH3F("h_Pdg1Pdg2Y_DiMuon_Rec", "; PDG code mum 1; PDG code mum 2; #it{y}) ", n_PDG_selection - 1, PDG_Selection, n_PDG_selection - 1, PDG_Selection, n_bin_Y_Rec, low_bin_Y_Rec);
     h_Pdg1Pdg2M_DiMuon_Rec = new TH3F("h_Pdg1Pdg2M_DiMuon_Rec", "; PDG code mum 1; PDG code mum 2; #it{m}_{#mu#mu} (GeV/#it{c}^{2}) ", n_PDG_selection - 1, PDG_Selection, n_PDG_selection - 1, PDG_Selection, n_bin_pt, low_bin_pt);
 
-    Int_t limit_DiMu_origin = n_DiMuon_origin;
-    if (forZ_sim)
-        limit_DiMu_origin = n_DiMuon_origin - 1;
-
-    for (Int_t i_DiMuon_origin = 0; i_DiMuon_origin < limit_DiMu_origin; i_DiMuon_origin++)
+    if (Generator.Contains("Powheg"))
+    {
+        h_Pdg1Pdg2Pt_DiMuon_Gen_PowhegOnly = (TH3F *)h_Pdg1Pdg2Pt_DiMuon_Gen->Clone(Form("%s_PowhegOnly", h_Pdg1Pdg2Pt_DiMuon_Gen->GetName()));
+        h_Pdg1Pdg2Y_DiMuon_Gen_PowhegOnly = (TH3F *)h_Pdg1Pdg2Y_DiMuon_Gen->Clone(Form("%s_PowhegOnly", h_Pdg1Pdg2Y_DiMuon_Gen->GetName()));
+        h_Pdg1Pdg2M_DiMuon_Gen_PowhegOnly = (TH3F *)h_Pdg1Pdg2M_DiMuon_Gen->Clone(Form("%s_PowhegOnly", h_Pdg1Pdg2M_DiMuon_Gen->GetName()));
+        h_Pdg1Pdg2Pt_DiMuon_Gen_DQcut_PowhegOnly = (TH3F *)h_Pdg1Pdg2Pt_DiMuon_Gen_DQcut->Clone(Form("%s_PowhegOnly", h_Pdg1Pdg2Pt_DiMuon_Gen_DQcut->GetName()));
+        h_Pdg1Pdg2Y_DiMuon_Gen_DQcut_PowhegOnly = (TH3F *)h_Pdg1Pdg2Y_DiMuon_Gen_DQcut->Clone(Form("%s_PowhegOnly", h_Pdg1Pdg2Y_DiMuon_Gen_DQcut->GetName()));
+        h_Pdg1Pdg2M_DiMuon_Gen_DQcut_PowhegOnly = (TH3F *)h_Pdg1Pdg2M_DiMuon_Gen_DQcut->Clone(Form("%s_PowhegOnly", h_Pdg1Pdg2M_DiMuon_Gen_DQcut->GetName()));
+        h_Pdg1Pdg2Pt_DiMuon_Rec_PowhegOnly = (TH3F *)h_Pdg1Pdg2Pt_DiMuon_Rec->Clone(Form("%s_PowhegOnly", h_Pdg1Pdg2Pt_DiMuon_Rec->GetName()));
+        h_Pdg1Pdg2Y_DiMuon_Rec_PowhegOnly = (TH3F *)h_Pdg1Pdg2Y_DiMuon_Rec->Clone(Form("%s_PowhegOnly", h_Pdg1Pdg2Y_DiMuon_Rec->GetName()));
+        h_Pdg1Pdg2M_DiMuon_Rec_PowhegOnly = (TH3F *)h_Pdg1Pdg2M_DiMuon_Rec->Clone(Form("%s_PowhegOnly", h_Pdg1Pdg2M_DiMuon_Rec->GetName()));
+    }
+    // ---------------------- Inizialization hist for Dimuons ---------------------------//
+    for (Int_t i_DiMuon_origin = 0; i_DiMuon_origin < n_DiMuon_origin; i_DiMuon_origin++)
     {
         // Inizialization hist for Generated Dimuons
         h_PtM_DiMuon_Gen[i_DiMuon_origin] = new TH2F(Form("h_PtM_DiMuon_Gen_%s", DiMuon_origin[i_DiMuon_origin].Data()), ";#it{p}_{T} (GeV/#it{c}) ; #it{m}_{#mu#mu} (GeV/#it{c}^{2})", 400, 0, 40.0, 400, 0, 40);
-        h_PtY_DiMuon_Gen[i_DiMuon_origin] = new TH2F(Form("h_PtY_DiMuon_Gen_%s", DiMuon_origin[i_DiMuon_origin].Data()), ";#it{p}_{T} (GeV/#it{c}) ; #it{m}_{#mu#mu} (GeV/#it{c}^{2})", 400, 0, 40.0, 1800, -8.0, 8.0);
-        h_Nperevent_DiMuon_Gen[i_DiMuon_origin] = new TH1F(Form("h_Nperevent_DiMuon_Gen_%s", DiMuon_origin[i_DiMuon_origin].Data()), "; #mu x ev", 10, -0.5, 9.5);
+        h_PtY_DiMuon_Gen[i_DiMuon_origin] = new TH2F(Form("h_PtY_DiMuon_Gen_%s", DiMuon_origin[i_DiMuon_origin].Data()), ";#it{p}_{T} (GeV/#it{c}) ; #it{y}_{#mu#mu}", 400, 0, 40.0, 160, -8.0, 8.0);
+        h_Nperevent_DiMuon_Gen[i_DiMuon_origin] = new TH1F(Form("h_Nperevent_DiMuon_Gen_%s", DiMuon_origin[i_DiMuon_origin].Data()), "; #mu#mu x ev", 10, -0.5, 9.5);
         // Inizialization hist for Generated Dimuons with DQ cuts
         h_PtM_DiMuon_Gen_DQcut[i_DiMuon_origin] = new TH2F(Form("h_PtM_DiMuon_Gen_DQcut_%s", DiMuon_origin[i_DiMuon_origin].Data()), ";#it{p}_{T} (GeV/#it{c}) ; #it{m}_{#mu#mu} (GeV/#it{c}^{2})", 400, 0, 40.0, 400, 0, 40);
         h_PtY_DiMuon_Gen_DQcut[i_DiMuon_origin] = new TH2F(Form("h_PtY_DiMuon_Gen_DQcut_%s", DiMuon_origin[i_DiMuon_origin].Data()), ";#it{p}_{T} (GeV/#it{c}) ; #it{y}", 400, 0, 40.0, 150, -4.0, -2.5);
-        h_Nperevent_DiMuon_Gen_DQcut[i_DiMuon_origin] = new TH1F(Form("h_Nperevent_DiMuon_Gen_DQcut_%s", DiMuon_origin[i_DiMuon_origin].Data()), "; #mu x ev", 10, -0.5, 9.5);
+        h_Nperevent_DiMuon_Gen_DQcut[i_DiMuon_origin] = new TH1F(Form("h_Nperevent_DiMuon_Gen_DQcut_%s", DiMuon_origin[i_DiMuon_origin].Data()), "; #mu#mu x ev", 10, -0.5, 9.5);
         // Inizialization hist for Reconstructed Dimuons
         h_PtM_DiMuon_Rec[i_DiMuon_origin] = new TH2F(Form("h_PtM_DiMuon_Rec_%s", DiMuon_origin[i_DiMuon_origin].Data()), ";#it{p}_{T} (GeV/#it{c}) ; #it{m}_{#mu#mu} (GeV/#it{c}^{2})", 400, 0, 40.0, 400, 0, 40);
         h_PtY_DiMuon_Rec[i_DiMuon_origin] = new TH2F(Form("h_PtY_DiMuon_Rec_%s", DiMuon_origin[i_DiMuon_origin].Data()), ";#it{p}_{T} (GeV/#it{c}) ; #it{y}", 400, 0, 40.0, 150, -4.0, -2.5);
-        h_Nperevent_DiMuon_Rec[i_DiMuon_origin] = new TH1F(Form("h_Nperevent_DiMuon_Rec_%s", DiMuon_origin[i_DiMuon_origin].Data()), "; #mu x ev", 10, -0.5, 9.5);
+        h_Nperevent_DiMuon_Rec[i_DiMuon_origin] = new TH1F(Form("h_Nperevent_DiMuon_Rec_%s", DiMuon_origin[i_DiMuon_origin].Data()), "; #mu#mu x ev", 10, -0.5, 9.5);
+
+        if (Generator.Contains("Powheg"))
+        {
+            h_PtM_DiMuon_Gen_PowhegOnly[i_DiMuon_origin] = (TH2F *)h_PtM_DiMuon_Gen[i_DiMuon_origin]->Clone(Form("%s_PowhegOnly", h_PtM_DiMuon_Gen[i_DiMuon_origin]->GetName()));
+            h_PtY_DiMuon_Gen_PowhegOnly[i_DiMuon_origin] = (TH2F *)h_PtY_DiMuon_Gen[i_DiMuon_origin]->Clone(Form("%s_PowhegOnly", h_PtY_DiMuon_Gen[i_DiMuon_origin]->GetName()));
+            h_Nperevent_DiMuon_Gen_PowhegOnly[i_DiMuon_origin] = (TH1F *)h_Nperevent_DiMuon_Gen[i_DiMuon_origin]->Clone(Form("%s_PowhegOnly", h_Nperevent_DiMuon_Gen[i_DiMuon_origin]->GetName()));
+            h_PtM_DiMuon_Gen_DQcut_PowhegOnly[i_DiMuon_origin] = (TH2F *)h_PtM_DiMuon_Gen_DQcut[i_DiMuon_origin]->Clone(Form("%s_PowhegOnly", h_PtM_DiMuon_Gen_DQcut[i_DiMuon_origin]->GetName()));
+            h_PtY_DiMuon_Gen_DQcut_PowhegOnly[i_DiMuon_origin] = (TH2F *)h_PtY_DiMuon_Gen_DQcut[i_DiMuon_origin]->Clone(Form("%s_PowhegOnly", h_PtY_DiMuon_Gen_DQcut[i_DiMuon_origin]->GetName()));
+            h_Nperevent_DiMuon_Gen_DQcut_PowhegOnly[i_DiMuon_origin] = (TH1F *)h_Nperevent_DiMuon_Gen_DQcut[i_DiMuon_origin]->Clone(Form("%s_PowhegOnly", h_Nperevent_DiMuon_Gen_DQcut[i_DiMuon_origin]->GetName()));
+            h_PtM_DiMuon_Rec_PowhegOnly[i_DiMuon_origin] = (TH2F *)h_PtM_DiMuon_Rec[i_DiMuon_origin]->Clone(Form("%s_PowhegOnly", h_PtM_DiMuon_Rec[i_DiMuon_origin]->GetName()));
+            h_PtY_DiMuon_Rec_PowhegOnly[i_DiMuon_origin] = (TH2F *)h_PtY_DiMuon_Rec[i_DiMuon_origin]->Clone(Form("%s_PowhegOnly", h_PtY_DiMuon_Rec[i_DiMuon_origin]->GetName()));
+            h_Nperevent_DiMuon_Rec_PowhegOnly[i_DiMuon_origin] = (TH1F *)h_Nperevent_DiMuon_Rec[i_DiMuon_origin]->Clone(Form("%s_PowhegOnly", h_Nperevent_DiMuon_Rec[i_DiMuon_origin]->GetName()));
+        }
     }
 
-    if (forZ_sim)
+    //------ Inizialization hist for HF hadrons----------------//
+
+    h_PdgPtY_HFHadron_prompt = new TH3F("h_PdgPtY_HFHadron_prompt", "; PDG hadron; #it{p}_{T} (GeV/#it{c}) ; #it{y}", n_PDG_selection - 1, PDG_Selection, n_bin_pt, low_bin_pt, n_bin_Y_Gen, low_bin_Y_Gen);
+
+    h_PdgPtY_HFHadron_notprompt = new TH3F("h_PdgPtY_HFHadron_notprompt", "; PDG hadron; #it{p}_{T} (GeV/#it{c}) ; #it{y}", n_PDG_selection - 1, PDG_Selection, n_bin_pt, low_bin_pt, n_bin_Y_Gen, low_bin_Y_Gen);
+
+    h_PdgPt_HFHadron_prompt = new TH2F("h_PdgPt_HFHadron_prompt", "; PDG hadron; #it{p}_{T} (GeV/#it{c})", n_PDG_selection - 1, PDG_Selection, n_bin_pt, low_bin_pt);
+    h_PdgY_HFHadron_prompt = new TH2F("h_PdgY_HFHadron_prompt", "; PDG hadron; #it{y}", n_PDG_selection - 1, PDG_Selection, n_bin_Y_Gen, low_bin_Y_Gen);
+
+    h_PdgPt_HFHadron_notprompt = new TH2F("h_PdgPt_HFHadron_notprompt", "; PDG hadron; #it{p}_{T} (GeV/#it{c})", n_PDG_selection - 1, PDG_Selection, n_bin_pt, low_bin_pt);
+    h_PdgY_HFHadron_notprompt = new TH2F("h_PdgY_HFHadron_notprompt", "; PDG hadron; #it{y}", n_PDG_selection - 1, PDG_Selection, n_bin_Y_Gen, low_bin_Y_Gen);
+
+    if (Generator.Contains("Powheg"))
     {
-        Double_t low_mass = 0;
-        Double_t high_mass = 120;
-        Int_t N_Bin = 1200;
-        h_PtM_DiMuon_Gen[limit_DiMu_origin] = new TH2F(Form("h_PtM_DiMuon_Gen_%s", DiMuon_origin[limit_DiMu_origin].Data()), ";#it{p}_{T} (GeV/#it{c}) ; #it{m}_{#mu#mu} (GeV/#it{c}^{2})", 1200, 0, 120.0, N_Bin, low_mass, high_mass);
-        h_PtY_DiMuon_Gen[limit_DiMu_origin] = new TH2F(Form("h_PtY_DiMuon_Gen_%s", DiMuon_origin[limit_DiMu_origin].Data()), ";#it{p}_{T} (GeV/#it{c}) ; #it{m}_{#mu#mu} (GeV/#it{c}^{2})", 1200, 0, 120.0, 1800, -8.0, 8.0);
-        h_Nperevent_DiMuon_Gen[limit_DiMu_origin] = new TH1F(Form("h_Nperevent_DiMuon_Gen_%s", DiMuon_origin[limit_DiMu_origin].Data()), "; #mu x ev", 10, -0.5, 9.5);
-        // Inizialization hist for Generated Dimuons with DQ cuts
-        h_PtM_DiMuon_Gen_DQcut[limit_DiMu_origin] = new TH2F(Form("h_PtM_DiMuon_Gen_DQcut_%s", DiMuon_origin[limit_DiMu_origin].Data()), ";#it{p}_{T} (GeV/#it{c}) ; #it{m}_{#mu#mu} (GeV/#it{c}^{2})", 1200, 0, 120.0, N_Bin, low_mass, high_mass);
-        h_PtY_DiMuon_Gen_DQcut[limit_DiMu_origin] = new TH2F(Form("h_PtY_DiMuon_Gen_DQcut_%s", DiMuon_origin[limit_DiMu_origin].Data()), ";#it{p}_{T} (GeV/#it{c}) ; #it{y}", 1200, 0, 120.0, 150, -4.0, -2.5);
-        h_Nperevent_DiMuon_Gen_DQcut[limit_DiMu_origin] = new TH1F(Form("h_Nperevent_DiMuon_Gen_DQcut_%s", DiMuon_origin[limit_DiMu_origin].Data()), "; #mu x ev", 10, -0.5, 9.5);
-        // Inizialization hist for Reconstructed Dimuons
-        h_PtM_DiMuon_Rec[limit_DiMu_origin] = new TH2F(Form("h_PtM_DiMuon_Rec_%s", DiMuon_origin[limit_DiMu_origin].Data()), ";#it{p}_{T} (GeV/#it{c}) ; #it{m}_{#mu#mu} (GeV/#it{c}^{2})", 1200, 0, 120.0, N_Bin, low_mass, high_mass);
-        h_PtY_DiMuon_Rec[limit_DiMu_origin] = new TH2F(Form("h_PtY_DiMuon_Rec_%s", DiMuon_origin[limit_DiMu_origin].Data()), ";#it{p}_{T} (GeV/#it{c}) ; #it{y}", 1200, 0, 120.0, 150, -4.0, -2.5);
-        h_Nperevent_DiMuon_Rec[limit_DiMu_origin] = new TH1F(Form("h_Nperevent_DiMuon_Rec_%s", DiMuon_origin[limit_DiMu_origin].Data()), "; #mu x ev", 10, -0.5, 9.5);
-
-        h_PtM_DiMuon_Gen_Z_ptmucut09 = new TH2F("h_PtM_DiMuon_Gen_Z_ptmucut09", ";#it{p}_{T} (GeV/#it{c}) ; #it{m}_{#mu#mu} (GeV/#it{c}^{2})", 1200, 0, 120.0, N_Bin, low_mass, high_mass);
-        h_PtY_DiMuon_Gen_Z_ptmucut09 = new TH2F("h_PtY_DiMuon_Gen_Z_ptmucut09", ";#it{p}_{T} (GeV/#it{c}) ; #it{y}", 1200, 0, 120.0, 1800, -8.0, 8.0);
-        h_Nperevent_DiMuon_Gen_Z_ptmucut09 = new TH1F("h_Nperevent_DiMuon_Gen_Z_ptmucut09", "; #mu x ev", 10, -0.5, 9.5);
-
-        h_PtM_DiMuon_Gen_Z_ptmucut10 = new TH2F("h_PtM_DiMuon_Gen_Z_ptmucut10", ";#it{p}_{T} (GeV/#it{c}) ; #it{m}_{#mu#mu} (GeV/#it{c}^{2})", 1200, 0, 120.0, N_Bin, low_mass, high_mass);
-        h_PtY_DiMuon_Gen_Z_ptmucut10 = new TH2F("h_PtY_DiMuon_Gen_Z_ptmucut10", ";#it{p}_{T} (GeV/#it{c}) ; #it{y}", 1200, 0, 120.0, 1800, -8.0, 8.0);
-        h_Nperevent_DiMuon_Gen_Z_ptmucut10 = new TH1F("h_Nperevent_DiMuon_Gen_Z_ptmucut10", "; #mu x ev", 10, -0.5, 9.5);
-
-        h_PtM_DiMuon_Gen_Z_ptmucut20 = new TH2F("h_PtM_DiMuon_Gen_Z_ptmucut20", ";#it{p}_{T} (GeV/#it{c}) ; #it{m}_{#mu#mu} (GeV/#it{c}^{2})", 1200, 0, 120.0, N_Bin, low_mass, high_mass);
-        h_PtY_DiMuon_Gen_Z_ptmucut20 = new TH2F("h_PtY_DiMuon_Gen_Z_ptmucut20", ";#it{p}_{T} (GeV/#it{c}) ; #it{y}", 1200, 0, 120.0, 1800, -8.0, 8.0);
-        h_Nperevent_DiMuon_Gen_Z_ptmucut20 = new TH1F("h_Nperevent_DiMuon_Gen_Z_ptmucut20", "; #mu x ev", 10, -0.5, 9.5);
-
-        h_PtM_DiMuon_Gen_Z_DQcut_ptmucut09 = new TH2F("h_PtM_DiMuon_Gen_Z_DQcut_ptmucut09", ";#it{p}_{T} (GeV/#it{c}) ; #it{m}_{#mu#mu} (GeV/#it{c}^{2})", 1200, 0, 120.0, N_Bin, low_mass, high_mass);
-        h_PtY_DiMuon_Gen_Z_DQcut_ptmucut09 = new TH2F("h_PtY_DiMuon_Gen_Z_DQcut_ptmucut09", ";#it{p}_{T} (GeV/#it{c}) ; #it{y}", 1200, 0, 120.0, 150, -4.0, -2.5);
-        h_Nperevent_DiMuon_Gen_Z_DQcut_ptmucut09 = new TH1F("h_Nperevent_DiMuon_Gen_Z_DQcut_ptmucut09", "; #mu x ev", 10, -0.5, 9.5);
-
-        h_PtM_DiMuon_Gen_Z_DQcut_ptmucut10 = new TH2F("h_PtM_DiMuon_Gen_Z_DQcut_ptmucut10", ";#it{p}_{T} (GeV/#it{c}) ; #it{m}_{#mu#mu} (GeV/#it{c}^{2})", 1200, 0, 120.0, N_Bin, low_mass, high_mass);
-        h_PtY_DiMuon_Gen_Z_DQcut_ptmucut10 = new TH2F("h_PtY_DiMuon_Gen_Z_DQcut_ptmucut10", ";#it{p}_{T} (GeV/#it{c}) ; #it{y}", 1200, 0, 120.0, 150, -4.0, -2.5);
-        h_Nperevent_DiMuon_Gen_Z_DQcut_ptmucut10 = new TH1F("h_Nperevent_DiMuon_Gen_Z_DQcut_ptmucut10", "; #mu x ev", 10, -0.5, 9.5);
-
-        h_PtM_DiMuon_Gen_Z_DQcut_ptmucut20 = new TH2F("h_PtM_DiMuon_Gen_Z_DQcut_ptmucut20", ";#it{p}_{T} (GeV/#it{c}) ; #it{m}_{#mu#mu} (GeV/#it{c}^{2})", 1200, 0, 120.0, N_Bin, low_mass, high_mass);
-        h_PtY_DiMuon_Gen_Z_DQcut_ptmucut20 = new TH2F("h_PtY_DiMuon_Gen_Z_DQcut_ptmucut20", ";#it{p}_{T} (GeV/#it{c}) ; #it{y}", 1200, 0, 120.0, 150, -4.0, -2.5);
-        h_Nperevent_DiMuon_Gen_Z_DQcut_ptmucut20 = new TH1F("h_Nperevent_DiMuon_Gen_Z_DQcut_ptmucut20", "; #mu x ev", 10, -0.5, 9.5);
-
-        h_PtM_DiMuon_Rec_Z_ptmucut09 = new TH2F("h_PtM_DiMuon_Rec_Z_ptmucut09", ";#it{p}_{T} (GeV/#it{c}) ; #it{m}_{#mu#mu} (GeV/#it{c}^{2})", 1200, 0, 120.0, N_Bin, low_mass, high_mass);
-        h_PtY_DiMuon_Rec_Z_ptmucut09 = new TH2F("h_PtY_DiMuon_Rec_Z_ptmucut09", ";#it{p}_{T} (GeV/#it{c}) ; #it{y}", 1200, 0, 120.0, 150, -4.0, -2.5);
-        h_Nperevent_DiMuon_Rec_Z_ptmucut09 = new TH1F("h_Nperevent_DiMuon_Rec_Z_ptmucut09", "; #mu x ev", 10, -0.5, 9.5);
-
-        h_PtM_DiMuon_Rec_Z_ptmucut10 = new TH2F("h_PtM_DiMuon_Rec_Z_ptmucut10", ";#it{p}_{T} (GeV/#it{c}) ; #it{m}_{#mu#mu} (GeV/#it{c}^{2})", 1200, 0, 120.0, N_Bin, low_mass, high_mass);
-        h_PtY_DiMuon_Rec_Z_ptmucut10 = new TH2F("h_PtY_DiMuon_Rec_Z_ptmucut10", ";#it{p}_{T} (GeV/#it{c}) ; #it{y}", 1200, 0, 120.0, 150, -4.0, -2.5);
-        h_Nperevent_DiMuon_Rec_Z_ptmucut10 = new TH1F("h_Nperevent_DiMuon_Rec_Z_ptmucut10", "; #mu x ev", 10, -0.5, 9.5);
-
-        h_PtM_DiMuon_Rec_Z_ptmucut20 = new TH2F("h_PtM_DiMuon_Rec_Z_ptmucut20", ";#it{p}_{T} (GeV/#it{c}) ; #it{m}_{#mu#mu} (GeV/#it{c}^{2})", 1200, 0, 120.0, N_Bin, low_mass, high_mass);
-        h_PtY_DiMuon_Rec_Z_ptmucut20 = new TH2F("h_PtY_DiMuon_Rec_Z_ptmucut20", ";#it{p}_{T} (GeV/#it{c}) ; #it{y}", 1200, 0, 120.0, 150, -4.0, -2.5);
-        h_Nperevent_DiMuon_Rec_Z_ptmucut20 = new TH1F("h_Nperevent_DiMuon_Rec_Z_ptmucut20", "; #mu x ev", 10, -0.5, 9.5);
+        h_PdgPtY_HFHadron_prompt_PowhegOnly = (TH3F *)h_PdgPtY_HFHadron_prompt->Clone(Form("%s_PowhegOnly", h_PdgPtY_HFHadron_prompt->GetName()));
+        h_PdgPtY_HFHadron_notprompt_PowhegOnly = (TH3F *)h_PdgPtY_HFHadron_notprompt->Clone(Form("%s_PowhegOnly", h_PdgPtY_HFHadron_notprompt->GetName()));
     }
+    // if (forZ_sim)
+    // {
+    //     Double_t low_mass = 0;
+    //     Double_t high_mass = 120;
+    //     Int_t N_Bin = 1200;
+    //     h_PtM_DiMuon_Gen[limit_DiMu_origin] = new TH2F(Form("h_PtM_DiMuon_Gen_%s", DiMuon_origin[limit_DiMu_origin].Data()), ";#it{p}_{T} (GeV/#it{c}) ; #it{m}_{#mu#mu} (GeV/#it{c}^{2})", 1200, 0, 120.0, N_Bin, low_mass, high_mass);
+    //     h_PtY_DiMuon_Gen[limit_DiMu_origin] = new TH2F(Form("h_PtY_DiMuon_Gen_%s", DiMuon_origin[limit_DiMu_origin].Data()), ";#it{p}_{T} (GeV/#it{c}) ; #it{y}_{#mu#mu}", 1200, 0, 120.0, 160, -8.0, 8.0);
+    //     h_Nperevent_DiMuon_Gen[limit_DiMu_origin] = new TH1F(Form("h_Nperevent_DiMuon_Gen_%s", DiMuon_origin[limit_DiMu_origin].Data()), "; #mu x ev", 10, -0.5, 9.5);
+    //     // Inizialization hist for Generated Dimuons with DQ cuts
+    //     h_PtM_DiMuon_Gen_DQcut[limit_DiMu_origin] = new TH2F(Form("h_PtM_DiMuon_Gen_DQcut_%s", DiMuon_origin[limit_DiMu_origin].Data()), ";#it{p}_{T} (GeV/#it{c}) ; #it{m}_{#mu#mu} (GeV/#it{c}^{2})", 1200, 0, 120.0, N_Bin, low_mass, high_mass);
+    //     h_PtY_DiMuon_Gen_DQcut[limit_DiMu_origin] = new TH2F(Form("h_PtY_DiMuon_Gen_DQcut_%s", DiMuon_origin[limit_DiMu_origin].Data()), ";#it{p}_{T} (GeV/#it{c}) ; #it{y}", 1200, 0, 120.0, 150, -4.0, -2.5);
+    //     h_Nperevent_DiMuon_Gen_DQcut[limit_DiMu_origin] = new TH1F(Form("h_Nperevent_DiMuon_Gen_DQcut_%s", DiMuon_origin[limit_DiMu_origin].Data()), "; #mu x ev", 10, -0.5, 9.5);
+    //     // Inizialization hist for Reconstructed Dimuons
+    //     h_PtM_DiMuon_Rec[limit_DiMu_origin] = new TH2F(Form("h_PtM_DiMuon_Rec_%s", DiMuon_origin[limit_DiMu_origin].Data()), ";#it{p}_{T} (GeV/#it{c}) ; #it{m}_{#mu#mu} (GeV/#it{c}^{2})", 1200, 0, 120.0, N_Bin, low_mass, high_mass);
+    //     h_PtY_DiMuon_Rec[limit_DiMu_origin] = new TH2F(Form("h_PtY_DiMuon_Rec_%s", DiMuon_origin[limit_DiMu_origin].Data()), ";#it{p}_{T} (GeV/#it{c}) ; #it{y}", 1200, 0, 120.0, 150, -4.0, -2.5);
+    //     h_Nperevent_DiMuon_Rec[limit_DiMu_origin] = new TH1F(Form("h_Nperevent_DiMuon_Rec_%s", DiMuon_origin[limit_DiMu_origin].Data()), "; #mu x ev", 10, -0.5, 9.5);
+
+    //     h_PtM_DiMuon_Gen_Z_ptmucut09 = new TH2F("h_PtM_DiMuon_Gen_Z_ptmucut09", ";#it{p}_{T} (GeV/#it{c}) ; #it{m}_{#mu#mu} (GeV/#it{c}^{2})", 1200, 0, 120.0, N_Bin, low_mass, high_mass);
+    //     h_PtY_DiMuon_Gen_Z_ptmucut09 = new TH2F("h_PtY_DiMuon_Gen_Z_ptmucut09", ";#it{p}_{T} (GeV/#it{c}) ; #it{y}", 1200, 0, 120.0, 160, -8.0, 8.0);
+    //     h_Nperevent_DiMuon_Gen_Z_ptmucut09 = new TH1F("h_Nperevent_DiMuon_Gen_Z_ptmucut09", "; #mu x ev", 10, -0.5, 9.5);
+
+    //     h_PtM_DiMuon_Gen_Z_ptmucut10 = new TH2F("h_PtM_DiMuon_Gen_Z_ptmucut10", ";#it{p}_{T} (GeV/#it{c}) ; #it{m}_{#mu#mu} (GeV/#it{c}^{2})", 1200, 0, 120.0, N_Bin, low_mass, high_mass);
+    //     h_PtY_DiMuon_Gen_Z_ptmucut10 = new TH2F("h_PtY_DiMuon_Gen_Z_ptmucut10", ";#it{p}_{T} (GeV/#it{c}) ; #it{y}", 1200, 0, 120.0, 160, -8.0, 8.0);
+    //     h_Nperevent_DiMuon_Gen_Z_ptmucut10 = new TH1F("h_Nperevent_DiMuon_Gen_Z_ptmucut10", "; #mu x ev", 10, -0.5, 9.5);
+
+    //     h_PtM_DiMuon_Gen_Z_ptmucut20 = new TH2F("h_PtM_DiMuon_Gen_Z_ptmucut20", ";#it{p}_{T} (GeV/#it{c}) ; #it{m}_{#mu#mu} (GeV/#it{c}^{2})", 1200, 0, 120.0, N_Bin, low_mass, high_mass);
+    //     h_PtY_DiMuon_Gen_Z_ptmucut20 = new TH2F("h_PtY_DiMuon_Gen_Z_ptmucut20", ";#it{p}_{T} (GeV/#it{c}) ; #it{y}", 1200, 0, 120.0, 160, -8.0, 8.0);
+    //     h_Nperevent_DiMuon_Gen_Z_ptmucut20 = new TH1F("h_Nperevent_DiMuon_Gen_Z_ptmucut20", "; #mu x ev", 10, -0.5, 9.5);
+
+    //     h_PtM_DiMuon_Gen_Z_DQcut_ptmucut09 = new TH2F("h_PtM_DiMuon_Gen_Z_DQcut_ptmucut09", ";#it{p}_{T} (GeV/#it{c}) ; #it{m}_{#mu#mu} (GeV/#it{c}^{2})", 1200, 0, 120.0, N_Bin, low_mass, high_mass);
+    //     h_PtY_DiMuon_Gen_Z_DQcut_ptmucut09 = new TH2F("h_PtY_DiMuon_Gen_Z_DQcut_ptmucut09", ";#it{p}_{T} (GeV/#it{c}) ; #it{y}", 1200, 0, 120.0, 150, -4.0, -2.5);
+    //     h_Nperevent_DiMuon_Gen_Z_DQcut_ptmucut09 = new TH1F("h_Nperevent_DiMuon_Gen_Z_DQcut_ptmucut09", "; #mu x ev", 10, -0.5, 9.5);
+
+    //     h_PtM_DiMuon_Gen_Z_DQcut_ptmucut10 = new TH2F("h_PtM_DiMuon_Gen_Z_DQcut_ptmucut10", ";#it{p}_{T} (GeV/#it{c}) ; #it{m}_{#mu#mu} (GeV/#it{c}^{2})", 1200, 0, 120.0, N_Bin, low_mass, high_mass);
+    //     h_PtY_DiMuon_Gen_Z_DQcut_ptmucut10 = new TH2F("h_PtY_DiMuon_Gen_Z_DQcut_ptmucut10", ";#it{p}_{T} (GeV/#it{c}) ; #it{y}", 1200, 0, 120.0, 150, -4.0, -2.5);
+    //     h_Nperevent_DiMuon_Gen_Z_DQcut_ptmucut10 = new TH1F("h_Nperevent_DiMuon_Gen_Z_DQcut_ptmucut10", "; #mu x ev", 10, -0.5, 9.5);
+
+    //     h_PtM_DiMuon_Gen_Z_DQcut_ptmucut20 = new TH2F("h_PtM_DiMuon_Gen_Z_DQcut_ptmucut20", ";#it{p}_{T} (GeV/#it{c}) ; #it{m}_{#mu#mu} (GeV/#it{c}^{2})", 1200, 0, 120.0, N_Bin, low_mass, high_mass);
+    //     h_PtY_DiMuon_Gen_Z_DQcut_ptmucut20 = new TH2F("h_PtY_DiMuon_Gen_Z_DQcut_ptmucut20", ";#it{p}_{T} (GeV/#it{c}) ; #it{y}", 1200, 0, 120.0, 150, -4.0, -2.5);
+    //     h_Nperevent_DiMuon_Gen_Z_DQcut_ptmucut20 = new TH1F("h_Nperevent_DiMuon_Gen_Z_DQcut_ptmucut20", "; #mu x ev", 10, -0.5, 9.5);
+
+    //     h_PtM_DiMuon_Rec_Z_ptmucut09 = new TH2F("h_PtM_DiMuon_Rec_Z_ptmucut09", ";#it{p}_{T} (GeV/#it{c}) ; #it{m}_{#mu#mu} (GeV/#it{c}^{2})", 1200, 0, 120.0, N_Bin, low_mass, high_mass);
+    //     h_PtY_DiMuon_Rec_Z_ptmucut09 = new TH2F("h_PtY_DiMuon_Rec_Z_ptmucut09", ";#it{p}_{T} (GeV/#it{c}) ; #it{y}", 1200, 0, 120.0, 150, -4.0, -2.5);
+    //     h_Nperevent_DiMuon_Rec_Z_ptmucut09 = new TH1F("h_Nperevent_DiMuon_Rec_Z_ptmucut09", "; #mu x ev", 10, -0.5, 9.5);
+
+    //     h_PtM_DiMuon_Rec_Z_ptmucut10 = new TH2F("h_PtM_DiMuon_Rec_Z_ptmucut10", ";#it{p}_{T} (GeV/#it{c}) ; #it{m}_{#mu#mu} (GeV/#it{c}^{2})", 1200, 0, 120.0, N_Bin, low_mass, high_mass);
+    //     h_PtY_DiMuon_Rec_Z_ptmucut10 = new TH2F("h_PtY_DiMuon_Rec_Z_ptmucut10", ";#it{p}_{T} (GeV/#it{c}) ; #it{y}", 1200, 0, 120.0, 150, -4.0, -2.5);
+    //     h_Nperevent_DiMuon_Rec_Z_ptmucut10 = new TH1F("h_Nperevent_DiMuon_Rec_Z_ptmucut10", "; #mu x ev", 10, -0.5, 9.5);
+
+    //     h_PtM_DiMuon_Rec_Z_ptmucut20 = new TH2F("h_PtM_DiMuon_Rec_Z_ptmucut20", ";#it{p}_{T} (GeV/#it{c}) ; #it{m}_{#mu#mu} (GeV/#it{c}^{2})", 1200, 0, 120.0, N_Bin, low_mass, high_mass);
+    //     h_PtY_DiMuon_Rec_Z_ptmucut20 = new TH2F("h_PtY_DiMuon_Rec_Z_ptmucut20", ";#it{p}_{T} (GeV/#it{c}) ; #it{y}", 1200, 0, 120.0, 150, -4.0, -2.5);
+    //     h_Nperevent_DiMuon_Rec_Z_ptmucut20 = new TH1F("h_Nperevent_DiMuon_Rec_Z_ptmucut20", "; #mu x ev", 10, -0.5, 9.5);
+    // }
 }
 
-TChain *Importing_Tree(TString dir_filename, TString filename)
+TChain *Importing_Tree(TString dir_filename, TString filename, TString Generator)
 {
     TChain *tree = nullptr;
 
     tree = new TChain("MCTree");
     //    printf("%s \n",Form("%s/%s",dir_filename.Data(),filename.Data()));
     tree->AddFile(Form("%s/%s", dir_filename.Data(), filename.Data()));
-
-    tree->SetBranchAddress("N_HFquarks_gen", &N_HFquarks_gen);
-
-    tree->SetBranchAddress("PDG_HFquark_gen", PDG_HFquark_gen);
-    tree->SetBranchAddress("Pt_HFquark_gen", Pt_HFquark_gen);
-    tree->SetBranchAddress("Y_HFquark_gen", Y_HFquark_gen);
+    if (Generator.Contains("HF"))
+    {
+        tree->SetBranchAddress("N_HFquarks_gen", &N_HFquarks_gen);
+        tree->SetBranchAddress("PDG_HFquark_gen", PDG_HFquark_gen);
+        tree->SetBranchAddress("Pt_HFquark_gen", Pt_HFquark_gen);
+        tree->SetBranchAddress("Y_HFquark_gen", Y_HFquark_gen);
+        tree->SetBranchAddress("NHadrons_gen", &NHadrons_gen);
+        tree->SetBranchAddress("PDGmum_Hadron_gen", PDGmum_Hadron_gen);
+        tree->SetBranchAddress("PDG_Hadron_gen", PDG_Hadron_gen);
+        tree->SetBranchAddress("Pt_Hadron_gen", Pt_Hadron_gen);
+        tree->SetBranchAddress("E_Hadron_gen", E_Hadron_gen);
+        tree->SetBranchAddress("Px_Hadron_gen", Px_Hadron_gen);
+        tree->SetBranchAddress("Py_Hadron_gen", Py_Hadron_gen);
+        tree->SetBranchAddress("Pz_Hadron_gen", Pz_Hadron_gen);
+        tree->SetBranchAddress("Y_Hadron_gen", Y_Hadron_gen);
+        tree->SetBranchAddress("Eta_Hadron_gen", Eta_Hadron_gen);
+        tree->SetBranchAddress("HadronFrom_Powheg_gen", fHadronFrom_Powheg_gen);
+    }
+    else if (Generator.Contains("DY"))
+    {
+        tree->SetBranchAddress("N_gamma_gen", &fN_gamma);
+        tree->SetBranchAddress("Pt_gamma_gen", fPt_gamma);
+        tree->SetBranchAddress("M_gamma_gen", fM_gamma);
+        tree->SetBranchAddress("Y_gamma_gen", fY_gamma);
+    }
 
     tree->SetBranchAddress("NDimu_gen", &NDimu_gen);
     tree->SetBranchAddress("DimuMu_gen", DimuMu_gen);
@@ -399,6 +526,7 @@ TChain *Importing_Tree(TString dir_filename, TString filename)
     tree->SetBranchAddress("Phi_gen", Phi_gen);
     tree->SetBranchAddress("Theta_gen", Theta_gen);
     tree->SetBranchAddress("Charge_gen", Charge_gen);
+    tree->SetBranchAddress("From_Powheg_gen", fFrom_Powheg_gen);
 
     tree->SetBranchAddress("NDimu_rec", &NDimu_rec);
     tree->SetBranchAddress("DimuMu_rec", DimuMu_rec);
@@ -430,17 +558,7 @@ TChain *Importing_Tree(TString dir_filename, TString filename)
     tree->SetBranchAddress("pDCA_rec", pDCA_rec);
     tree->SetBranchAddress("Phi_rec", Phi_rec);
     tree->SetBranchAddress("Theta_rec", Theta_rec);
-
-    tree->SetBranchAddress("NHadrons_gen", &NHadrons_gen);
-    tree->SetBranchAddress("PDGmum_Hadron_gen", PDGmum_Hadron_gen);
-    tree->SetBranchAddress("PDG_Hadron_gen", PDG_Hadron_gen);
-    tree->SetBranchAddress("Pt_Hadron_gen", Pt_Hadron_gen);
-    tree->SetBranchAddress("E_Hadron_gen", E_Hadron_gen);
-    tree->SetBranchAddress("Px_Hadron_gen", Px_Hadron_gen);
-    tree->SetBranchAddress("Py_Hadron_gen", Py_Hadron_gen);
-    tree->SetBranchAddress("Pz_Hadron_gen", Pz_Hadron_gen);
-    tree->SetBranchAddress("Y_Hadron_gen", Y_Hadron_gen);
-    tree->SetBranchAddress("Eta_Hadron_gen", Eta_Hadron_gen);
+    tree->SetBranchAddress("From_Powheg_rec", fFrom_Powheg_rec);
 
     return tree;
 }
