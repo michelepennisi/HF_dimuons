@@ -38,7 +38,7 @@
 #include "AliAnalysisTaskDimuon_HighMass.h"
 
 Int_t IsPrompt(AliAODMCParticle *mcp_mumum, TClonesArray *mcarray);
-Int_t *Muon_ancestor_features(AliAODMCParticle *mcp_mumum, TClonesArray *mcarray, TString AOD_origin);
+Int_t *Muon_ancestor_features(AliAODMCParticle *mcp_mumum, TClonesArray *mcarray, TString AOD_origin, Bool_t Muon_Verbosity, Bool_t Hadron_Verbosity);
 
 ClassImp(AliAnalysisTaskDimuon_HighMass)
     //__________________________________________________________________________
@@ -87,15 +87,16 @@ ClassImp(AliAnalysisTaskDimuon_HighMass)
         fTheta_gen[i] = 999.;
         fFrom_Powheg_gen[i] = 999;
 
-        fPDGmum_Hadron_gen[i] = 999; // gen Hadron PDG mum
-        fPDG_Hadron_gen[i] = 999;    // gen Hadron PDG
-        fPt_Hadron_gen[i] = 999;     // gen Hadron pT
-        fE_Hadron_gen[i] = 999;      // gen Hadron E
-        fPx_Hadron_gen[i] = 999;     // gen Hadron px
-        fPy_Hadron_gen[i] = 999;     // gen Hadron py
-        fPz_Hadron_gen[i] = 999;     // gen Hadron pz
-        fY_Hadron_gen[i] = 999;      // gen Hadron y
-        fEta_Hadron_gen[i] = 999;    // gen Hadron eta
+        fPDGmum_Hadron_gen[i] = 999;     // gen Hadron PDG mum
+        fPDG_Hadron_gen[i] = 999;        // gen Hadron PDG
+        fPt_Hadron_gen[i] = 999;         // gen Hadron pT
+        fE_Hadron_gen[i] = 999;          // gen Hadron E
+        fPx_Hadron_gen[i] = 999;         // gen Hadron px
+        fPy_Hadron_gen[i] = 999;         // gen Hadron py
+        fPz_Hadron_gen[i] = 999;         // gen Hadron pz
+        fY_Hadron_gen[i] = 999;          // gen Hadron y
+        fEta_Hadron_gen[i] = 999;        // gen Hadron eta
+        fHadronFrom_Powheg_gen[i] = 999; // is hadron from powheg
 
         fPDGmum_rec[i] = 9999.;
         fPt_rec[i] = 999.;
@@ -193,15 +194,16 @@ AliAnalysisTaskDimuon_HighMass::AliAnalysisTaskDimuon_HighMass(const char *name)
         fTheta_gen[i] = 999.;
         fFrom_Powheg_gen[i] = 999;
 
-        fPDGmum_Hadron_gen[i] = 999; // gen Hadron PDG mum
-        fPDG_Hadron_gen[i] = 999;    // gen Hadron PDG
-        fPt_Hadron_gen[i] = 999;     // gen Hadron pT
-        fE_Hadron_gen[i] = 999;      // gen Hadron E
-        fPx_Hadron_gen[i] = 999;     // gen Hadron px
-        fPy_Hadron_gen[i] = 999;     // gen Hadron py
-        fPz_Hadron_gen[i] = 999;     // gen Hadron pz
-        fY_Hadron_gen[i] = 999;      // gen Hadron y
-        fEta_Hadron_gen[i] = 999;    // gen Hadron eta
+        fPDGmum_Hadron_gen[i] = 999;     // gen Hadron PDG mum
+        fPDG_Hadron_gen[i] = 999;        // gen Hadron PDG
+        fPt_Hadron_gen[i] = 999;         // gen Hadron pT
+        fE_Hadron_gen[i] = 999;          // gen Hadron E
+        fPx_Hadron_gen[i] = 999;         // gen Hadron px
+        fPy_Hadron_gen[i] = 999;         // gen Hadron py
+        fPz_Hadron_gen[i] = 999;         // gen Hadron pz
+        fY_Hadron_gen[i] = 999;          // gen Hadron y
+        fEta_Hadron_gen[i] = 999;        // gen Hadron eta
+        fHadronFrom_Powheg_gen[i] = 999; // is hadron from powheg
 
         fPDGmum_rec[i] = 9999.;
         fPt_rec[i] = 999.;
@@ -311,9 +313,8 @@ void AliAnalysisTaskDimuon_HighMass::UserCreateOutputObjects()
     OpenFile(1, "RECREATE");
 
     fOutputTree = new TTree("MCTree", "Data Tree");
-    switch (fSaving_opt)
+    if (fSaving_opt.Contains("withHF"))
     {
-    case kSaveHF:
         fOutputTree->Branch("N_HFquarks_gen", &fN_HFquarks_gen, "N_HFquarks_gen/I");
         fOutputTree->Branch("PDG_HFquark_gen", fPDG_HFquark_gen, "PDG_HFquark_gen[N_HFquarks_gen]/I");
         fOutputTree->Branch("Px_HFquark_gen", fPx_HFquark_gen, "Px_HFquark_gen[N_HFquarks_gen]/D");
@@ -333,71 +334,96 @@ void AliAnalysisTaskDimuon_HighMass::UserCreateOutputObjects()
         fOutputTree->Branch("Pz_Hadron_gen", fPz_Hadron_gen, "Pz_Hadron_gen[NHadrons_gen]/D");
         fOutputTree->Branch("Y_Hadron_gen", fY_Hadron_gen, "Y_Hadron_gen[NHadrons_gen]/D");
         fOutputTree->Branch("Eta_Hadron_gen", fEta_Hadron_gen, "Eta_Hadron_gen[NHadrons_gen]/D");
-        break;
-
-    case kSaveDY:
+        fOutputTree->Branch("HadronFrom_Powheg_gen", fHadronFrom_Powheg_gen, "HadronFrom_Powheg_gen[NHadrons_gen]/I");
+    }
+    else if (fSaving_opt.Contains("withDY"))
+    {
         fOutputTree->Branch("N_gamma_gen", &fN_gamma, "N_gamma_gen/I");
         fOutputTree->Branch("Pt_gamma_gen", fPt_gamma, "Pt_gamma_gen[N_gamma_gen]/D");
         fOutputTree->Branch("M_gamma_gen", fM_gamma, "M_gamma_gen[N_gamma_gen]/D");
         fOutputTree->Branch("Y_gamma_gen", fY_gamma, "Y_gamma_gen[N_gamma_gen]/D");
-        break;
     }
+    else if (fSaving_opt.Contains("lightMu"))
+    {
+        fOutputTree->Branch("NMuons_gen", &fNMuons_gen, "NMuons_gen/I");
+        fOutputTree->Branch("PDGmum_gen", fPDGmum_gen, "PDGmum_gen[NMuons_gen]/I");
+        fOutputTree->Branch("Pt_gen", fPt_gen, "Pt_gen[NMuons_gen]/D");
+        fOutputTree->Branch("Y_gen", fY_gen, "Y_gen[NMuons_gen]/D");
+        fOutputTree->Branch("Eta_gen", fEta_gen, "Eta_gen[NMuons_gen]/D");
+        fOutputTree->Branch("Charge_gen", fCharge_gen, "Charge_gen[NMuons_gen]/I");
+        fOutputTree->Branch("From_Powheg_gen", fFrom_Powheg_gen, "From_Powheg_gen[NMuons_gen]/I");
 
-    fOutputTree->Branch("NMuons_gen", &fNMuons_gen, "NMuons_gen/I");
-    fOutputTree->Branch("PDGmum_gen", fPDGmum_gen, "PDGmum_gen[NMuons_gen]/I");
-    fOutputTree->Branch("Pt_gen", fPt_gen, "Pt_gen[NMuons_gen]/D");
-    fOutputTree->Branch("E_gen", fE_gen, "E_gen[NMuons_gen]/D");
-    fOutputTree->Branch("Px_gen", fPx_gen, "Px_gen[NMuons_gen]/D");
-    fOutputTree->Branch("Py_gen", fPy_gen, "Py_gen[NMuons_gen]/D");
-    fOutputTree->Branch("Pz_gen", fPz_gen, "Pz_gen[NMuons_gen]/D");
-    fOutputTree->Branch("Y_gen", fY_gen, "Y_gen[NMuons_gen]/D");
-    fOutputTree->Branch("Eta_gen", fEta_gen, "Eta_gen[NMuons_gen]/D");
-    fOutputTree->Branch("Phi_gen", fPhi_gen, "Phi_gen[NMuons_gen]/D");
-    fOutputTree->Branch("Theta_gen", fTheta_gen, "Theta_gen[NMuons_gen]/D");
-    fOutputTree->Branch("Charge_gen", fCharge_gen, "Charge_gen[NMuons_gen]/I");
-    fOutputTree->Branch("From_Powheg_gen", fFrom_Powheg_gen, "From_Powheg_gen[NMuons_gen]/I");
+        fOutputTree->Branch("NMuons_rec", &fNMuons_rec, "NMuons_rec/I");
+        fOutputTree->Branch("PDGmum_rec", fPDGmum_rec, "PDGmum_rec[NMuons_rec]/I");
+        fOutputTree->Branch("Pt_rec", fPt_rec, "Pt_rec[NMuons_rec]/D");
+        fOutputTree->Branch("Y_rec", fY_rec, "Y_rec[NMuons_rec]/D");
+        fOutputTree->Branch("Eta_rec", fEta_rec, "Eta_rec[NMuons_rec]/D");
+        fOutputTree->Branch("MatchTrig_rec", fMatchTrig_rec, "MatchTrig_rec[NMuons_rec]/I");
+        fOutputTree->Branch("TrackChi2_rec", fTrackChi2_rec, "TrackChi2_rec[NMuons_rec]/D");
+        fOutputTree->Branch("MatchTrigChi2_rec", fMatchTrigChi2_rec, "MatchTrigChi2_rec[NMuons_rec]/D");
+        fOutputTree->Branch("Charge_rec", fCharge_rec, "Charge_rec[NMuons_rec]/I");
+        fOutputTree->Branch("RAtAbsEnd_rec", fRAtAbsEnd_rec, "RAtAbsEnd_rec[NMuons_rec]/D");
+        fOutputTree->Branch("pDCA_rec", fpDCA_rec, "pDCA[NMuons_rec]/I");
+        fOutputTree->Branch("From_Powheg_rec", fFrom_Powheg_rec, "From_Powheg_rec[NMuons_rec]/I");
+    }
+    else
+    {
+        fOutputTree->Branch("NMuons_gen", &fNMuons_gen, "NMuons_gen/I");
+        fOutputTree->Branch("PDGmum_gen", fPDGmum_gen, "PDGmum_gen[NMuons_gen]/I");
+        fOutputTree->Branch("Pt_gen", fPt_gen, "Pt_gen[NMuons_gen]/D");
+        fOutputTree->Branch("E_gen", fE_gen, "E_gen[NMuons_gen]/D");
+        fOutputTree->Branch("Px_gen", fPx_gen, "Px_gen[NMuons_gen]/D");
+        fOutputTree->Branch("Py_gen", fPy_gen, "Py_gen[NMuons_gen]/D");
+        fOutputTree->Branch("Pz_gen", fPz_gen, "Pz_gen[NMuons_gen]/D");
+        fOutputTree->Branch("Y_gen", fY_gen, "Y_gen[NMuons_gen]/D");
+        fOutputTree->Branch("Eta_gen", fEta_gen, "Eta_gen[NMuons_gen]/D");
+        fOutputTree->Branch("Phi_gen", fPhi_gen, "Phi_gen[NMuons_gen]/D");
+        fOutputTree->Branch("Theta_gen", fTheta_gen, "Theta_gen[NMuons_gen]/D");
+        fOutputTree->Branch("Charge_gen", fCharge_gen, "Charge_gen[NMuons_gen]/I");
+        fOutputTree->Branch("From_Powheg_gen", fFrom_Powheg_gen, "From_Powheg_gen[NMuons_gen]/I");
 
-    fOutputTree->Branch("NMuons_rec", &fNMuons_rec, "NMuons_rec/I");
-    fOutputTree->Branch("PDGmum_rec", fPDGmum_rec, "PDGmum_rec[NMuons_rec]/I");
-    fOutputTree->Branch("Pt_rec", fPt_rec, "Pt_rec[NMuons_rec]/D");
-    fOutputTree->Branch("E_rec", fE_rec, "E_rec[NMuons_rec]/D");
-    fOutputTree->Branch("Px_rec", fPx_rec, "Px_rec[NMuons_rec]/D");
-    fOutputTree->Branch("Py_rec", fPy_rec, "Py_rec[NMuons_rec]/D");
-    fOutputTree->Branch("Pz_rec", fPz_rec, "Pz_rec[NMuons_rec]/D");
-    fOutputTree->Branch("Y_rec", fY_rec, "Y_rec[NMuons_rec]/D");
-    fOutputTree->Branch("Eta_rec", fEta_rec, "Eta_rec[NMuons_rec]/D");
-    fOutputTree->Branch("MatchTrig_rec", fMatchTrig_rec, "MatchTrig_rec[NMuons_rec]/I");
-    fOutputTree->Branch("TrackChi2_rec", fTrackChi2_rec, "TrackChi2_rec[NMuons_rec]/D");
-    fOutputTree->Branch("MatchTrigChi2_rec", fMatchTrigChi2_rec, "MatchTrigChi2_rec[NMuons_rec]/D");
-    fOutputTree->Branch("Charge_rec", fCharge_rec, "Charge_rec[NMuons_rec]/I");
-    fOutputTree->Branch("RAtAbsEnd_rec", fRAtAbsEnd_rec, "RAtAbsEnd_rec[NMuons_rec]/D");
-    fOutputTree->Branch("pDCA_rec", fpDCA_rec, "pDCA[NMuons_rec]/I");
-    fOutputTree->Branch("Phi_rec", fPhi_rec, "Phi_rec[NMuons_rec]/D");
-    fOutputTree->Branch("Theta_rec", fTheta_rec, "Theta_rec[NMuons_rec]/D");
-    fOutputTree->Branch("From_Powheg_rec", fFrom_Powheg_rec, "From_Powheg_rec[NMuons_rec]/I");
+        fOutputTree->Branch("NMuons_rec", &fNMuons_rec, "NMuons_rec/I");
+        fOutputTree->Branch("PDGmum_rec", fPDGmum_rec, "PDGmum_rec[NMuons_rec]/I");
+        fOutputTree->Branch("Pt_rec", fPt_rec, "Pt_rec[NMuons_rec]/D");
+        fOutputTree->Branch("E_rec", fE_rec, "E_rec[NMuons_rec]/D");
+        fOutputTree->Branch("Px_rec", fPx_rec, "Px_rec[NMuons_rec]/D");
+        fOutputTree->Branch("Py_rec", fPy_rec, "Py_rec[NMuons_rec]/D");
+        fOutputTree->Branch("Pz_rec", fPz_rec, "Pz_rec[NMuons_rec]/D");
+        fOutputTree->Branch("Y_rec", fY_rec, "Y_rec[NMuons_rec]/D");
+        fOutputTree->Branch("Eta_rec", fEta_rec, "Eta_rec[NMuons_rec]/D");
+        fOutputTree->Branch("MatchTrig_rec", fMatchTrig_rec, "MatchTrig_rec[NMuons_rec]/I");
+        fOutputTree->Branch("TrackChi2_rec", fTrackChi2_rec, "TrackChi2_rec[NMuons_rec]/D");
+        fOutputTree->Branch("MatchTrigChi2_rec", fMatchTrigChi2_rec, "MatchTrigChi2_rec[NMuons_rec]/D");
+        fOutputTree->Branch("Charge_rec", fCharge_rec, "Charge_rec[NMuons_rec]/I");
+        fOutputTree->Branch("RAtAbsEnd_rec", fRAtAbsEnd_rec, "RAtAbsEnd_rec[NMuons_rec]/D");
+        fOutputTree->Branch("pDCA_rec", fpDCA_rec, "pDCA[NMuons_rec]/I");
+        fOutputTree->Branch("Phi_rec", fPhi_rec, "Phi_rec[NMuons_rec]/D");
+        fOutputTree->Branch("Theta_rec", fTheta_rec, "Theta_rec[NMuons_rec]/D");
+        fOutputTree->Branch("From_Powheg_rec", fFrom_Powheg_rec, "From_Powheg_rec[NMuons_rec]/I");
 
-    fOutputTree->Branch("NDimu_gen", &fNDimu_gen, "NDimu_gen/I");
-    fOutputTree->Branch("DimuMu_gen", fDimuMu_gen, "DimuMu_gen[NDimu_gen][2]/I");
-    fOutputTree->Branch("DimuPt_gen", fDimuPt_gen, "DimuPt_gen[NDimu_gen]/D");
-    fOutputTree->Branch("DimuPx_gen", fDimuPx_gen, "DimuPx_gen[NDimu_gen]/D");
-    fOutputTree->Branch("DimuPy_gen", fDimuPy_gen, "DimuPy_gen[NDimu_gen]/D");
-    fOutputTree->Branch("DimuPz_gen", fDimuPz_gen, "DimuPz_gen[NDimu_gen]/D");
-    fOutputTree->Branch("DimuY_gen", fDimuY_gen, "DimuY_gen[NDimu_gen]/D");
-    fOutputTree->Branch("DimuMass_gen", fDimuMass_gen, "DimuMass_gen[NDimu_gen]/D");
-    fOutputTree->Branch("DimuCharge_gen", fDimuCharge_gen, "DimuCharge_gen[NDimu_gen]/I");
+        fOutputTree->Branch("NDimu_gen", &fNDimu_gen, "NDimu_gen/I");
+        fOutputTree->Branch("DimuMu_gen", fDimuMu_gen, "DimuMu_gen[NDimu_gen][2]/I");
+        fOutputTree->Branch("DimuPt_gen", fDimuPt_gen, "DimuPt_gen[NDimu_gen]/D");
+        fOutputTree->Branch("DimuPx_gen", fDimuPx_gen, "DimuPx_gen[NDimu_gen]/D");
+        fOutputTree->Branch("DimuPy_gen", fDimuPy_gen, "DimuPy_gen[NDimu_gen]/D");
+        fOutputTree->Branch("DimuPz_gen", fDimuPz_gen, "DimuPz_gen[NDimu_gen]/D");
+        fOutputTree->Branch("DimuY_gen", fDimuY_gen, "DimuY_gen[NDimu_gen]/D");
+        fOutputTree->Branch("DimuMass_gen", fDimuMass_gen, "DimuMass_gen[NDimu_gen]/D");
+        fOutputTree->Branch("DimuCharge_gen", fDimuCharge_gen, "DimuCharge_gen[NDimu_gen]/I");
 
-    fOutputTree->Branch("NDimu_rec", &fNDimu_rec, "NDimu_rec/I");
-    fOutputTree->Branch("DimuMu_rec", fDimuMu_rec, "DimuMu_rec[NDimu_rec][2]/I");
-    fOutputTree->Branch("DimuPt_rec", fDimuPt_rec, "DimuPt_rec[NDimu_rec]/D");
-    fOutputTree->Branch("DimuPx_rec", fDimuPx_rec, "DimuPx_rec[NDimu_rec]/D");
-    fOutputTree->Branch("DimuPy_rec", fDimuPy_rec, "DimuPy_rec[NDimu_rec]/D");
-    fOutputTree->Branch("DimuPz_rec", fDimuPz_rec, "DimuPz_rec[NDimu_rec]/D");
-    fOutputTree->Branch("DimuY_rec", fDimuY_rec, "DimuY_rec[NDimu_rec]/D");
-    fOutputTree->Branch("DimuMass_rec", fDimuMass_rec, "DimuMass_rec[NDimu_rec]/D");
-    fOutputTree->Branch("DimuCharge_rec", fDimuCharge_rec, "DimuCharge_rec[NDimu_rec]/I");
-    fOutputTree->Branch("DimuMatch_rec", fDimuMatch_rec, "DimuMatch_rec[NDimu_rec]/I");
-    fOutputTree->Branch("DimuPhi_rec", fDimuPhi_rec, "DimuPhi_rec[NDimu_rec]/D");
-    fOutputTree->Branch("DimuTheta_rec", fDimuTheta_rec, "DimuTheta_rec[NDimu_rec]/D");
+        fOutputTree->Branch("NDimu_rec", &fNDimu_rec, "NDimu_rec/I");
+        fOutputTree->Branch("DimuMu_rec", fDimuMu_rec, "DimuMu_rec[NDimu_rec][2]/I");
+        fOutputTree->Branch("DimuPt_rec", fDimuPt_rec, "DimuPt_rec[NDimu_rec]/D");
+        fOutputTree->Branch("DimuPx_rec", fDimuPx_rec, "DimuPx_rec[NDimu_rec]/D");
+        fOutputTree->Branch("DimuPy_rec", fDimuPy_rec, "DimuPy_rec[NDimu_rec]/D");
+        fOutputTree->Branch("DimuPz_rec", fDimuPz_rec, "DimuPz_rec[NDimu_rec]/D");
+        fOutputTree->Branch("DimuY_rec", fDimuY_rec, "DimuY_rec[NDimu_rec]/D");
+        fOutputTree->Branch("DimuMass_rec", fDimuMass_rec, "DimuMass_rec[NDimu_rec]/D");
+        fOutputTree->Branch("DimuCharge_rec", fDimuCharge_rec, "DimuCharge_rec[NDimu_rec]/I");
+        fOutputTree->Branch("DimuMatch_rec", fDimuMatch_rec, "DimuMatch_rec[NDimu_rec]/I");
+        fOutputTree->Branch("DimuPhi_rec", fDimuPhi_rec, "DimuPhi_rec[NDimu_rec]/D");
+        fOutputTree->Branch("DimuTheta_rec", fDimuTheta_rec, "DimuTheta_rec[NDimu_rec]/D");
+    }
 
     fOutputTree->ls();
 
@@ -444,15 +470,16 @@ void AliAnalysisTaskDimuon_HighMass::UserExec(Option_t *)
         fCharge_gen[i] = 999.;
         fFrom_Powheg_gen[i] = 999;
 
-        fPDGmum_Hadron_gen[i] = 999; // gen Hadron PDG mum
-        fPDG_Hadron_gen[i] = 999;    // gen Hadron PDG
-        fPt_Hadron_gen[i] = 999;     // gen Hadron pT
-        fE_Hadron_gen[i] = 999;      // gen Hadron E
-        fPx_Hadron_gen[i] = 999;     // gen Hadron px
-        fPy_Hadron_gen[i] = 999;     // gen Hadron py
-        fPz_Hadron_gen[i] = 999;     // gen Hadron pz
-        fY_Hadron_gen[i] = 999;      // gen Hadron y
-        fEta_Hadron_gen[i] = 999;    // gen Hadron eta
+        fPDGmum_Hadron_gen[i] = 999;     // gen Hadron PDG mum
+        fPDG_Hadron_gen[i] = 999;        // gen Hadron PDG
+        fPt_Hadron_gen[i] = 999;         // gen Hadron pT
+        fE_Hadron_gen[i] = 999;          // gen Hadron E
+        fPx_Hadron_gen[i] = 999;         // gen Hadron px
+        fPy_Hadron_gen[i] = 999;         // gen Hadron py
+        fPz_Hadron_gen[i] = 999;         // gen Hadron pz
+        fY_Hadron_gen[i] = 999;          // gen Hadron y
+        fEta_Hadron_gen[i] = 999;        // gen Hadron eta
+        fHadronFrom_Powheg_gen[i] = 999; // is hadron from powheg
 
         fPDGmum_rec[i] = 9999.;
         fPt_rec[i] = 999.;
@@ -512,7 +539,7 @@ void AliAnalysisTaskDimuon_HighMass::UserExec(Option_t *)
     TClonesArray *mcarray = dynamic_cast<TClonesArray *>(fAODEvent->FindListObject(AliAODMCParticle::StdBranchName()));
     AliAODHeader *aodheader = dynamic_cast<AliAODHeader *>(fAODEvent->GetHeader());
     TString firedtrigger = aodheader->GetFiredTriggerClasses();
-    printf("%s\n", firedtrigger.Data());
+    // printf("%s\n", firedtrigger.Data());
 
     Int_t nHFquark_gen = 0;
     Int_t nmu_gen = 0;
@@ -602,16 +629,15 @@ void AliAnalysisTaskDimuon_HighMass::UserExec(Option_t *)
             fCharge_gen[nmu_gen] = -TMath::Sign(1, PDG_MC_part0); // Sign minus necessary
             fTheta_gen[nmu_gen] = MC_part0->Theta();
             MC_part0->Momentum(vector_mcp0);
-            Int_t Final_PDG = 999;
-            Bool_t isFromPowheg = kFALSE;
+
             // Int_t final_mom_mu0 = IsPrompt(Mum_MC_part0, mcarray);
             // if ((TMath::Abs(PDG_Mum_MC_part0) > 400 && TMath::Abs(PDG_Mum_MC_part0) < 500) || (TMath::Abs(PDG_Mum_MC_part0) > 4000 && TMath::Abs(PDG_Mum_MC_part0) < 5000))
             //     fPDGmum_gen[nmu_gen] = IsPrompt(Mum_MC_part0, mcarray);
             // else
             //     fPDGmum_gen[nmu_gen] = PDG_Mum_MC_part0;
-            Int_t *muon_properties = Muon_ancestor_features(Mum_MC_part0, mcarray, fAOD_origin);
-
-            printf("Gen Muon properties: PDG mum %d , is from powheg %d\n", muon_properties[0], muon_properties[1]);
+            Int_t *muon_properties = Muon_ancestor_features(Mum_MC_part0, mcarray, fAOD_origin, kFALSE, kFALSE);
+            if (fVerbose)
+                printf("Gen Muon properties: PDG mum %d , is from powheg? %d\n", muon_properties[0], muon_properties[1]);
             fPDGmum_gen[nmu_gen] = muon_properties[0];
             fFrom_Powheg_gen[nmu_gen] = muon_properties[1];
 
@@ -628,7 +654,7 @@ void AliAnalysisTaskDimuon_HighMass::UserExec(Option_t *)
             fPt_gamma[n_gamma] = MC_part0->Pt();
             fM_gamma[n_gamma] = MC_part0->GetCalcMass();
             fY_gamma[n_gamma] = MC_part0->Y();
-            if (index_Mum_MC_part0 == -1 && fSaving_opt == kSaveDY)
+            if (index_Mum_MC_part0 == -1 && fSaving_opt.Contains("DY"))
             {
                 printf("\n");
                 printf("index %d\n", i_nMCpart);
@@ -653,7 +679,7 @@ void AliAnalysisTaskDimuon_HighMass::UserExec(Option_t *)
             fY_HFquark_gen[nHFquark_gen] = MC_part0->Y();
             fMother_index[nHFquark_gen] = index_Mum_MC_part0;
 
-            if (index_Mum_MC_part0 == -1 && fSaving_opt == kSaveHF)
+            if (index_Mum_MC_part0 == -1 && fSaving_opt.Contains("HF"))
             {
                 printf("\n");
                 printf("index %d\n", i_nMCpart);
@@ -668,14 +694,18 @@ void AliAnalysisTaskDimuon_HighMass::UserExec(Option_t *)
         {
             // MC_part0->Print();
             // printf("i_nMCpart %d) PDG: %d | MCParticle Pt %0.1f | Px %0.1f | Py %0.1f | Pz %0.1f | Y %0.1f || Mother %d , PDG Mother %d \n", i_nMCpart, PDG_MC_part0, MC_part0->Pt(), MC_part0->Px(), MC_part0->Py(), MC_part0->Pz(), MC_part0->Y(), index_Mum_MC_part0, PDG_Mum_MC_part0);
+            Int_t *hadron_properties = Muon_ancestor_features(Mum_MC_part0, mcarray, fAOD_origin, kFALSE, kFALSE);
+            if (fVerbose)
+                printf("Gen Hadron properties: PDG Hadron %d PDG mum %d , is from powheg? %d\n", PDG_MC_part0, hadron_properties[0], hadron_properties[1]);
 
-            if (Charm_Hadron && TMath::Abs(PDG_Mum_MC_part0) != 4)
-                final_mom_mu0 = IsPrompt(Mum_MC_part0, mcarray);
-            else
-                final_mom_mu0 = PDG_Mum_MC_part0;
+            // if (Charm_Hadron && TMath::Abs(PDG_Mum_MC_part0) != 4)
+            //     final_mom_mu0 = IsPrompt(Mum_MC_part0, mcarray);
+            // else
+            //     final_mom_mu0 = PDG_Mum_MC_part0;
             // printf("final mum %i \n", final_mom_mu0);
-            fPDGmum_Hadron_gen[nHadron_gen] = final_mom_mu0; // gen Hadron PDG mum
-            fPDG_Hadron_gen[nHadron_gen] = PDG_MC_part0;     // gen Hadron PDG
+            fPDGmum_Hadron_gen[nHadron_gen] = hadron_properties[0];     // gen Hadron PDG mum
+            fHadronFrom_Powheg_gen[nHadron_gen] = hadron_properties[1]; // gen Hadron PDG mum
+            fPDG_Hadron_gen[nHadron_gen] = PDG_MC_part0;                // gen Hadron PDG
             fPt_Hadron_gen[nHadron_gen] = MC_part0->Pt();
             fE_Hadron_gen[nHadron_gen] = MC_part0->E();
             fPx_Hadron_gen[nHadron_gen] = MC_part0->Px();
@@ -727,6 +757,7 @@ void AliAnalysisTaskDimuon_HighMass::UserExec(Option_t *)
     fNMuons_gen = nmu_gen;
     fNHadrons_gen = nHadron_gen;
     fNDimu_gen = ndimu_gen;
+    printf("Stop MC particles analysis\n");
     for (Int_t i_nDimu_Gen = 0; i_nDimu_Gen < ndimu_gen; i_nDimu_Gen++)
     {
         Int_t LabelNew1 = 0;
@@ -847,9 +878,9 @@ void AliAnalysisTaskDimuon_HighMass::UserExec(Option_t *)
         // }
         // else
         //     fPDGmum_rec[nmu_rec] = PDG_Mum_MCpart_Track0;
-        Int_t *muon_properties = Muon_ancestor_features(Mum_MCpart_Track0, mcarray, fAOD_origin);
-
-        printf("Rec Muon properties: PDG mum %d , is from powheg %d\n", muon_properties[0], muon_properties[1]);
+        Int_t *muon_properties = Muon_ancestor_features(Mum_MCpart_Track0, mcarray, fAOD_origin, kFALSE, kFALSE);
+        if (fVerbose)
+            printf("Rec Muon properties: PDG mum %d , is from powheg? %d\n", muon_properties[0], muon_properties[1]);
         fPDGmum_rec[nmu_rec] = muon_properties[0];
         fFrom_Powheg_rec[nmu_rec] = muon_properties[1];
 
@@ -952,19 +983,25 @@ void AliAnalysisTaskDimuon_HighMass::UserExec(Option_t *)
         fDimuMu_rec[i][0] = LabelNew1;
         fDimuMu_rec[i][1] = LabelNew2;
     }
-
+    printf("Stop Rec particles analysis\n");
     fOutputTree->Fill();
     PostData(1, fOutputTree);
 }
 
 //________________________________________________________________________
 
-Int_t *Muon_ancestor_features(AliAODMCParticle *mcp_mumum, TClonesArray *mcarray, TString AOD_origin)
+Int_t *Muon_ancestor_features(AliAODMCParticle *mcp_mumum, TClonesArray *mcarray, TString AOD_origin, Bool_t Muon_Verbosity, Bool_t Hadron_Verbosity)
 {
     static Int_t Muon_properties[2];
     Muon_properties[0] = mcp_mumum->GetPdgCode();
     Muon_properties[1] = 999;
-    Bool_t Verbosity = kTRUE;
+
+    if (Muon_Verbosity)
+        printf("Found Muon from HF hadron decay. HF ancestor PDG: %d\n", mcp_mumum->GetPdgCode());
+
+    if (Hadron_Verbosity)
+        printf("Found HF hadron. HF ancestor PDG: %d\n", mcp_mumum->GetPdgCode());
+
     Int_t index_ancestor_mum = mcp_mumum->GetMother();
     if (index_ancestor_mum == -1)
     {
@@ -978,20 +1015,25 @@ Int_t *Muon_ancestor_features(AliAODMCParticle *mcp_mumum, TClonesArray *mcarray
 
     if ((TMath::Abs(PDG_muon_mum) > 400 && TMath::Abs(PDG_muon_mum) < 500) || (TMath::Abs(PDG_muon_mum) > 4000 && TMath::Abs(PDG_muon_mum) < 5000))
     {
-        if (Verbosity)
+        if (Muon_Verbosity)
             printf("Starting: Index Muon Ancestor %d | PDG Muon Ancestor %d | \n", index_ancestor_mum, PDG_muon_mum);
+
+        if (Hadron_Verbosity)
+            printf("Starting: Index Hadron Ancestor %d | PDG Hadron Ancestor %d | \n", index_ancestor_mum, PDG_muon_mum);
         Bool_t testing = kTRUE;
         Int_t round = 0;
 
         AliAODMCParticle *mcp_ancestor0 = (AliAODMCParticle *)mcarray->At(index_ancestor_mum); // Muon ancestor definition
         Int_t PDGcode_ancestor0 = mcp_ancestor0->GetPdgCode();
-        if (Verbosity)
-            printf("Round: %d Index Muon Ancestor %d | PDG Muon Ancestor %d | \n", round, index_ancestor_mum, PDGcode_ancestor0);
 
         while (testing)
         {
-            if (Verbosity)
+            if (Muon_Verbosity)
                 printf("Round %d | Index Muon Ancestor %d | PDG Muon Ancestor %d | \n", round, index_ancestor_mum, PDGcode_ancestor0);
+
+            if (Hadron_Verbosity)
+                printf("Round %d | Index Charm Hadron Ancestor %d | PDG Charm Hadron Ancestor %d | \n", round, index_ancestor_mum, PDGcode_ancestor0);
+
             round++;
             if (index_ancestor_mum < 2)
             {
@@ -1000,23 +1042,34 @@ Int_t *Muon_ancestor_features(AliAODMCParticle *mcp_mumum, TClonesArray *mcarray
             }
             else if (TMath::Abs(PDGcode_ancestor0) == 5)
             {
-                if (Verbosity)
+                if (Muon_Verbosity)
                     printf("Muon from Beauty Quark \n");
+
+                if (Hadron_Verbosity)
+                    printf("Hadron from Beauty Quark \n");
                 testing = kFALSE;
                 break;
             }
             else if (TMath::Abs(PDGcode_ancestor0) > 500 && TMath::Abs(PDGcode_ancestor0) < 600)
             {
-                if (Verbosity)
+                if (Muon_Verbosity)
                     printf("Muon from Beauty Meson \n");
+
+                if (Hadron_Verbosity)
+                    printf("Hadron from Beauty Meson \n");
+
                 PDG_muon_mum = PDGcode_ancestor0; // if the charm hadron ancestor had a beauty hadron as ancestor, save this last one as the muon ancestor
                 testing = kFALSE;
                 break;
             }
             else if (TMath::Abs(PDGcode_ancestor0) > 5000 && TMath::Abs(PDGcode_ancestor0) < 6000)
             {
-                if (Verbosity)
+                if (Muon_Verbosity)
                     printf("Muon from Beauty Barion \n");
+
+                if (Hadron_Verbosity)
+                    printf("Hadron from Beauty Barion \n");
+
                 PDG_muon_mum = PDGcode_ancestor0; // if the charm hadron ancestor had a beauty hadron as ancestor, save this last one as the muon ancestor
                 testing = kFALSE;
                 break;
@@ -1042,38 +1095,49 @@ Int_t *Muon_ancestor_features(AliAODMCParticle *mcp_mumum, TClonesArray *mcarray
     if (AOD_origin != "Powheg")
         return Muon_properties;
 
-    if (Verbosity)
+    if (Muon_Verbosity)
         printf("Looking for powheg HF quark\n");
 
-    if (Verbosity)
+    if (Muon_Verbosity)
         printf("Starting: Index Muon Ancestor %d | PDG Muon Ancestor %d | \n", index_ancestor_mum, PDG_muon_mum);
+
+    if (Hadron_Verbosity)
+        printf("Starting: Index Hadron Ancestor %d | PDG Hadron Ancestor %d | \n", index_ancestor_mum, PDG_muon_mum);
     Bool_t testing = kTRUE;
     Int_t round = 0;
 
     if (index_ancestor_mum < 2)
+    {
+        if (Muon_Verbosity || Hadron_Verbosity)
+            printf("Found initial parton with index %d\n", index_ancestor_mum);
         Muon_properties[1] = index_ancestor_mum;
+    }
     else
     {
 
         AliAODMCParticle *mcp_ancestor0 = (AliAODMCParticle *)mcarray->At(index_ancestor_mum); // Muon ancestor definition
         Int_t PDGcode_ancestor0 = mcp_ancestor0->GetPdgCode();
-        if (Verbosity)
-            printf("Round: %d Index Muon Ancestor %d | PDG Muon Ancestor %d | \n", round, index_ancestor_mum, PDGcode_ancestor0);
 
         while (testing)
         {
+
+            if (Muon_Verbosity)
+                printf("Round %d | Index Mum %d | PDG Muon Ancestor %d | \n", round, index_ancestor_mum, PDGcode_ancestor0);
+
+            if (Hadron_Verbosity)
+                printf("Round %d | Index Mum %d | PDG Hadron Ancestor %d | \n", round, index_ancestor_mum, PDGcode_ancestor0);
+
             index_ancestor_mum = mcp_ancestor0->GetMother();
             if (index_ancestor_mum < 2)
             {
                 testing = kFALSE;
-                printf("HF from Powheg\n");
+                if (Muon_Verbosity || Hadron_Verbosity)
+                    printf("Found initial parton with index %d\n", index_ancestor_mum);
+
                 break;
             }
             mcp_ancestor0 = (AliAODMCParticle *)mcarray->At(index_ancestor_mum); // Salto gen Muone
             PDGcode_ancestor0 = mcp_ancestor0->GetPdgCode();
-
-            if (Verbosity)
-                printf("Round %d | Index Mum %d | PDG Muon Ancestor %d | \n", round, index_ancestor_mum, PDGcode_ancestor0);
             round++;
         }
 

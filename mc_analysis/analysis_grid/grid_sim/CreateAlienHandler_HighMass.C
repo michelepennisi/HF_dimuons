@@ -32,7 +32,7 @@ AliAnalysisGrid *CreateAlienHandler_HighMass(const char *runMode, TString Versio
 
   // Define alien work directory where all files will be copied. Relative to alien $HOME.
   TString outdirname;
-  outdirname.Form("test_%s_analysis/%s/%d", MC_type.Data(), Version.Data(), RunNumber);
+  outdirname.Form("MuonOnlyTest_%s_analysis/%s/%d", MC_type.Data(), Version.Data(), RunNumber);
   plugin->SetGridWorkingDir(outdirname.Data()); // NOTE: Change name here every new run!!!eclare alien output directory. Relative to working directory.
   // plugin->SetGridOutputDir("OutputTree");          // In this case will be $HOME/work/output
   plugin->SetOutputToRunNo(kFALSE); // we want the run number as output subdirectory
@@ -52,7 +52,7 @@ AliAnalysisGrid *CreateAlienHandler_HighMass(const char *runMode, TString Versio
   plugin->SetDropToShell(kFALSE); // to automatically exit alien shell
 
   // Optionally set maximum number of input files/subjob (default 100, put 0 to ignore)
-  Int_t nNoOfInputFiles = 30; // default is usually 0
+  Int_t nNoOfInputFiles = 20; // default is usually 0
   if (nNoOfInputFiles != 0)
     plugin->SetSplitMaxInputFileNumber(nNoOfInputFiles);
   // Optionally set number of failed jobs that will trigger killing waiting sub-jobs.

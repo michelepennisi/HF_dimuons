@@ -29,13 +29,14 @@ public:
     void SetAnalysisType(const char *type) { fkAnalysisType = type; }
     void SetPeriod(TString period) { fPeriod = period; }
 
-    typedef enum
-    {
-        kSaveHF,
-        kSaveDY
-    } Saving_opt_t;
+    // typedef enum
+    // {
+    //     kSaveHF,
+    //     kSaveDY,
+    //     kSaveMuonOnly,
+    // } Saving_opt_t;
 
-    virtual void SetSaving_opt(Saving_opt_t opt)
+    virtual void SetSaving_opt(TString opt)
     {
         fSaving_opt = opt;
     }
@@ -48,7 +49,7 @@ private:
     AliAnalysisTaskDimuon_HighMass(const AliAnalysisTaskDimuon_HighMass &);
     AliAnalysisTaskDimuon_HighMass &operator=(const AliAnalysisTaskDimuon_HighMass &);
 
-    Saving_opt_t fSaving_opt;
+    TString fSaving_opt;
 
     TString fAOD_origin;
 
@@ -132,6 +133,7 @@ private:
     Double_t fPz_Hadron_gen[fMuons_dim];  // gen Hadron pz
     Double_t fY_Hadron_gen[fMuons_dim];   // gen Hadron y
     Double_t fEta_Hadron_gen[fMuons_dim]; // gen Hadron eta
+    Int_t fHadronFrom_Powheg_gen[fMuons_dim]; // check muon gen origin
 
     Int_t fDimuMu_gen[fDimu_dim][2];   // reference to single gen mus
     Double_t fDimuPt_gen[fDimu_dim];   // gen dimuon pT

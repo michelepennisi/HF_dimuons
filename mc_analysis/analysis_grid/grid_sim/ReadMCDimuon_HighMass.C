@@ -13,16 +13,16 @@
 /// alice/sim/2022/LHC22b3/294925/AOD/
 /// alice/cern.ch/user/m/mpennisi/powheg_jdl_sub_test/LHC18p
 void ReadMCDimuon_HighMass(
-    const char *RunMode = "test",
-    Int_t RunNumber = 294009,
-    TString Version = "Version_3_AOD",
-    TString MC_type = "LHC22b3",
-    TString GridDir = "/alice/sim/2022",
+    const char *RunMode = "full",
+    Int_t RunNumber = 294013,
+    TString Version = "Version_3_AliAODMuons",
+    TString MC_type = "LHC23i1",
+    TString GridDir = "/alice/sim/2023",
     // TString GridDir = "/alice/cern.ch/user/m/mpennisi/jira_test_charm",
     // TString GridDir = "/alice/cern.ch/user/m/mpennisi",
-    TString AOD_origin = "Pythia",
+    TString AOD_origin = "Powheg",
     Bool_t usePhysicsSelection = kFALSE,
-    TString DataPattern = "/AOD/*/AliAOD.root",
+    TString DataPattern = "/AOD/*/AliAOD.Muons.root",
     TString AliPhysicsVersion = "vAN-20220204_ROOT6-1",
     Bool_t gridMerge = kTRUE)
 {
@@ -69,7 +69,7 @@ void ReadMCDimuon_HighMass(
   //------------------------------------------------------------------------------------
   gROOT->LoadMacro("AliAnalysisTaskDimuon_HighMass.cxx++g");
   AliAnalysisTaskDimuon_HighMass *MCTask = reinterpret_cast<AliAnalysisTaskDimuon_HighMass *>(gInterpreter->ProcessLine(Form(".x %s(\"%s\",%d)", "../AddTaskDimuon_HighMass.C", MC_type.Data(), RunNumber))); // I set by hand usePhysicsSelection=kTRUE
-  MCTask->SetSaving_opt(AliAnalysisTaskDimuon_HighMass::kSaveHF);
+  MCTask->SetSaving_opt(Version);
   MCTask->SetAOD_origin(AOD_origin);
   mgr->AddTask(MCTask);
   if (usePhysicsSelection)
