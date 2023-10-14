@@ -3,11 +3,11 @@
 void save_mc_output(
     // TString RunMode = "test_new_prompt_LHC22b3",
     TString RunMode = "LHC23i2",
-    // TString dir_fileIn = " /home/michele_pennisi/cernbox/output_HF_dimuons/mc_analysis_output/LHC22b3/Data/Version1_AOD",
-    TString dir_fileIn = "/home/michele_pennisi/cernbox/HF_dimuons/mc_analysis/analysis_grid/grid_sim/test_beauty_sim_2",
+    TString dir_fileIn = "/alidata/mpennisi/output_grid/LHC23i2/Version3_AliAOD/Data/294009/output/000/001",
+    // TString dir_fileIn = "/home/michele_pennisi/cernbox/HF_dimuons/mc_analysis/analysis_grid/grid_sim/test_beauty_sim_2",
     // TString dir_fileIn = "/home/michele_pennisi/cernbox/HF_dimuons/mc_analysis/analysis_grid/grid_sim/test_charm_sim",
     // TString dir_fileIn = "/home/michele_pennisi/cernbox/HF_dimuons/mc_analysis/analysis_grid/grid_sim/LHC18p_DY_100k_Version2_AOD",
-    TString dir_fileOut = "test_new_sim",
+    TString dir_fileOut = "/alidata/mpennisi/output_grid",
     Int_t RunNumber = 294009,
     TString Generator = "Powheg",
     TString prefix_filename = "MCDimuHFTree")
@@ -19,11 +19,11 @@ void save_mc_output(
     filename.Form("%s_MCDimuHFTree_%d.root", RunMode.Data(), RunNumber);
 
     TString file_out;
-    file_out.Form("27_09_changes_%s_MC_output_Hist_%d.root", RunMode.Data(), RunNumber);
+    file_out.Form("%s_MC_output_Hist_%d.root", RunMode.Data(), RunNumber);
     // file_out.Form("old_%s_MC_output_Hist_%d.root", RunMode.Data(), RunNumber);
 
     TString file_out_tree;
-    file_out_tree.Form("27_09_changes_%s_MC_output_Tree_%d.root", RunMode.Data(), RunNumber);
+    file_out_tree.Form("%s_MC_output_Tree_%d.root", RunMode.Data(), RunNumber);
 
     printf("%s/%s\n", dir_fileOut.Data(), file_out.Data());
     printf("%s/%s\n", dir_fileOut.Data(), file_out_tree.Data());
@@ -31,12 +31,23 @@ void save_mc_output(
     Double_t *Pt_Dimu_Rec = new Double_t;
     Double_t *M_Dimu_Rec = new Double_t;
 
+    Double_t *Pt_Dimu_Rec_PowhegOnly = new Double_t;
+    Double_t *M_Dimu_Rec_PowhegOnly = new Double_t;
+
     TTree *Tree_DiMuon_Rec[n_DiMuon_origin];
+    TTree *Tree_DiMuon_Rec_PowhegOnly[n_DiMuon_origin];
     for (Int_t i_DiMuon_origin = 0; i_DiMuon_origin < n_DiMuon_origin; i_DiMuon_origin++)
     {
         Tree_DiMuon_Rec[i_DiMuon_origin] = new TTree(Form("Tree_DiMuon_Rec_%s", DiMuon_origin[i_DiMuon_origin].Data()), "Dimuons with mass > 4 Gev");
         Tree_DiMuon_Rec[i_DiMuon_origin]->Branch("m", M_Dimu_Rec, "m/D");
         Tree_DiMuon_Rec[i_DiMuon_origin]->Branch("pt", Pt_Dimu_Rec, "pt/D");
+
+        if (Generator.Contains("Powheg"))
+        {
+            Tree_DiMuon_Rec_PowhegOnly[i_DiMuon_origin] = new TTree(Form("Tree_DiMuon_Rec_PowhegOnly_%s", DiMuon_origin[i_DiMuon_origin].Data()), "Dimuons with mass > 4 Gev");
+            Tree_DiMuon_Rec_PowhegOnly[i_DiMuon_origin]->Branch("m", M_Dimu_Rec_PowhegOnly, "m/D");
+            Tree_DiMuon_Rec_PowhegOnly[i_DiMuon_origin]->Branch("pt", Pt_Dimu_Rec_PowhegOnly, "pt/D");
+        }
     }
 
     printf("Input File: %s\n", filename.Data());
@@ -722,11 +733,18 @@ void save_mc_output(
                         h_PtY_DiMuon_Rec_PowhegOnly[i_DiMuon_origin]->Fill(Pt_DiMu, Y_DiMu);
                         n_DiMuon_Rec_PowhegOnly[i_DiMuon_origin]++;
                     }
-                    if (M_DiMu > 4 && M_DiMu < 30)
+                    if (M_DiMu > 4 && M_DiMu < 40)
                     {
                         *Pt_Dimu_Rec = Pt_DiMu;
                         *M_Dimu_Rec = M_DiMu;
                         Tree_DiMuon_Rec[i_DiMuon_origin]->Fill();
+
+                        if (Generator.Contains("Powheg") && IsFromPowheg_Mu0 == -1 && IsFromPowheg_Mu1 == -1)
+                        {
+                            *Pt_Dimu_Rec_PowhegOnly = Pt_DiMu;
+                            *M_Dimu_Rec_PowhegOnly = M_DiMu;
+                            Tree_DiMuon_Rec_PowhegOnly[i_DiMuon_origin]->Fill();
+                        }
                     }
                 }
             }
@@ -748,6 +766,11 @@ void save_mc_output(
     {
         if (Tree_DiMuon_Rec[i_Dimuon_origin]->GetEntries() > 0)
             Tree_DiMuon_Rec[i_Dimuon_origin]->Write(0, 2, 0);
+        if (Generator.Contains("Powheg"))
+        {
+            if (Tree_DiMuon_Rec_PowhegOnly[i_Dimuon_origin]->GetEntries() > 0)
+                Tree_DiMuon_Rec_PowhegOnly[i_Dimuon_origin]->Write(0, 2, 0);
+        }
     }
     // Tree_DiMuon_Rec->Write(0, 2, 0);
     fOut_Tree.Close();
