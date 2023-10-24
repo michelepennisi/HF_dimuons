@@ -15,6 +15,7 @@
 #include "TROOT.h"
 #include "TString.h"
 #include "TLorentzVector.h"
+#include "TRandom3.h"
 // ROOT, for interactive graphics.
 #include "TVirtualPad.h"
 #include "TApplication.h"
@@ -42,18 +43,25 @@ int main(int argc, char *argv[])
     TApplication theApp("hist", &argc, argv);
     // printf("argc = %d\n argv = %s\n",theApp.Argc(),theApp.Argv(0));
     int nevents = 10000;
-    int seed = 1996;
+    
+    int seed = 12345;
     int mode = -1;  //-1==Monash  .  1 not allowed. Check JHEP08(2015)003
     int n_MPI = -1; //-1==we take everything --> >0--> register only larger nMPI events
     int chooseprocess = 1;
     int choosechange = 0; // 1 = SoftQCD, 2 = ccbar, 3 = bbbar
     int BR = 0;           // 0 = original BR, 1 = force semileptonic decay of charm
+    int nchunk = 999;
 
     // read arguments to change settings
     for (int ig = 0; ig < argc; ++ig)
     {
         TString str = argv[ig];
         printf("str %d %s\n", ig, argv[ig]);
+        if (str.Contains("--chunk"))
+        {
+            sscanf(argv[ig + 1], "%d", &nchunk);
+            printf("nchunk after setting: %d\n", nchunk);
+        }
         if (str.Contains("--events"))
         {
             sscanf(argv[ig + 1], "%d", &nevents);
@@ -218,9 +226,13 @@ int main(int argc, char *argv[])
     char outfilename2[100];
 
     // const char *path="/Volumes/REPOSITORY/Test/";
+    TString path;
+    if (nchunk == 999)
+        path.Form("/home/michele_pennisi/cernbox/HF_dimuons/pythia_stand/sim");
+    else
+        path.Form("/alidata/mpennisi/pythia_stand_sim/%s/%i",selectedprocess[chooseprocess - 1],nchunk);
 
-    const char *path = "/home/michele_pennisi/cernbox/HF_dimuons/pythia_stand/sim";
-    sprintf(outfilename1, "%s/norm_test_pythia_sim_%s_%s_%d_%d_%s.root", path, selectedprocess[chooseprocess - 1], change[choosechange], nevents, seed, selectedBR[BR]);
+    sprintf(outfilename1, "%s/norm_test_pythia_sim_%s_%s_%d_%d_%s.root", path.Data(), selectedprocess[chooseprocess - 1], change[choosechange], nevents, seed, selectedBR[BR]);
 
     if (choosechange != 3)
     {
@@ -569,8 +581,8 @@ int main(int argc, char *argv[])
             TLorentzVector Muon_Mum2(pythia.event[pythia.event[i].mother2()].px(), pythia.event[pythia.event[i].mother2()].py(), pythia.event[pythia.event[i].mother2()].pz(), pythia.event[pythia.event[i].mother2()].e());
             bool isMuCharm = false;
             bool isMuBeauty = false;
-            Int_t PDG_Mu_Mum1=pythia.event[pythia.event[i].mother1()].id();
-            Int_t PDG_Mu_Mum2=pythia.event[pythia.event[i].mother2()].id();
+            Int_t PDG_Mu_Mum1 = pythia.event[pythia.event[i].mother1()].id();
+            Int_t PDG_Mu_Mum2 = pythia.event[pythia.event[i].mother2()].id();
 
             if ((TMath::Abs(PDG_Mu_Mum1) > 400 && TMath::Abs(PDG_Mu_Mum1) < 500) || (TMath::Abs(PDG_Mu_Mum1) > 4000 && TMath::Abs(PDG_Mu_Mum1) < 5000))
             {
@@ -585,7 +597,7 @@ int main(int argc, char *argv[])
                 fPt_mum_gen[nmu_gen] = Muon_Mum1.Pt();
                 fY_mum_gen[nmu_gen] = Muon_Mum1.Rapidity();
             }
-            else if ( (TMath::Abs(PDG_Mu_Mum2) > 400 && TMath::Abs(PDG_Mu_Mum2) < 500) || (TMath::Abs(PDG_Mu_Mum2) > 4000 && TMath::Abs(PDG_Mu_Mum2) < 5000))
+            else if ((TMath::Abs(PDG_Mu_Mum2) > 400 && TMath::Abs(PDG_Mu_Mum2) < 500) || (TMath::Abs(PDG_Mu_Mum2) > 4000 && TMath::Abs(PDG_Mu_Mum2) < 5000))
             {
 
                 isMuCharm = isCharm(pythia.event[i].mother2(), iEvent, kFALSE);
@@ -598,7 +610,7 @@ int main(int argc, char *argv[])
                 fPt_mum_gen[nmu_gen] = Muon_Mum2.Pt();
                 fY_mum_gen[nmu_gen] = Muon_Mum2.Rapidity();
             }
-            else if ((TMath::Abs(PDG_Mu_Mum1) > 500 && TMath::Abs(PDG_Mu_Mum1) < 600) ||(TMath::Abs(PDG_Mu_Mum1) > 5000 && TMath::Abs(PDG_Mu_Mum1) < 6000))
+            else if ((TMath::Abs(PDG_Mu_Mum1) > 500 && TMath::Abs(PDG_Mu_Mum1) < 600) || (TMath::Abs(PDG_Mu_Mum1) > 5000 && TMath::Abs(PDG_Mu_Mum1) < 6000))
             {
 
                 isMuBeauty = true;
@@ -808,7 +820,7 @@ bool isCharm(int i, int iEvent, bool verbose)
                 isPrompt = false;
                 break;
             }
-            else if ((TMath::Abs(pythia.event[mothers[momindex]].id()) > 5000 && TMath::Abs(pythia.event[mothers[momindex]].id()) < 6000 )|| (TMath::Abs(pythia.event[mothers[momindex + 1]].id()) > 5000 && TMath::Abs(pythia.event[mothers[momindex + 1]].id()) < 6000))
+            else if ((TMath::Abs(pythia.event[mothers[momindex]].id()) > 5000 && TMath::Abs(pythia.event[mothers[momindex]].id()) < 6000) || (TMath::Abs(pythia.event[mothers[momindex + 1]].id()) > 5000 && TMath::Abs(pythia.event[mothers[momindex + 1]].id()) < 6000))
             {
                 if (verbose)
                 {
