@@ -41,8 +41,8 @@ int main(int argc, char *argv[])
     // Create the ROOT application environment.
     TApplication theApp("hist", &argc, argv);
     // printf("argc = %d\n argv = %s\n",theApp.Argc(),theApp.Argv(0));
-    int nevents = 1000;
-    int seed = 9170;
+    int nevents = 10000;
+    int seed = 1996;
     int mode = -1;  //-1==Monash  .  1 not allowed. Check JHEP08(2015)003
     int n_MPI = -1; //-1==we take everything --> >0--> register only larger nMPI events
     int chooseprocess = 1;
@@ -220,7 +220,7 @@ int main(int argc, char *argv[])
     // const char *path="/Volumes/REPOSITORY/Test/";
 
     const char *path = "/home/michele_pennisi/cernbox/HF_dimuons/pythia_stand/sim";
-    sprintf(outfilename1, "%s/pythia_sim_%s_%s_%d_%d_%s.root", path, selectedprocess[chooseprocess - 1], change[choosechange], nevents, seed, selectedBR[BR]);
+    sprintf(outfilename1, "%s/norm_test_pythia_sim_%s_%s_%d_%d_%s.root", path, selectedprocess[chooseprocess - 1], change[choosechange], nevents, seed, selectedBR[BR]);
 
     if (choosechange != 3)
     {
@@ -533,8 +533,8 @@ int main(int argc, char *argv[])
 
                 nHFHadron_gen++;
             }
-            if (Particle.Rapidity() < -4.0 || Particle.Rapidity() > -2.5)
-                continue;
+            // if (Particle.Rapidity() < -4.0 || Particle.Rapidity() > -2.5)
+            //     continue;
 
             if (TMath::Abs(pythia.event[i].id()) == 4 || TMath::Abs(pythia.event[i].id()) == 5)
             {
