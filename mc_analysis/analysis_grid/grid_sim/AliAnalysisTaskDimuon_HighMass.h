@@ -101,7 +101,8 @@ private:
     Int_t fpDCA_rec[fMuons_dim];             // single rec mu charge
     Double_t fPhi_rec[fMuons_dim];           // single rec mu phi
     Double_t fTheta_rec[fMuons_dim];         // single rec mu theta
-    Int_t fFrom_Powheg_rec[fMuons_dim]; // check muon gen origin
+    Int_t fFrom_Powheg_rec[fMuons_dim];      // check muon rec origin
+    Int_t fInitial_Parton_rec[fMuons_dim];   // check muon rec original parton
 
     Int_t fPDG_HFquark_gen[fMuons_dim];   // single gen c/cbar PDG mum
     Double_t fPx_HFquark_gen[fMuons_dim]; // single gen c/cbar or b/bbar HFquark pT
@@ -123,6 +124,7 @@ private:
     Double_t fPhi_gen[fMuons_dim];   // single gen mu phi
     Double_t fTheta_gen[fMuons_dim]; // single gen mu theta
     Int_t fFrom_Powheg_gen[fMuons_dim]; // check muon gen origin
+    Int_t fInitial_Parton_gen[fMuons_dim]; // check muon gen original parton
 
     Int_t fPDGmum_Hadron_gen[fMuons_dim]; // gen Hadron PDG mum
     Int_t fPDG_Hadron_gen[fMuons_dim];    // gen Hadron PDG
