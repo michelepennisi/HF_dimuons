@@ -1,7 +1,7 @@
 AliAnalysisTaskDimuon_HighMass *AddTaskDimuon_HighMass(TString MC_type, Int_t RunNumber = 294009)
 {
 
-   //****************************************************************************************
+   //**************************************************************************************
    // Add task class.
    // The attached class prepares a MC tree with generated and reconstructed muons/dimuons
    // Michele Pennisi
