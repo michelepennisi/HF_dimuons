@@ -668,10 +668,36 @@ void AliAnalysisTaskDimuon_HighMass::UserExec(Option_t *)
             //     printf("i_nMCpart %d) PDG: %d | MCParticle Pt %0.1f | Px %0.1f | Py %0.1f | Pz %0.1f | Y %0.1f || Mother %d , PDG Mother %d \n", i_nMCpart, PDG_MC_part0, MC_part0->Pt(), MC_part0->Px(), MC_part0->Py(), MC_part0->Pz(), MC_part0->Y(), index_Mum_MC_part0, PDG_Mum_MC_part0);
             // }
 
-            if (fVerbose)
+            if (kTRUE)
             {
                 printf("Muon mother: %d\n", PDG_Mum_MC_part0);
                 printf("i_nMCpart %d) PDG: %d | MCParticle Pt %0.1f | Px %0.1f | Py %0.1f | Pz %0.1f | Y %0.1f || Mother %d , PDG Mother %d \n", i_nMCpart, PDG_MC_part0, MC_part0->Pt(), MC_part0->Px(), MC_part0->Py(), MC_part0->Pz(), MC_part0->Y(), index_Mum_MC_part0, PDG_Mum_MC_part0);
+
+                AliAODMCParticle *LF_part = (AliAODMCParticle *)mcarray->At(index_Mum_MC_part0);
+                AliAODMCParticle *LF_part_mum = (AliAODMCParticle *)mcarray->At(LF_part->GetMother());
+
+                printf("LF mum index %d) PDG: %d | MCParticle Pt %0.1f | Px %0.1f | Py %0.1f | Pz %0.1f | Y %0.1f || Mother %d , PDG Mother %d \n", index_Mum_MC_part0, LF_part->GetPdgCode(), LF_part->Pt(), LF_part->Px(), LF_part->Py(), LF_part->Pz(), LF_part->Y(), LF_part->GetMother(), LF_part_mum->GetPdgCode());
+
+                Int_t *hadron_properties = Muon_ancestor_features(LF_part_mum, mcarray, fAOD_origin, kFALSE, kFALSE);
+                if (fVerbose)
+                    printf("Gen Hadron properties: PDG Hadron %d PDG mum %d , is from powheg? %d\n", LF_part->GetPdgCode(), hadron_properties[0], hadron_properties[1]);
+
+                // if (Charm_Hadron && TMath::Abs(PDG_Mum_MC_part0) != 4)
+                //     final_mom_mu0 = IsPrompt(Mum_MC_part0, mcarray);
+                // else
+                //     final_mom_mu0 = PDG_Mum_MC_part0;
+                // printf("final mum %i \n", final_mom_mu0);
+                fPDGmum_Hadron_gen[nHadron_gen] = hadron_properties[0];     // gen Hadron PDG mum
+                fHadronFrom_Powheg_gen[nHadron_gen] = hadron_properties[1]; // gen Hadron PDG mum
+                fPDG_Hadron_gen[nHadron_gen] = LF_part->GetPdgCode();                // gen Hadron PDG
+                fPt_Hadron_gen[nHadron_gen] = LF_part->Pt();
+                fE_Hadron_gen[nHadron_gen] = LF_part->E();
+                fPx_Hadron_gen[nHadron_gen] = LF_part->Px();
+                fPy_Hadron_gen[nHadron_gen] = LF_part->Py();
+                fPz_Hadron_gen[nHadron_gen] = LF_part->Pz();
+                fY_Hadron_gen[nHadron_gen] = LF_part->Y();
+                fEta_Hadron_gen[nHadron_gen] = LF_part->Eta();
+                nHadron_gen++;
             }
             fY_gen[nmu_gen] = MC_part0->Y();
             fPt_gen[nmu_gen] = MC_part0->Pt();
@@ -690,11 +716,11 @@ void AliAnalysisTaskDimuon_HighMass::UserExec(Option_t *)
             //     fPDGmum_gen[nmu_gen] = IsPrompt(Mum_MC_part0, mcarray);
             // else
             //     fPDGmum_gen[nmu_gen] = PDG_Mum_MC_part0;
-            printf("Muon mother: %d\n", PDG_Mum_MC_part0);
-            printf("i_nMCpart %d) PDG: %d | MCParticle Pt %0.1f | Px %0.1f | Py %0.1f | Pz %0.1f | Y %0.1f || Mother %d , PDG Mother %d \n", i_nMCpart, PDG_MC_part0, MC_part0->Pt(), MC_part0->Px(), MC_part0->Py(), MC_part0->Pz(), MC_part0->Y(), index_Mum_MC_part0, PDG_Mum_MC_part0);
+            // printf("Muon mother: %d\n", PDG_Mum_MC_part0);
+            // printf("i_nMCpart %d) PDG: %d | MCParticle Pt %0.1f | Px %0.1f | Py %0.1f | Pz %0.1f | Y %0.1f || Mother %d , PDG Mother %d \n", i_nMCpart, PDG_MC_part0, MC_part0->Pt(), MC_part0->Px(), MC_part0->Py(), MC_part0->Pz(), MC_part0->Y(), index_Mum_MC_part0, PDG_Mum_MC_part0);
 
-            Int_t *muon_properties = Muon_ancestor_features(Mum_MC_part0, mcarray, fAOD_origin, kTRUE, kFALSE);
-            if (kTRUE)
+            Int_t *muon_properties = Muon_ancestor_features(Mum_MC_part0, mcarray, fAOD_origin, kFALSE, kFALSE);
+            if (fVerbose)
                 printf("Gen Muon properties: PDG mum %d , is from powheg? %d, initial quark %d\n", muon_properties[0], muon_properties[1], muon_properties[2]);
             fPDGmum_gen[nmu_gen] = muon_properties[0];
             fFrom_Powheg_gen[nmu_gen] = muon_properties[1];
@@ -726,8 +752,14 @@ void AliAnalysisTaskDimuon_HighMass::UserExec(Option_t *)
         {
             if (fVerbose)
             {
-                printf("Flag %u Gen status %d\n", MC_part0->GetFlag(), MC_part0->GetGeneratorIndex());
                 printf("i_nMCpart %d) PDG: %d | MCParticle Pt %0.1f | Px %0.1f | Py %0.1f | Pz %0.1f | Y %0.1f || Mother %d , PDG Mother %d \n", i_nMCpart, PDG_MC_part0, MC_part0->Pt(), MC_part0->Px(), MC_part0->Py(), MC_part0->Pz(), MC_part0->Y(), index_Mum_MC_part0, PDG_Mum_MC_part0);
+                printf("Daughter1 HF %d || Daughter2 HF %d\n", MC_part0->GetDaughterFirst(), MC_part0->GetDaughterLast());
+                if (MC_part0->GetDaughterFirst() < 0 || MC_part0->GetDaughterLast() < 0)
+                    continue;
+                AliAODMCParticle *dauther1 = (AliAODMCParticle *)mcarray->At(MC_part0->GetDaughterFirst());
+                AliAODMCParticle *dauther2 = (AliAODMCParticle *)mcarray->At(MC_part0->GetDaughterLast());
+
+                printf("Daughter1 HF %d || Daughter2 HF %d\n", dauther1->GetPdgCode(), dauther2->GetPdgCode());
             }
 
             fPDG_HFquark_gen[nHFquark_gen] = PDG_MC_part0;
