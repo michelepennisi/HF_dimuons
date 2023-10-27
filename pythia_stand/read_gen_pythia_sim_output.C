@@ -66,15 +66,19 @@ TChain *Getting_Tree(TString dir_filename, TString filename, bool from_data)
 void read_gen_pythia_sim_output()
 {
     SetHist();
-    TString dir_filename("/home/michele_pennisi/cernbox/HF_dimuons/pythia_stand/sim");
+    TString dir_filename("sim");
     // TString filename("pythia_sim_SoftQCD_Def_100000_3216_DefaultBR.root");
     // TString filename("pythia_sim_SoftQCD_Def_100000_9170_DefaultBR.root");
     // TString filename("monash_100Mev.root");
     // TString filename("pythia_sim_SoftQCD_Mode2_10000_3216_DefaultBR.root");
-    TString filename("mode2_sim_fixed_10Mev.root");
+    // TString filename("pythia_sim_SoftQCD_Def_10000_1996_DefaultBR.root");
+    // TString filename("mode2_sim_fixed_100Mev.root");
+    // TString filename("monash_sim_fixed_100Mev.root");
+    TString filename("SoftQCD_Def_pythia_sim_12345_DefaultBR_200.root");
 
     printf("Creating hist for %s/%s\n", dir_filename.Data(), filename.Data());
-    TString fileout(Form("test/Hist_%s", filename.Data()));
+    // TString fileout(Form("test/Hist_%s", filename.Data()));
+    TString fileout(Form("oaoaoHist_%s", filename.Data()));
 
     TChain *input_tree = Getting_Tree(dir_filename, filename, false);
 
@@ -90,8 +94,8 @@ void read_gen_pythia_sim_output()
     for (Int_t w = 0; w < input_tree->GetEntries(); w++)
     // for (Int_t w = 0; w < 1000; w++)
     {
-        if (w % 1000000 == 0)
-            printf("Evento :i %d\n", w);
+        if (w % 2500000 == 0)
+            progress_status(w, input_tree->GetEntries());
         input_tree->GetEntry(w);
         h_Nevents->Fill(1);
         tot_cquark += N_HFquarks_gen;
@@ -115,6 +119,8 @@ void read_gen_pythia_sim_output()
             Int_t PDG_quark_gen1 = PDG_HFquark_gen[i];  // single gen mu PDG mum
             Double_t Pt_quark_gen1 = Pt_HFquark_gen[i]; // single gen mu pT
             Double_t Y_quark_gen1 = Y_HFquark_gen[i];   // single gen mu E
+            if (Y_quark_gen1 > -4.0 || Y_quark_gen1 < -2.5)
+                continue;
 
             if (PDG_quark_gen1 == 4)
             {
@@ -409,7 +415,6 @@ void read_gen_pythia_sim_output()
                     Bool_t Charm_Mu2 = kFALSE;
                     Bool_t Charm_Mu2_Meson = kFALSE;
                     Bool_t Charm_Mu2_Barion = kFALSE;
-
                     Bool_t Beauty_Mu2 = kFALSE;
                     Bool_t Beauty_Mu2_Meson = kFALSE;
                     Bool_t Beauty_Mu2_Barion = kFALSE;
@@ -593,6 +598,12 @@ void read_gen_pythia_sim_output()
             Double_t Pt_hadron = Hadron_Pt_gen[iHadron]; // single gen hadron pT
             Double_t Y_hadron = Hadron_Y_gen[iHadron];   // single gen hadron E
 
+            if ((TMath::Abs(PDGHadron) == 411) || (TMath::Abs(PDGHadron) == 421) || (TMath::Abs(PDGHadron) == 431) || (TMath::Abs(PDGHadron) == 443) || (TMath::Abs(PDGHadron) == 4122) || (TMath::Abs(PDGHadron) == 4132) || (TMath::Abs(PDGHadron) == 4232))
+            {
+                if (PromptHadron == 4)
+                    h_pdg_Charm->Fill(TMath::Abs(PDGHadron));
+            }
+
             for (size_t i_hadron = 0; i_hadron < n_Hadron_studied; i_hadron++)
             {
                 if (TMath::Abs(PDGHadron) == PDG_hadron[i_hadron])
@@ -736,11 +747,13 @@ void read_gen_pythia_sim_output()
     } // End definition over DiMu charge cut
     fOut->cd();
     dir_fOut = fOut->GetDirectory("hf_hadron");
+
     if (!dir_fOut)
         dir_fOut = fOut->mkdir("hf_hadron");
     else
         printf("%s already exists \n", "hf_hadron");
     fOut->cd("hf_hadron");
+    h_pdg_Charm->Write(0, 2, 0);
     dir_fOut = fOut->GetDirectory("hf_hadron/prompt");
     if (!dir_fOut)
         dir_fOut = fOut->mkdir("hf_hadron/prompt");
