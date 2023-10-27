@@ -484,7 +484,7 @@ int main(int argc, char *argv[])
     Int_t LabelOld2[fDimu_dim];
     Bool_t GoodMuon[fDimu_dim];
 
-    Bool_t Fwd_y = kFALSE;
+    Bool_t Fwd_y = kTRUE;
     // Inizio del loop sul numero di eventi
     for (int iEvent = 0; iEvent < nevents; ++iEvent)
     {
@@ -564,9 +564,6 @@ int main(int argc, char *argv[])
 
                 nHFHadron_gen++;
             }
-            if (Fwd_y)
-                if (Particle.Rapidity() < -4.5 || Particle.Rapidity() > -2.0)
-                    continue;
 
             if (TMath::Abs(pythia.event[i].id()) == 4 || TMath::Abs(pythia.event[i].id()) == 5)
             {
@@ -596,6 +593,10 @@ int main(int argc, char *argv[])
                     }
                 }
             }
+            
+            if (Fwd_y)
+                if (Particle.Rapidity() < -4.5 || Particle.Rapidity() > -2.0)
+                    continue;
             // Ricerca singolo mu meno
             if (!(TMath::Abs(pythia.event[i].id()) == 13))
                 continue;
