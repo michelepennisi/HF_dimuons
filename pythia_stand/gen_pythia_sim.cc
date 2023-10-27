@@ -42,8 +42,8 @@ int main(int argc, char *argv[])
     // Create the ROOT application environment.
     TApplication theApp("hist", &argc, argv);
     // printf("argc = %d\n argv = %s\n",theApp.Argc(),theApp.Argv(0));
-    int nevents = 10000;
-    
+    int nevents = 10;
+
     int seed = 12345;
     int mode = -1;  //-1==Monash  .  1 not allowed. Check JHEP08(2015)003
     int n_MPI = -1; //-1==we take everything --> >0--> register only larger nMPI events
@@ -117,6 +117,7 @@ int main(int argc, char *argv[])
         {
             cout << "choosechange 0" << endl;
             pythia.readString("SoftQCD:nonDiffractive = on ");
+            pythia.readString("211:mayDecay = true");
         }
         else if (choosechange == 1)
         {
@@ -230,9 +231,9 @@ int main(int argc, char *argv[])
     if (nchunk == 999)
         path.Form("/home/michele_pennisi/cernbox/HF_dimuons/pythia_stand/sim");
     else
-        path.Form("/alidata/mpennisi/pythia_stand_sim/%s/%i",selectedprocess[chooseprocess - 1],nchunk);
+        path.Form("/alidata/mpennisi/pythia_stand_sim/%s/%i", selectedprocess[chooseprocess - 1], nchunk);
 
-    sprintf(outfilename1, "%s/norm_test_pythia_sim_%s_%s_%d_%d_%s.root", path.Data(), selectedprocess[chooseprocess - 1], change[choosechange], nevents, seed, selectedBR[BR]);
+    sprintf(outfilename1, "%s/%s_%s_pythia_sim_%d_%s_%d.root", path.Data(), selectedprocess[chooseprocess - 1], change[choosechange], seed, selectedBR[BR], nevents);
 
     if (choosechange != 3)
     {
@@ -310,8 +311,8 @@ int main(int argc, char *argv[])
     Int_t fNMuons_gen = 0;     // gen muon in the event
     Int_t fNDimu_gen;          // gen dimuons in the event
     Int_t fN_HFquarks_gen = 0; // gen c/cbar or b/bar HFquarks in the event
-    static const Int_t fMuons_dim = 500;
-    static const Int_t fDimu_dim = 500;
+    static const Int_t fMuons_dim = 10000;
+    static const Int_t fDimu_dim = 10000;
     Int_t fPDG_HFquark_gen[fMuons_dim];           // single gen c/cbar PDG mum
     Int_t fPDG_HFquark_gen_daughter1[fMuons_dim]; // single gen c/cbar PDG mum
     Int_t fPDG_HFquark_gen_daughter2[fMuons_dim]; // single gen c/cbar PDG mum
@@ -405,15 +406,15 @@ int main(int argc, char *argv[])
     fOutputTree->Branch("Pt_HFquark_gen", fPt_HFquark_gen, "Pt_HFquark_gen[N_HFquarks_gen]/D");
     fOutputTree->Branch("Y_HFquark_gen", fY_HFquark_gen, "Y_HFquark_gen[N_HFquarks_gen]/D");
 
-    // fOutputTree->Branch("NDimu_gen", &fNDimu_gen, "NDimu_gen/I");
-    // fOutputTree->Branch("DimuMu_gen", fDimuMu_gen, "DimuMu_gen[NDimu_gen][2]/I");
-    // fOutputTree->Branch("DimuPt_gen", fDimuPt_gen, "DimuPt_gen[NDimu_gen]/D");
-    // fOutputTree->Branch("DimuPx_gen", fDimuPx_gen, "DimuPx_gen[NDimu_gen]/D");
-    // fOutputTree->Branch("DimuPy_gen", fDimuPy_gen, "DimuPy_gen[NDimu_gen]/D");
-    // fOutputTree->Branch("DimuPz_gen", fDimuPz_gen, "DimuPz_gen[NDimu_gen]/D");
-    // fOutputTree->Branch("DimuY_gen", fDimuY_gen, "DimuY_gen[NDimu_gen]/D");
-    // fOutputTree->Branch("DimuMass_gen", fDimuMass_gen, "DimuMass_gen[NDimu_gen]/D");
-    // fOutputTree->Branch("DimuCharge_gen", fDimuCharge_gen, "DimuCharge_gen[NDimu_gen]/I");
+    fOutputTree->Branch("NDimu_gen", &fNDimu_gen, "NDimu_gen/I");
+    fOutputTree->Branch("DimuMu_gen", fDimuMu_gen, "DimuMu_gen[NDimu_gen][2]/I");
+    fOutputTree->Branch("DimuPt_gen", fDimuPt_gen, "DimuPt_gen[NDimu_gen]/D");
+    fOutputTree->Branch("DimuPx_gen", fDimuPx_gen, "DimuPx_gen[NDimu_gen]/D");
+    fOutputTree->Branch("DimuPy_gen", fDimuPy_gen, "DimuPy_gen[NDimu_gen]/D");
+    fOutputTree->Branch("DimuPz_gen", fDimuPz_gen, "DimuPz_gen[NDimu_gen]/D");
+    fOutputTree->Branch("DimuY_gen", fDimuY_gen, "DimuY_gen[NDimu_gen]/D");
+    fOutputTree->Branch("DimuMass_gen", fDimuMass_gen, "DimuMass_gen[NDimu_gen]/D");
+    fOutputTree->Branch("DimuCharge_gen", fDimuCharge_gen, "DimuCharge_gen[NDimu_gen]/I");
 
     fOutputTree->Branch("NMuons_gen", &fNMuons_gen, "NMuons_gen/I");
     fOutputTree->Branch("PDGmum_gen", fPDGmum_gen, "PDGmum_gen[NMuons_gen]/I");
@@ -479,11 +480,15 @@ int main(int argc, char *argv[])
     int muplus_bquark = 0;
     int muplus_bmeson = 0;
     int muplus_bbarion = 0;
+    Int_t LabelOld1[50000];
+    Int_t LabelOld2[50000];
+    Bool_t GoodMuon[50000];
 
+    Bool_t Fwd_y = kFALSE;
     // Inizio del loop sul numero di eventi
     for (int iEvent = 0; iEvent < nevents; ++iEvent)
     {
-        if (iEvent % (10000) == 0)
+        if (iEvent % (100) == 0)
         {
             Printf("Evento: %d time: CPU %f (min) real %f", iEvent, t.CpuTime(), t.RealTime());
             t.Start(kFALSE);
@@ -494,19 +499,27 @@ int main(int argc, char *argv[])
         // generation
         if (!pythia.next())
             continue;
+        pythia.event.savePartonLevelSize();
         Int_t nHFquark_gen = 0;
         Int_t nmu_gen = 0;
         Int_t ndimu_gen = 0;
-
         Int_t nHFHadron_gen = 0;
 
+        for (Int_t i_nMCpart = 0; i_nMCpart < 50000; i_nMCpart++)
+        {
+            LabelOld1[i_nMCpart] = 999;
+            LabelOld2[i_nMCpart] = 999;
+            GoodMuon[i_nMCpart] = kFALSE;
+        }
+
+        // cout<<"==================================================="<<endl;
+        // pythia.event.list();
         for (int i = 0; i < pythia.event.size(); i++)
         {
             TLorentzVector Particle(pythia.event[i].px(), pythia.event[i].py(), pythia.event[i].pz(), pythia.event[i].e());
-            if (TMath::Abs(pythia.event[i].id()) > 400 && TMath::Abs(pythia.event[i].id()) < 500 || TMath::Abs(pythia.event[i].id()) > 4000 && TMath::Abs(pythia.event[i].id()) < 5000)
+            if (TMath::Abs(pythia.event[i].id()) > 200 && TMath::Abs(pythia.event[i].id()) < 500 || TMath::Abs(pythia.event[i].id()) > 2000 && TMath::Abs(pythia.event[i].id()) < 5000)
             {
-
-                bool isPrompt = true;
+                bool isPrompt = kFALSE;
                 fPDGHadron_gen[nHFHadron_gen] = pythia.event[i].id();
                 fHadron_Pt_gen[nHFHadron_gen] = Particle.Pt();
                 fHadron_E_gen[nHFHadron_gen] = Particle.E();
@@ -518,12 +531,18 @@ int main(int argc, char *argv[])
                 fHadron_Phi_gen[nHFHadron_gen] = Particle.Phi();
                 fHadron_Theta_gen[nHFHadron_gen] = Particle.Theta();
 
-                isPrompt = isCharm(i, iEvent, false);
+                if (TMath::Abs(pythia.event[i].id()) > 400 && TMath::Abs(pythia.event[i].id()) < 500 || TMath::Abs(pythia.event[i].id()) > 4000 && TMath::Abs(pythia.event[i].id()) < 5000)
+                {
 
-                if (isPrompt == true)
-                    fPromptHadron_gen[nHFHadron_gen] = 4;
+                    isPrompt = isCharm(i, iEvent, kFALSE);
+
+                    if (isPrompt)
+                        fPromptHadron_gen[nHFHadron_gen] = 4;
+                    else
+                        fPromptHadron_gen[nHFHadron_gen] = 5;
+                }
                 else
-                    fPromptHadron_gen[nHFHadron_gen] = 5;
+                    fPromptHadron_gen[nHFHadron_gen] = 99;
 
                 nHFHadron_gen++;
             }
@@ -545,42 +564,49 @@ int main(int argc, char *argv[])
 
                 nHFHadron_gen++;
             }
-            // if (Particle.Rapidity() < -4.0 || Particle.Rapidity() > -2.5)
-            //     continue;
+            if (Fwd_y)
+                if (Particle.Rapidity() < -4.5 || Particle.Rapidity() > -2.0)
+                    continue;
 
             if (TMath::Abs(pythia.event[i].id()) == 4 || TMath::Abs(pythia.event[i].id()) == 5)
             {
                 Int_t index_daughter1 = pythia.event[i].daughter1();
                 Int_t index_daughter2 = pythia.event[i].daughter2();
-                // pythia.event.list();
 
                 Int_t pdg_daughter1 = pythia.event[index_daughter1].id();
                 Int_t pdg_daughter2 = pythia.event[index_daughter2].id();
 
-                if ((TMath::Abs(pdg_daughter1) > 400 && TMath::Abs(pdg_daughter1) < 600) || (TMath::Abs(pdg_daughter1) > 4000 && TMath::Abs(pdg_daughter1) < 6000) || (TMath::Abs(pdg_daughter2) > 400 && TMath::Abs(pdg_daughter2) < 600) || (TMath::Abs(pdg_daughter2) > 4000 && TMath::Abs(pdg_daughter2) < 6000))
+                vector<int> prova = pythia.event[i].daughterList();
+                for (int i_prova = 0; i_prova < prova.size(); i_prova++)
                 {
-                    // printf("Array index %d || PDG %d || PT %f || Y %f \n", i, pythia.event[i].id(), Particle.Pt(), Particle.Rapidity());
+                    Int_t PDG_daughter = pythia.event[prova[i_prova]].id();
+                    if ((TMath::Abs(PDG_daughter) > 400 && TMath::Abs(PDG_daughter) < 600) || (TMath::Abs(PDG_daughter) > 4000 && TMath::Abs(PDG_daughter) < 6000))
+                    {
 
-                    // printf("Array index %d || PDG %d || Array index FIGLIA1 %d || PDG FIGLIA1 %d || Array index FIGLIA2 %d || PDG FIGLIA2 %d \n", i, pythia.event[i].id(), index_daughter1, pythia.event[index_daughter1].id(), index_daughter2, pythia.event[index_daughter2].id());
-                    fPDG_HFquark_gen_daughter1[nHFquark_gen] = pdg_daughter1;
-                    fPDG_HFquark_gen_daughter2[nHFquark_gen] = pdg_daughter2;
+                        // printf("Array index %d || PDG %d || PT %f || Y %f || PDG daughter1 %d || PDG daughter2 %d || statusHepMC %d \n", i, pythia.event[i].id(), Particle.Pt(), Particle.Rapidity(), pythia.event[pythia.event[i].daughter1()].id(), pythia.event[pythia.event[i].daughter2()].id(), pythia.event[i].statusHepMC());
 
-                    fPDG_HFquark_gen[nHFquark_gen] = pythia.event[i].id();
-                    fPt_HFquark_gen[nHFquark_gen] = Particle.Pt();
-                    fY_HFquark_gen[nHFquark_gen] = Particle.Rapidity();
+                        fPDG_HFquark_gen_daughter1[nHFquark_gen] = pdg_daughter1;
+                        fPDG_HFquark_gen_daughter2[nHFquark_gen] = pdg_daughter2;
 
-                    nHFquark_gen++;
+                        fPDG_HFquark_gen[nHFquark_gen] = pythia.event[i].id();
+                        fPt_HFquark_gen[nHFquark_gen] = Particle.Pt();
+                        fY_HFquark_gen[nHFquark_gen] = Particle.Rapidity();
+
+                        nHFquark_gen++;
+                    }
                 }
             }
-
             // Ricerca singolo mu meno
             if (!(TMath::Abs(pythia.event[i].id()) == 13))
                 continue;
 
+            // pythia.event.list();
+            // printf("Array index %d || PDG %d || PT %f || Y %f || Mom1: Index %d PDG %d || Mom2 Index %d PDG %d \n", i, pythia.event[i].id(), Particle.Pt(), Particle.Rapidity(), pythia.event[i].mother1(), pythia.event[pythia.event[i].mother1()].id(), pythia.event[i].mother2(), pythia.event[pythia.event[i].mother2()].id());
             TLorentzVector Muon_Mum1(pythia.event[pythia.event[i].mother1()].px(), pythia.event[pythia.event[i].mother1()].py(), pythia.event[pythia.event[i].mother1()].pz(), pythia.event[pythia.event[i].mother1()].e());
             TLorentzVector Muon_Mum2(pythia.event[pythia.event[i].mother2()].px(), pythia.event[pythia.event[i].mother2()].py(), pythia.event[pythia.event[i].mother2()].pz(), pythia.event[pythia.event[i].mother2()].e());
             bool isMuCharm = false;
             bool isMuBeauty = false;
+            bool isMuLF = false;
             Int_t PDG_Mu_Mum1 = pythia.event[pythia.event[i].mother1()].id();
             Int_t PDG_Mu_Mum2 = pythia.event[pythia.event[i].mother2()].id();
 
@@ -626,10 +652,22 @@ int main(int argc, char *argv[])
                 fPt_mum_gen[nmu_gen] = Muon_Mum2.Pt();
                 fY_mum_gen[nmu_gen] = Muon_Mum2.Rapidity();
             }
-            else
-                continue;
+            else if ((TMath::Abs(PDG_Mu_Mum1) > 200 && TMath::Abs(PDG_Mu_Mum1) < 400) || (TMath::Abs(PDG_Mu_Mum1) > 2000 && TMath::Abs(PDG_Mu_Mum1) < 4000))
+            {
+                isMuLF = kTRUE;
+                fPDGmum_gen[nmu_gen] = PDG_Mu_Mum1;
+                fPt_mum_gen[nmu_gen] = Muon_Mum1.Pt();
+                fY_mum_gen[nmu_gen] = Muon_Mum1.Rapidity();
+            }
+            else if ((TMath::Abs(PDG_Mu_Mum2) > 200 && TMath::Abs(PDG_Mu_Mum2) < 400) || (TMath::Abs(PDG_Mu_Mum2) > 2000 && TMath::Abs(PDG_Mu_Mum2) < 4000))
+            {
+                isMuLF = kTRUE;
+                fPDGmum_gen[nmu_gen] = PDG_Mu_Mum2;
+                fPt_mum_gen[nmu_gen] = Muon_Mum2.Pt();
+                fY_mum_gen[nmu_gen] = Muon_Mum2.Rapidity();
+            }
 
-            if (isMuCharm || isMuBeauty)
+            if (isMuCharm || isMuBeauty || isMuLF)
             {
                 fPDG_gen[nmu_gen] = pythia.event[i].id();
                 fPt_gen[nmu_gen] = Particle.Pt();
@@ -642,12 +680,63 @@ int main(int argc, char *argv[])
                 fPhi_gen[nmu_gen] = Particle.Phi();
                 fTheta_gen[nmu_gen] = Particle.Theta();
                 fCharge_gen[nmu_gen] = -TMath::Sign(1, pythia.event[i].id());
+                GoodMuon[i] = kTRUE;
                 nmu_gen++;
+
+                for (size_t j_Part1 = i + 1; j_Part1 < pythia.event.size(); j_Part1++)
+                {
+                    if (!(TMath::Abs(pythia.event[j_Part1].id()) == 13))
+                        continue;
+                    TLorentzVector Mu1(pythia.event[j_Part1].px(), pythia.event[j_Part1].py(), pythia.event[j_Part1].pz(), pythia.event[j_Part1].e());
+                    if (Fwd_y)
+                        if (Mu1.Rapidity() < -4.5 || Mu1.Rapidity() > -2.0)
+                            continue;
+
+                    TLorentzVector dimu = Particle + Mu1;
+
+                    fDimuPt_gen[ndimu_gen] = dimu.Pt();
+                    fDimuPx_gen[ndimu_gen] = dimu.Px();
+                    fDimuPy_gen[ndimu_gen] = dimu.Py();
+                    fDimuPz_gen[ndimu_gen] = dimu.Pz();
+                    fDimuY_gen[ndimu_gen] = dimu.Rapidity();
+                    fDimuMass_gen[ndimu_gen] = dimu.M();
+                    if (dimu.M() < 1)
+                    {
+                        cout << dimu.M() << endl;
+                        printf("Array index %d || PDG %d || PT %f || Y %f || Mom1: Index %d PDG %d || Mom2 Index %d PDG %d \n", i, pythia.event[i].id(), Particle.Pt(), Particle.Rapidity(), pythia.event[i].mother1(), pythia.event[pythia.event[i].mother1()].id(), pythia.event[i].mother2(), pythia.event[pythia.event[i].mother2()].id());
+
+                        printf("Array index %d || PDG %d || PT %f || Y %f || Mom1: Index %d PDG %d || Mom2 Index %d PDG %d \n", i, pythia.event[j_Part1].id(), Particle.Pt(), Particle.Rapidity(), pythia.event[j_Part1].mother1(), pythia.event[pythia.event[j_Part1].mother1()].id(), pythia.event[j_Part1].mother2(), pythia.event[pythia.event[j_Part1].mother2()].id());
+                    }
+
+                    fDimuCharge_gen[ndimu_gen] = -(TMath::Sign(1, pythia.event[i].id()) + TMath::Sign(1, pythia.event[j_Part1].id()));
+                    LabelOld1[ndimu_gen] = i;
+                    LabelOld2[ndimu_gen] = j_Part1;
+                    GoodMuon[j_Part1] = kTRUE;
+                    ndimu_gen++;
+                }
             }
         }
         fN_HFquarks_gen = nHFquark_gen;
         fNMuons_gen = nmu_gen;
         fNHadron_gen = nHFHadron_gen;
+        fNDimu_gen = ndimu_gen;
+
+        for (Int_t i_nDimu_Gen = 0; i_nDimu_Gen < ndimu_gen; i_nDimu_Gen++)
+        {
+            Int_t LabelNew1 = 0;
+            Int_t LabelNew2 = 0;
+            for (int j = 0; j < LabelOld1[i_nDimu_Gen]; j++)
+                if (GoodMuon[j])
+                    LabelNew1++;
+
+            for (int j = 0; j < LabelOld2[i_nDimu_Gen]; j++)
+                if (GoodMuon[j])
+                    LabelNew2++;
+
+            fDimuMu_gen[i_nDimu_Gen][0] = LabelNew1;
+            fDimuMu_gen[i_nDimu_Gen][1] = LabelNew2;
+        }
+
         fOutputTree->Fill();
     }
 
