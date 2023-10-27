@@ -8,8 +8,8 @@ Int_t NMuons_rec;   // rec muon tracks in the event
 Int_t NDimu_rec;    // rec dimuons in the event
 Int_t fN_gamma;     // gen gamma* in the event
 
-const Int_t fMuons_dim = 1000;
-const Int_t fDimu_dim = 1000;
+const Int_t fMuons_dim = 5000;
+const Int_t fDimu_dim = 50000;
 
 Int_t PDGmum_rec[fMuons_dim];           // single rec mu PDG mum
 Double_t Pt_rec[fMuons_dim];            // single rec mu pT
@@ -28,6 +28,7 @@ Int_t pDCA_rec[fMuons_dim];             // single rec mu charge
 Double_t Phi_rec[fMuons_dim];           // single rec mu phi
 Double_t Theta_rec[fMuons_dim];         // single rec mu theta
 Int_t fFrom_Powheg_rec[fMuons_dim];     // check muon gen origin
+Int_t fInitial_Parton_rec[fMuons_dim];  // check muon gen orecin
 
 Int_t PDG_HFquark_gen[fMuons_dim];   // single gen c/cbar PDG mum
 Double_t Pt_HFquark_gen[fMuons_dim]; // single gen c/cbar or b/bbar HFquark pT
@@ -49,6 +50,7 @@ Double_t Phi_gen[fMuons_dim];       // single gen mu phi
 Double_t Theta_gen[fMuons_dim];     // single gen mu theta
 Int_t Charge_gen[fMuons_dim];       // single gen mu theta
 Int_t fFrom_Powheg_gen[fMuons_dim]; // check muon gen origin
+Int_t fInitial_Parton_gen[fMuons_dim];
 
 Int_t DimuMu_gen[fDimu_dim][2];   // reference to single gen mus
 Double_t DimuPt_gen[fDimu_dim];   // gen dimuon pT
@@ -91,6 +93,12 @@ TH2F *h_PtPdg_Muon_Gen;
 TH2F *h_YPdg_Muon_Gen;
 TH2F *h_PtY_Muon_Gen[n_Muon_origin];
 TH1F *h_Nperevent_Muon_Gen[n_Muon_origin];
+
+TH2F *h_PtQ_Muon_Gen_LF_Powheg;
+TH2F *h_PtQ_Muon_Gen_LF_Pythia;
+
+TH2F *h_YQ_Muon_Gen_LF_Powheg;
+TH2F *h_YQ_Muon_Gen_LF_Pythia;
 
 TH2F *h_PtPdg_Muon_Gen_DQcut;
 TH2F *h_YPdg_Muon_Gen_DQcut;
@@ -223,8 +231,8 @@ TH1F *h_Nperevent_DiMuon_Rec_Z_ptmucut20;
 
 TString DiMuon_origin[n_DiMuon_origin];
 
-const Int_t n_PDG_selection = 31;
-Double_t PDG_Selection[n_PDG_selection] = {0, 23, 24, 200, 400, 410, 420, 430, 440, 450, 500, 510, 520, 530, 540, 550, 600, 4000, 4100, 4120, 4130, 4140, 4200, 4230, 4240, 4300, 5000, 5100, 5200, 5300, 6000};
+const Int_t n_PDG_selection = 41;
+Double_t PDG_Selection[n_PDG_selection] = {0, 23, 24, 200, 210, 220, 230, 240, 250, 300, 310, 320, 330, 340, 400, 410, 420, 430, 440, 450, 500, 510, 520, 530, 540, 550, 600, 4000, 4100, 4120, 4130, 4140, 4200, 4230, 4240, 4300, 5000, 5100, 5200, 5300, 6000};
 const Int_t n_charm_hadrons = 7;
 Int_t PDG_charm_hadrons[n_charm_hadrons] = {411, 421, 431, 443, 4122, 4132, 4232};
 
@@ -259,6 +267,11 @@ TH2F *h_PtY_Gamma;
 TH2F *h_YGamma_YDimuon;
 void Set_Histograms(TString Generator)
 {
+    h_PtQ_Muon_Gen_LF_Powheg = new TH2F("h_PtQ_Muon_Gen_LF_Powheg", "; #it{p}_{T} (GeV/#it{c}) ; initial parton", 400, 0.0, 40.0, 4000, 0, 4000);
+    h_PtQ_Muon_Gen_LF_Pythia = new TH2F("h_PtQ_Muon_Gen_LF_Pythia", "; #it{p}_{T} (GeV/#it{c}) ; initial parton", 400, 0.0, 40.0, 4000, 0, 4000);
+
+    h_YQ_Muon_Gen_LF_Powheg = new TH2F("h_YQ_Muon_Gen_LF_Powheg", "; #it{y}; initial parton", 160, -8, 8, 4000, 0, 4000);
+    h_YQ_Muon_Gen_LF_Pythia = new TH2F("h_YQ_Muon_Gen_LF_Pythia", "; #it{y}; initial parton", 160, -8, 8, 4000, 0, 4000);
     // Histograms for saving Gamma star kinematics
     h_PtM_Gamma = new TH2F("h_PtM_Gamma", "; #it{p}_{T,#gamma^{*}} (GeV/#it{c}); #it{m}_{#gamma^{*}} (GeV/#it{c}^{2})", 400, 0, 40.0, 400, 0, 40.0);
     h_PtY_Gamma = new TH2F("h_PtY_Gamma", "; #it{p}_{T,#gamma^{*}} (GeV/#it{c}); #it{y}_{#gamma^{*}}", 400, 0, 40.0, 160, -8, 8);
@@ -494,7 +507,8 @@ TChain *Importing_Tree(TString dir_filename, TString filename, TString Generator
         tree->SetBranchAddress("Pz_Hadron_gen", Pz_Hadron_gen);
         tree->SetBranchAddress("Y_Hadron_gen", Y_Hadron_gen);
         tree->SetBranchAddress("Eta_Hadron_gen", Eta_Hadron_gen);
-        tree->SetBranchAddress("HadronFrom_Powheg_gen", fHadronFrom_Powheg_gen);
+        if (Generator.Contains("Powheg"))
+            tree->SetBranchAddress("HadronFrom_Powheg_gen", fHadronFrom_Powheg_gen);
     }
     else if (Generator.Contains("DY"))
     {
@@ -502,6 +516,46 @@ TChain *Importing_Tree(TString dir_filename, TString filename, TString Generator
         tree->SetBranchAddress("Pt_gamma_gen", fPt_gamma);
         tree->SetBranchAddress("M_gamma_gen", fM_gamma);
         tree->SetBranchAddress("Y_gamma_gen", fY_gamma);
+    }
+    else if (Generator.Contains("Rec"))
+    {
+        tree->SetBranchAddress("NDimu_rec", &NDimu_rec);
+        tree->SetBranchAddress("DimuMu_rec", DimuMu_rec);
+        tree->SetBranchAddress("DimuPt_rec", DimuPt_rec);
+        tree->SetBranchAddress("DimuPx_rec", DimuPx_rec);
+        tree->SetBranchAddress("DimuPy_rec", DimuPy_rec);
+        tree->SetBranchAddress("DimuPz_rec", DimuPz_rec);
+        tree->SetBranchAddress("DimuY_rec", DimuY_rec);
+        tree->SetBranchAddress("DimuMass_rec", DimuMass_rec);
+        tree->SetBranchAddress("DimuCharge_rec", DimuCharge_rec);
+        tree->SetBranchAddress("DimuMatch_rec", DimuMatch_rec);
+        tree->SetBranchAddress("DimuPhi_rec", DimuPhi_rec);
+        tree->SetBranchAddress("DimuTheta_rec", DimuTheta_rec);
+
+        tree->SetBranchAddress("NMuons_rec", &NMuons_rec);
+        tree->SetBranchAddress("PDGmum_rec", PDGmum_rec);
+        tree->SetBranchAddress("E_rec", E_rec);
+        tree->SetBranchAddress("Px_rec", Px_rec);
+        tree->SetBranchAddress("Pt_rec", Pt_rec);
+        tree->SetBranchAddress("Py_rec", Py_rec);
+        tree->SetBranchAddress("Pz_rec", Pz_rec);
+        tree->SetBranchAddress("Y_rec", Y_rec);
+        tree->SetBranchAddress("Eta_rec", Eta_rec);
+        tree->SetBranchAddress("MatchTrig_rec", MatchTrig_rec);
+        tree->SetBranchAddress("TrackChi2_rec", TrackChi2_rec);
+        tree->SetBranchAddress("MatchTrigChi2_rec", MatchTrigChi2_rec);
+        tree->SetBranchAddress("Charge_rec", Charge_rec);
+        tree->SetBranchAddress("RAtAbsEnd_rec", RAtAbsEnd_rec);
+        tree->SetBranchAddress("pDCA_rec", pDCA_rec);
+        tree->SetBranchAddress("Phi_rec", Phi_rec);
+        tree->SetBranchAddress("Theta_rec", Theta_rec);
+        tree->SetBranchAddress("From_Powheg_rec", fFrom_Powheg_rec);
+        tree->SetBranchAddress("Initial_Parton_rec", fInitial_Parton_rec);
+    }
+    else if (Generator.Contains("Powheg"))
+    {
+        tree->SetBranchAddress("From_Powheg_gen", fFrom_Powheg_gen);
+        tree->SetBranchAddress("Initial_Parton_gen", fInitial_Parton_gen);
     }
 
     tree->SetBranchAddress("NDimu_gen", &NDimu_gen);
@@ -526,39 +580,6 @@ TChain *Importing_Tree(TString dir_filename, TString filename, TString Generator
     tree->SetBranchAddress("Phi_gen", Phi_gen);
     tree->SetBranchAddress("Theta_gen", Theta_gen);
     tree->SetBranchAddress("Charge_gen", Charge_gen);
-    tree->SetBranchAddress("From_Powheg_gen", fFrom_Powheg_gen);
-
-    tree->SetBranchAddress("NDimu_rec", &NDimu_rec);
-    tree->SetBranchAddress("DimuMu_rec", DimuMu_rec);
-    tree->SetBranchAddress("DimuPt_rec", DimuPt_rec);
-    tree->SetBranchAddress("DimuPx_rec", DimuPx_rec);
-    tree->SetBranchAddress("DimuPy_rec", DimuPy_rec);
-    tree->SetBranchAddress("DimuPz_rec", DimuPz_rec);
-    tree->SetBranchAddress("DimuY_rec", DimuY_rec);
-    tree->SetBranchAddress("DimuMass_rec", DimuMass_rec);
-    tree->SetBranchAddress("DimuCharge_rec", DimuCharge_rec);
-    tree->SetBranchAddress("DimuMatch_rec", DimuMatch_rec);
-    tree->SetBranchAddress("DimuPhi_rec", DimuPhi_rec);
-    tree->SetBranchAddress("DimuTheta_rec", DimuTheta_rec);
-
-    tree->SetBranchAddress("NMuons_rec", &NMuons_rec);
-    tree->SetBranchAddress("PDGmum_rec", PDGmum_rec);
-    tree->SetBranchAddress("E_rec", E_rec);
-    tree->SetBranchAddress("Px_rec", Px_rec);
-    tree->SetBranchAddress("Pt_rec", Pt_rec);
-    tree->SetBranchAddress("Py_rec", Py_rec);
-    tree->SetBranchAddress("Pz_rec", Pz_rec);
-    tree->SetBranchAddress("Y_rec", Y_rec);
-    tree->SetBranchAddress("Eta_rec", Eta_rec);
-    tree->SetBranchAddress("MatchTrig_rec", MatchTrig_rec);
-    tree->SetBranchAddress("TrackChi2_rec", TrackChi2_rec);
-    tree->SetBranchAddress("MatchTrigChi2_rec", MatchTrigChi2_rec);
-    tree->SetBranchAddress("Charge_rec", Charge_rec);
-    tree->SetBranchAddress("RAtAbsEnd_rec", RAtAbsEnd_rec);
-    tree->SetBranchAddress("pDCA_rec", pDCA_rec);
-    tree->SetBranchAddress("Phi_rec", Phi_rec);
-    tree->SetBranchAddress("Theta_rec", Theta_rec);
-    tree->SetBranchAddress("From_Powheg_rec", fFrom_Powheg_rec);
 
     return tree;
 }
