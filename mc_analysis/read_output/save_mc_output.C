@@ -2,21 +2,22 @@
 
 void save_mc_output(
     // TString RunMode = "test_new_prompt_LHC22b3",
-    TString RunMode = "LHC23i2",
-    TString dir_fileIn = "/alidata/mpennisi/output_grid/LHC23i2/Version3_AliAOD/Data/294009/output/000/001",
+    TString RunMode = "SoftQCD_Def",
+    TString dir_fileIn = "/home/michele_pennisi/cernbox/HF_dimuons/pythia_stand/sim",
+    // TString dir_fileIn = "/home/michele_pennisi/cernbox/HF_dimuons/mc_analysis/analysis_grid/grid_sim/LF_test",
     // TString dir_fileIn = "/home/michele_pennisi/cernbox/HF_dimuons/mc_analysis/analysis_grid/grid_sim/test_beauty_sim_2",
     // TString dir_fileIn = "/home/michele_pennisi/cernbox/HF_dimuons/mc_analysis/analysis_grid/grid_sim/test_charm_sim",
     // TString dir_fileIn = "/home/michele_pennisi/cernbox/HF_dimuons/mc_analysis/analysis_grid/grid_sim/LHC18p_DY_100k_Version2_AOD",
-    TString dir_fileOut = "/alidata/mpennisi/output_grid",
-    Int_t RunNumber = 294009,
-    TString Generator = "Powheg",
-    TString prefix_filename = "MCDimuHFTree")
+    TString dir_fileOut = "test_new_sim",
+    Int_t RunNumber = 200,
+    TString Generator = "HF_Pythia",
+    TString prefix_filename = "pythia_sim_12345_DefaultBR")
 {
 
     Set_Histograms(Generator);
 
     TString filename;
-    filename.Form("%s_MCDimuHFTree_%d.root", RunMode.Data(), RunNumber);
+    filename.Form("%s_%s_%d.root", RunMode.Data(), prefix_filename.Data(), RunNumber);
 
     TString file_out;
     file_out.Form("%s_MC_output_Hist_%d.root", RunMode.Data(), RunNumber);
@@ -138,7 +139,6 @@ void save_mc_output(
 
             // printf("i) %d | PDG %d | PDG mum %d | Pt %f | Y %f\n", i_NHadron_gen, PDG_Hadron,PDGmum_Hadron, Pt_Hadron, Y_Hadron);
         }
-
         for (Int_t i_NMuons_gen = 0; i_NMuons_gen < NMuons_gen; i_NMuons_gen++)
         {
 
@@ -154,6 +154,7 @@ void save_mc_output(
             Double_t Theta_Mu = Theta_gen[i_NMuons_gen];              // single gen mu theta
             Double_t Charge_Mu = Charge_gen[i_NMuons_gen];            // single gen mu theta
             Int_t IsFrom_Powheg_gen = fFrom_Powheg_gen[i_NMuons_gen]; // single gen mu theta
+            Int_t Initial_parton = fInitial_Parton_gen[i_NMuons_gen]; // single gen mu theta
 
             Bool_t DQ_Muon = kFALSE;
             Bool_t Selection_Muon[n_Muon_origin] = {kFALSE};
@@ -174,6 +175,21 @@ void save_mc_output(
             else if (TMath::Abs(PDG_Mu) == 23)
             {
                 Selection_Muon[4] = kTRUE;
+            }
+
+            // printf("Initial_parton %d\n",Initial_parton);
+            if (Selection_Muon[3] && Generator.Contains("Powheg"))
+            {
+                if (IsFrom_Powheg_gen == -1)
+                {
+                    h_PtQ_Muon_Gen_LF_Powheg->Fill(Pt_Mu, Initial_parton);
+                    h_YQ_Muon_Gen_LF_Powheg->Fill(Y_Mu, Initial_parton);
+                }
+                else
+                {
+                    h_PtQ_Muon_Gen_LF_Pythia->Fill(Pt_Mu, Initial_parton);
+                    h_YQ_Muon_Gen_LF_Pythia->Fill(Y_Mu, Initial_parton);
+                }
             }
 
             for (Int_t i_Muon_origin = 0; i_Muon_origin < n_Muon_origin; i_Muon_origin++)
@@ -318,7 +334,7 @@ void save_mc_output(
 
         for (Int_t i_NDimu_gen = 0; i_NDimu_gen < NDimu_gen; i_NDimu_gen++)
         {
-
+            
             Double_t Pt_DiMu = DimuPt_gen[i_NDimu_gen];      // gen dimuon pT
             Double_t Px_DiMu = DimuPx_gen[i_NDimu_gen];      // gen dimuon px
             Double_t Py_DiMu = DimuPy_gen[i_NDimu_gen];      // gen dimuon py
@@ -326,7 +342,7 @@ void save_mc_output(
             Double_t Y_DiMu = DimuY_gen[i_NDimu_gen];        // gen dimuon y
             Double_t M_DiMu = DimuMass_gen[i_NDimu_gen];     // gen dimuon invariant mass
             Int_t Charge_DiMu = DimuCharge_gen[i_NDimu_gen]; // gen dimuon charge
-
+            
             Double_t Pt_Mu0 = Pt_gen[DimuMu_gen[i_NDimu_gen][0]];
             Double_t Y_Mu0 = Y_gen[DimuMu_gen[i_NDimu_gen][0]];
             Double_t Eta_Mu0 = Eta_gen[DimuMu_gen[i_NDimu_gen][0]];
@@ -337,9 +353,13 @@ void save_mc_output(
 
             Int_t PDG_Mu0 = PDGmum_gen[DimuMu_gen[i_NDimu_gen][0]];
             Int_t PDG_Mu1 = PDGmum_gen[DimuMu_gen[i_NDimu_gen][1]];
-
-            Int_t IsFromPowheg_Mu0 = fFrom_Powheg_gen[DimuMu_gen[i_NDimu_gen][0]];
-            Int_t IsFromPowheg_Mu1 = fFrom_Powheg_gen[DimuMu_gen[i_NDimu_gen][1]];
+            Int_t IsFromPowheg_Mu0 = 999;
+            Int_t IsFromPowheg_Mu1 = 999;
+            if (Generator.Contains("Powheg"))
+            {
+                IsFromPowheg_Mu0 = fFrom_Powheg_gen[DimuMu_gen[i_NDimu_gen][0]];
+                IsFromPowheg_Mu1 = fFrom_Powheg_gen[DimuMu_gen[i_NDimu_gen][1]];
+            }
 
             Bool_t HF_mu0 = kFALSE;
             Bool_t Charm_mu0 = kFALSE;
@@ -471,7 +491,6 @@ void save_mc_output(
                 DQ_Dimuon = kTRUE;
 
             Double_t charm_correction = (BR_times_frag_MEAS_Mu0 * BR_times_frag_MEAS_Mu1) / (BR_times_frag_PYTHIA_Mu0 * BR_times_frag_PYTHIA_Mu1);
-
             if (DQ_Dimuon)
             {
                 h_Pdg1Pdg2Pt_DiMuon_Gen_DQcut->Fill(TMath::Abs(PDG_Mu0), TMath::Abs(PDG_Mu1), Pt_DiMu);
@@ -804,6 +823,13 @@ void save_mc_output(
     }
 
     fOut.cd("Muon_Gen");
+    if (Generator.Contains("Powheg"))
+    {
+        h_PtQ_Muon_Gen_LF_Powheg->Write();
+        h_PtQ_Muon_Gen_LF_Pythia->Write();
+        h_YQ_Muon_Gen_LF_Powheg->Write();
+        h_YQ_Muon_Gen_LF_Pythia->Write();
+    }
 
     h_PtPdg_Muon_Gen->Write(0, 2, 0);
     h_YPdg_Muon_Gen->Write(0, 2, 0);
