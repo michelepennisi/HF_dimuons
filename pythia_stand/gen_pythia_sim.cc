@@ -311,8 +311,8 @@ int main(int argc, char *argv[])
     Int_t fNMuons_gen = 0;     // gen muon in the event
     Int_t fNDimu_gen;          // gen dimuons in the event
     Int_t fN_HFquarks_gen = 0; // gen c/cbar or b/bar HFquarks in the event
-    static const Int_t fMuons_dim = 10000;
-    static const Int_t fDimu_dim = 10000;
+    static const Int_t fMuons_dim = 5000;
+    static const Int_t fDimu_dim = 50000;
     Int_t fPDG_HFquark_gen[fMuons_dim];           // single gen c/cbar PDG mum
     Int_t fPDG_HFquark_gen_daughter1[fMuons_dim]; // single gen c/cbar PDG mum
     Int_t fPDG_HFquark_gen_daughter2[fMuons_dim]; // single gen c/cbar PDG mum
@@ -401,10 +401,10 @@ int main(int argc, char *argv[])
     // fOutputTree->Branch("PercentV0M",&fPercentV0M,"PercentV0M/D");
     fOutputTree->Branch("N_HFquarks_gen", &fN_HFquarks_gen, "N_HFquarks_gen/I");
     fOutputTree->Branch("PDG_HFquark_gen", fPDG_HFquark_gen, "PDG_HFquark_gen[N_HFquarks_gen]/I");
-    fOutputTree->Branch("PDG_HFquark_gen_daughter1", fPDG_HFquark_gen_daughter1, "PDG_HFquark_gen_daughter1[N_HFquarks_gen]/I");
-    fOutputTree->Branch("PDG_HFquark_gen_daughter2", fPDG_HFquark_gen_daughter2, "PDG_HFquark_gen_daughter2[N_HFquarks_gen]/I");
     fOutputTree->Branch("Pt_HFquark_gen", fPt_HFquark_gen, "Pt_HFquark_gen[N_HFquarks_gen]/D");
     fOutputTree->Branch("Y_HFquark_gen", fY_HFquark_gen, "Y_HFquark_gen[N_HFquarks_gen]/D");
+    fOutputTree->Branch("PDG_HFquark_gen_daughter1", fPDG_HFquark_gen_daughter1, "PDG_HFquark_gen_daughter1[N_HFquarks_gen]/I");
+    fOutputTree->Branch("PDG_HFquark_gen_daughter2", fPDG_HFquark_gen_daughter2, "PDG_HFquark_gen_daughter2[N_HFquarks_gen]/I");
 
     fOutputTree->Branch("NDimu_gen", &fNDimu_gen, "NDimu_gen/I");
     fOutputTree->Branch("DimuMu_gen", fDimuMu_gen, "DimuMu_gen[NDimu_gen][2]/I");
@@ -433,18 +433,18 @@ int main(int argc, char *argv[])
     fOutputTree->Branch("Theta_gen", fTheta_gen, "Theta_gen[NMuons_gen]/D");
     fOutputTree->Branch("Charge_gen", fCharge_gen, "Charge_gen[NMuons_gen]/I");
 
-    fOutputTree->Branch("NHadron_gen", &fNHadron_gen, "NHadron_gen/I");
-    fOutputTree->Branch("PDGHadron_gen", fPDGHadron_gen, "PDGHadron_gen[NHadron_gen]/I");
-    fOutputTree->Branch("PromptHadron_gen", fPromptHadron_gen, "PromptHadron_gen[NHadron_gen]/I");
-    fOutputTree->Branch("Hadron_Pt_gen", fHadron_Pt_gen, "Hadron_Pt_gen[NHadron_gen]/D");
-    fOutputTree->Branch("Hadron_E_gen", fHadron_E_gen, "Hadron_E_gen[NHadron_gen]/D");
-    fOutputTree->Branch("Hadron_Px_gen", fHadron_Px_gen, "Hadron_Px_gen[NHadron_gen]/D");
-    fOutputTree->Branch("Hadron_Py_gen", fHadron_Py_gen, "Hadron_Py_gen[NHadron_gen]/D");
-    fOutputTree->Branch("Hadron_Pz_gen", fHadron_Pz_gen, "Hadron_Pz_gen[NHadron_gen]/D");
-    fOutputTree->Branch("Hadron_Y_gen", fHadron_Y_gen, "Hadron_Y_gen[NHadron_gen]/D");
-    fOutputTree->Branch("Hadron_Eta_gen", fHadron_Eta_gen, "Hadron_Eta_gen[NHadron_gen]/D");
-    fOutputTree->Branch("Hadron_Phi_gen", fHadron_Phi_gen, "Hadron_Phi_gen[NHadron_gen]/D");
-    fOutputTree->Branch("Hadron_Theta_gen", fHadron_Theta_gen, "Hadron_Theta_gen[NHadron_gen]/D");
+    fOutputTree->Branch("NHadrons_gen", &fNHadron_gen, "NHadron_gen/I");
+    fOutputTree->Branch("PDG_Hadron_gen", fPDGHadron_gen, "PDGHadron_gen[NHadron_gen]/I");
+    fOutputTree->Branch("PDGmum_Hadron_gen", fPromptHadron_gen, "PromptHadron_gen[NHadron_gen]/I");
+    fOutputTree->Branch("Pt_Hadron_gen", fHadron_Pt_gen, "Hadron_Pt_gen[NHadron_gen]/D");
+    fOutputTree->Branch("E_Hadron_gen", fHadron_E_gen, "Hadron_E_gen[NHadron_gen]/D");
+    fOutputTree->Branch("Px_Hadron_gen", fHadron_Px_gen, "Hadron_Px_gen[NHadron_gen]/D");
+    fOutputTree->Branch("Py_Hadron_gen", fHadron_Py_gen, "Hadron_Py_gen[NHadron_gen]/D");
+    fOutputTree->Branch("Pz_Hadron_gen", fHadron_Pz_gen, "Hadron_Pz_gen[NHadron_gen]/D");
+    fOutputTree->Branch("Y_Hadron_gen", fHadron_Y_gen, "Hadron_Y_gen[NHadron_gen]/D");
+    fOutputTree->Branch("Eta_Hadron_gen", fHadron_Eta_gen, "Hadron_Eta_gen[NHadron_gen]/D");
+    fOutputTree->Branch("Phi_Hadron_gen", fHadron_Phi_gen, "Hadron_Phi_gen[NHadron_gen]/D");
+    fOutputTree->Branch("Theta_Hadron_gen", fHadron_Theta_gen, "Hadron_Theta_gen[NHadron_gen]/D");
 
     TH1D *h_charm = new TH1D("h_charm", "charm number", 10, -0.5, 9.5);
     TH1D *h_bbbar = new TH1D("h_bbbar", "bbbar number", 10, -0.5, 9.5);
@@ -480,9 +480,9 @@ int main(int argc, char *argv[])
     int muplus_bquark = 0;
     int muplus_bmeson = 0;
     int muplus_bbarion = 0;
-    Int_t LabelOld1[50000];
-    Int_t LabelOld2[50000];
-    Bool_t GoodMuon[50000];
+    Int_t LabelOld1[fDimu_dim];
+    Int_t LabelOld2[fDimu_dim];
+    Bool_t GoodMuon[fDimu_dim];
 
     Bool_t Fwd_y = kFALSE;
     // Inizio del loop sul numero di eventi
@@ -669,6 +669,7 @@ int main(int argc, char *argv[])
 
             if (isMuCharm || isMuBeauty || isMuLF)
             {
+
                 fPDG_gen[nmu_gen] = pythia.event[i].id();
                 fPt_gen[nmu_gen] = Particle.Pt();
                 fE_gen[nmu_gen] = Particle.E();
@@ -679,6 +680,7 @@ int main(int argc, char *argv[])
                 fEta_gen[nmu_gen] = Particle.Eta();
                 fPhi_gen[nmu_gen] = Particle.Phi();
                 fTheta_gen[nmu_gen] = Particle.Theta();
+
                 fCharge_gen[nmu_gen] = -TMath::Sign(1, pythia.event[i].id());
                 GoodMuon[i] = kTRUE;
                 nmu_gen++;
@@ -700,18 +702,20 @@ int main(int argc, char *argv[])
                     fDimuPz_gen[ndimu_gen] = dimu.Pz();
                     fDimuY_gen[ndimu_gen] = dimu.Rapidity();
                     fDimuMass_gen[ndimu_gen] = dimu.M();
-                    if (dimu.M() < 1)
-                    {
-                        cout << dimu.M() << endl;
-                        printf("Array index %d || PDG %d || PT %f || Y %f || Mom1: Index %d PDG %d || Mom2 Index %d PDG %d \n", i, pythia.event[i].id(), Particle.Pt(), Particle.Rapidity(), pythia.event[i].mother1(), pythia.event[pythia.event[i].mother1()].id(), pythia.event[i].mother2(), pythia.event[pythia.event[i].mother2()].id());
+                    // if (dimu.M() < 1)
+                    // {
+                    //     cout << dimu.M() << endl;
+                    //     printf("Array index %d || PDG %d || PT %f || Y %f || Mom1: Index %d PDG %d || Mom2 Index %d PDG %d \n", i, pythia.event[i].id(), Particle.Pt(), Particle.Rapidity(), pythia.event[i].mother1(), pythia.event[pythia.event[i].mother1()].id(), pythia.event[i].mother2(), pythia.event[pythia.event[i].mother2()].id());
 
-                        printf("Array index %d || PDG %d || PT %f || Y %f || Mom1: Index %d PDG %d || Mom2 Index %d PDG %d \n", i, pythia.event[j_Part1].id(), Particle.Pt(), Particle.Rapidity(), pythia.event[j_Part1].mother1(), pythia.event[pythia.event[j_Part1].mother1()].id(), pythia.event[j_Part1].mother2(), pythia.event[pythia.event[j_Part1].mother2()].id());
-                    }
+                    //     printf("Array index %d || PDG %d || PT %f || Y %f || Mom1: Index %d PDG %d || Mom2 Index %d PDG %d \n", i, pythia.event[j_Part1].id(), Particle.Pt(), Particle.Rapidity(), pythia.event[j_Part1].mother1(), pythia.event[pythia.event[j_Part1].mother1()].id(), pythia.event[j_Part1].mother2(), pythia.event[pythia.event[j_Part1].mother2()].id());
+                    // }
 
                     fDimuCharge_gen[ndimu_gen] = -(TMath::Sign(1, pythia.event[i].id()) + TMath::Sign(1, pythia.event[j_Part1].id()));
                     LabelOld1[ndimu_gen] = i;
+
                     LabelOld2[ndimu_gen] = j_Part1;
                     GoodMuon[j_Part1] = kTRUE;
+
                     ndimu_gen++;
                 }
             }
@@ -720,7 +724,7 @@ int main(int argc, char *argv[])
         fNMuons_gen = nmu_gen;
         fNHadron_gen = nHFHadron_gen;
         fNDimu_gen = ndimu_gen;
-
+        
         for (Int_t i_nDimu_Gen = 0; i_nDimu_Gen < ndimu_gen; i_nDimu_Gen++)
         {
             Int_t LabelNew1 = 0;
@@ -736,6 +740,7 @@ int main(int argc, char *argv[])
             fDimuMu_gen[i_nDimu_Gen][0] = LabelNew1;
             fDimuMu_gen[i_nDimu_Gen][1] = LabelNew2;
         }
+        
 
         fOutputTree->Fill();
     }
