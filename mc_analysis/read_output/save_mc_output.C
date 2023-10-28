@@ -3,7 +3,7 @@
 void save_mc_output(
     // TString RunMode = "test_new_prompt_LHC22b3",
     TString RunMode = "SoftQCD_Def",
-    TString dir_fileIn = "/home/michele_pennisi/cernbox/HF_dimuons/pythia_stand/sim",
+    TString dir_fileIn = "/home/michele_pennisi/cernbox/HF_dimuons/pythia_stand/new_pythia_sim",
     // TString dir_fileIn = "/home/michele_pennisi/cernbox/HF_dimuons/mc_analysis/analysis_grid/grid_sim/LF_test",
     // TString dir_fileIn = "/home/michele_pennisi/cernbox/HF_dimuons/mc_analysis/analysis_grid/grid_sim/test_beauty_sim_2",
     // TString dir_fileIn = "/home/michele_pennisi/cernbox/HF_dimuons/mc_analysis/analysis_grid/grid_sim/test_charm_sim",
@@ -65,10 +65,10 @@ void save_mc_output(
     Bool_t Verbose = kFALSE;
     Int_t counter_test = 0;
 
-    for (Int_t i_Event = 0; i_Event < total_entries; i_Event++)
+    for (Int_t i_Event = 0; i_Event < 100; i_Event++)
     {
         h_Nevents->Fill(1);
-        if (i_Event % (Int_t)(total_entries*0.05) == 0)
+        if (i_Event % (Int_t)(total_entries * 0.05) == 0)
         {
             progress_status(i_Event, total_entries);
         }
@@ -92,8 +92,69 @@ void save_mc_output(
         Double_t Y_Gamma = fY_gamma[0];
         Double_t M_Gamma = fM_gamma[0];
 
+        Int_t N_Charm_event = 0;
+        Int_t N_Charm_event_fwd = 0;
+        Int_t N_Charm_event_PowhegOnly = 0;
+        Int_t N_Charm_event_fwd_PowhegOnly = 0;
+
+        Int_t N_Beauty_event = 0;
+        Int_t N_Beauty_event_fwd = 0;
+        Int_t N_Beauty_event_PowhegOnly = 0;
+        Int_t N_Beauty_event_fwd_PowhegOnly = 0;
+
         h_PtM_Gamma->Fill(Pt_Gamma, M_Gamma);
         h_PtY_Gamma->Fill(Pt_Gamma, Y_Gamma);
+
+        for (Int_t i_N_HFquarks_gen = 0; i_N_HFquarks_gen < N_HFquarks_gen; i_N_HFquarks_gen++)
+        {
+            Int_t PDG_HFquark = PDG_HFquark_gen[i_N_HFquarks_gen];
+            Double_t Pt_HFquark = Pt_HFquark_gen[i_N_HFquarks_gen];
+            Double_t Y_HFquark = Y_HFquark_gen[i_N_HFquarks_gen];
+
+            if (TMath::Abs(PDG_HFquark) == 4)
+            {
+                h_PtY_Charm_quark->Fill(Pt_HFquark, Y_HFquark);
+                N_Charm_event++;
+                if (Generator.Contains("Powheg"))
+                {
+                    h_PtY_Charm_quark_PowhegOnly->Fill(Pt_HFquark, Y_HFquark);
+                    N_Charm_event_PowhegOnly++;
+                }
+
+                if (Y_HFquark > -4.0 && Y_HFquark < -2.5)
+                {
+                    N_Charm_event_fwd++;
+                    if (Generator.Contains("Powheg"))
+                        N_Charm_event_fwd_PowhegOnly++;
+                }
+            }
+            else if (TMath::Abs(PDG_HFquark) == 5)
+            {
+                h_PtY_Beauty_quark->Fill(Pt_HFquark, Y_HFquark);
+                N_Beauty_event++;
+                if (Generator.Contains("Powheg"))
+                {
+                    h_PtY_Beauty_quark_PowhegOnly->Fill(Pt_HFquark, Y_HFquark);
+                    N_Beauty_event_PowhegOnly++;
+                }
+
+                if (Y_HFquark > -4.0 && Y_HFquark < -2.5)
+                {
+                    N_Beauty_event_fwd++;
+                    if (Generator.Contains("Powheg"))
+                        N_Beauty_event_fwd_PowhegOnly++;
+                }
+            }
+        }
+        h_NCharm_event->Fill(N_Charm_event);
+        h_NCharm_event_fwd->Fill(N_Charm_event_fwd);
+        h_NCharm_event_PowhegOnly->Fill(N_Charm_event_PowhegOnly);
+        h_NCharm_event_fwd_PowhegOnly->Fill(N_Charm_event_fwd_PowhegOnly);
+
+        h_NBeauty_event->Fill(N_Beauty_event);
+        h_NBeauty_event_fwd->Fill(N_Beauty_event_fwd);
+        h_NBeauty_event_PowhegOnly->Fill(N_Beauty_event_PowhegOnly);
+        h_NBeauty_event_fwd_PowhegOnly->Fill(N_Beauty_event_fwd_PowhegOnly);
 
         for (Int_t i_NHadron_gen = 0; i_NHadron_gen < NHadrons_gen; i_NHadron_gen++)
         {
@@ -334,7 +395,7 @@ void save_mc_output(
 
         for (Int_t i_NDimu_gen = 0; i_NDimu_gen < NDimu_gen; i_NDimu_gen++)
         {
-            
+
             Double_t Pt_DiMu = DimuPt_gen[i_NDimu_gen];      // gen dimuon pT
             Double_t Px_DiMu = DimuPx_gen[i_NDimu_gen];      // gen dimuon px
             Double_t Py_DiMu = DimuPy_gen[i_NDimu_gen];      // gen dimuon py
@@ -342,7 +403,7 @@ void save_mc_output(
             Double_t Y_DiMu = DimuY_gen[i_NDimu_gen];        // gen dimuon y
             Double_t M_DiMu = DimuMass_gen[i_NDimu_gen];     // gen dimuon invariant mass
             Int_t Charge_DiMu = DimuCharge_gen[i_NDimu_gen]; // gen dimuon charge
-            
+
             Double_t Pt_Mu0 = Pt_gen[DimuMu_gen[i_NDimu_gen][0]];
             Double_t Y_Mu0 = Y_gen[DimuMu_gen[i_NDimu_gen][0]];
             Double_t Eta_Mu0 = Eta_gen[DimuMu_gen[i_NDimu_gen][0]];
@@ -797,6 +858,38 @@ void save_mc_output(
     TFile fOut(Form("%s/%s", dir_fileOut.Data(), file_out.Data()), "RECREATE");
     fOut.cd();
     h_Nevents->Write();
+    if (Generator.Contains("HF"))
+    {
+        if (!fOut.GetDirectory("HF_quarks"))
+            fOut.mkdir("HF_quarks");
+
+        fOut.cd("HF_quarks");
+
+        h_PtY_Charm_quark->Write(0,2,0);
+        h_NCharm_event->Write(0, 2, 0);
+        h_NCharm_event_fwd->Write(0, 2, 0);
+
+        h_PtY_Beauty_quark->Write(0,2,0);
+        h_NBeauty_event->Write(0, 2, 0);
+        h_NBeauty_event_fwd->Write(0, 2, 0);
+
+        if (Generator.Contains("Powheg"))
+        {
+            if (!fOut.GetDirectory("HF_quarks/PowhegOnly"))
+                fOut.mkdir("HF_quarks/PowhegOnly");
+
+            fOut.cd("HF_quarks/PowhegOnly");
+            
+            h_PtY_Charm_quark_PowhegOnly->Write(0,2,0);
+            h_NCharm_event_PowhegOnly->Write(0, 2, 0);
+            h_NCharm_event_fwd_PowhegOnly->Write(0, 2, 0);
+            
+            h_PtY_Beauty_quark_PowhegOnly->Write(0,2,0);
+            h_NBeauty_event_PowhegOnly->Write(0, 2, 0);
+            h_NBeauty_event_fwd_PowhegOnly->Write(0, 2, 0);
+        }
+    }
+
     if (!fOut.GetDirectory("Muon_Gen"))
         fOut.mkdir("Muon_Gen");
 

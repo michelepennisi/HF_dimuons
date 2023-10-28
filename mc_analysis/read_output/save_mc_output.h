@@ -89,6 +89,19 @@ TH1D *h_Nevents = new TH1D("h_Nevents", "h_Nevents", 2, 0, 2);
 const Int_t n_Muon_origin = 5; // 0 for All sources, 1 for Charm, 2 for Beauty, 3 for LF, 4 for DY
 
 //------Declaration Hist for Generated Muons----------------//
+TH2F *h_PtY_Charm_quark;
+TH1F *h_NCharm_event;
+TH1F *h_NCharm_event_fwd;
+TH2F *h_PtY_Charm_quark_PowhegOnly;
+TH1F *h_NCharm_event_PowhegOnly;
+TH1F *h_NCharm_event_fwd_PowhegOnly;
+TH2F *h_PtY_Beauty_quark;
+TH1F *h_NBeauty_event;
+TH1F *h_NBeauty_event_fwd;
+TH2F *h_PtY_Beauty_quark_PowhegOnly;
+TH1F *h_NBeauty_event_PowhegOnly;
+TH1F *h_NBeauty_event_fwd_PowhegOnly;
+
 TH2F *h_PtPdg_Muon_Gen;
 TH2F *h_YPdg_Muon_Gen;
 TH2F *h_PtY_Muon_Gen[n_Muon_origin];
@@ -267,6 +280,22 @@ TH2F *h_PtY_Gamma;
 TH2F *h_YGamma_YDimuon;
 void Set_Histograms(TString Generator)
 {
+    h_PtY_Charm_quark = new TH2F("h_PtY_Charm_quark", "#it{p}_{T} (GeV/#it{c}); #it{y}", 400, 0.0, 40.0, 200, -10.0, 10.0);
+    h_NCharm_event = new TH1F("h_NCharm_event", "c quark x ev", 20, -0.5, 19.5);
+    h_NCharm_event_fwd = new TH1F("h_NCharm_event_fwd", "c quark x ev fwd", 20, -0.5, 19.5);
+
+    h_PtY_Charm_quark_PowhegOnly = new TH2F("h_PtY_Charm_quark_PowhegOnly", "#it{p}_{T} (GeV/#it{c}); #it{y}", 400, 0.0, 40.0, 200, -10.0, 10.0);
+    h_NCharm_event_PowhegOnly = new TH1F("h_NCharm_event_PowhegOnly", "c quark x ev", 20, -0.5, 19.5);
+    h_NCharm_event_fwd_PowhegOnly = new TH1F("h_NCharm_event_fwd_PowhegOnly", "c quark x ev fwd", 20, -0.5, 19.5);
+
+    h_PtY_Beauty_quark = new TH2F("h_PtY_Beauty_quark", "#it{p}_{T} (GeV/#it{c}); #it{y}", 400, 0.0, 40.0, 200, -10.0, 10.0);
+    h_NBeauty_event = new TH1F("h_NBeauty_event", "b quark x ev", 20, -0.5, 19.5);
+    h_NBeauty_event_fwd = new TH1F("h_NBeauty_event_fwd", "b quark x ev fwd", 20, -0.5, 19.5);
+
+    h_PtY_Beauty_quark_PowhegOnly = new TH2F("h_PtY_Beauty_quark_PowhegOnly", "#it{p}_{T} (GeV/#it{c}); #it{y}", 400, 0.0, 40.0, 200, -10.0, 10.0);
+    h_NBeauty_event_PowhegOnly = new TH1F("h_NBeauty_event_PowhegOnly", "b quark x ev", 20, -0.5, 19.5);
+    h_NBeauty_event_fwd_PowhegOnly = new TH1F("h_NBeauty_event_fwd_PowhegOnly", "b quark x ev fwd", 20, -0.5, 19.5);
+
     h_PtQ_Muon_Gen_LF_Powheg = new TH2F("h_PtQ_Muon_Gen_LF_Powheg", "; #it{p}_{T} (GeV/#it{c}) ; initial parton", 400, 0.0, 40.0, 4000, 0, 4000);
     h_PtQ_Muon_Gen_LF_Pythia = new TH2F("h_PtQ_Muon_Gen_LF_Pythia", "; #it{p}_{T} (GeV/#it{c}) ; initial parton", 400, 0.0, 40.0, 4000, 0, 4000);
 
