@@ -9,7 +9,7 @@ Int_t NDimu_rec;    // rec dimuons in the event
 Int_t fN_gamma;     // gen gamma* in the event
 
 const Int_t fMuons_dim = 5000;
-const Int_t fDimu_dim = 50000;
+const Int_t fDimu_dim = 100000;
 
 Int_t PDGmum_rec[fMuons_dim];           // single rec mu PDG mum
 Double_t Pt_rec[fMuons_dim];            // single rec mu pT

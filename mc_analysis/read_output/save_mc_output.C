@@ -9,7 +9,7 @@ void save_mc_output(
     // TString dir_fileIn = "/home/michele_pennisi/cernbox/HF_dimuons/mc_analysis/analysis_grid/grid_sim/test_charm_sim",
     // TString dir_fileIn = "/home/michele_pennisi/cernbox/HF_dimuons/mc_analysis/analysis_grid/grid_sim/LHC18p_DY_100k_Version2_AOD",
     TString dir_fileOut = "test_new_sim",
-    Int_t RunNumber = 200,
+    Int_t RunNumber = 100000,
     TString Generator = "HF_Pythia",
     TString prefix_filename = "pythia_sim_12345_DefaultBR")
 {
@@ -68,7 +68,7 @@ void save_mc_output(
     for (Int_t i_Event = 0; i_Event < total_entries; i_Event++)
     {
         h_Nevents->Fill(1);
-        if (i_Event % 250000 == 0)
+        if (i_Event % (Int_t)(total_entries*0.05) == 0)
         {
             progress_status(i_Event, total_entries);
         }
