@@ -21,6 +21,8 @@ void save_mc_output(
 
     TString file_out;
     file_out.Form("%s_MC_output_Hist_%d.root", RunMode.Data(), RunNumber);
+    if(Generator.Contains("Pythia"))
+        file_out.Form("%s_%s_output_Hist_%d.root", RunMode.Data(), prefix_filename.Data(),RunNumber);
     // file_out.Form("old_%s_MC_output_Hist_%d.root", RunMode.Data(), RunNumber);
 
     TString file_out_tree;
@@ -879,11 +881,11 @@ void save_mc_output(
                 fOut.mkdir("HF_quarks/PowhegOnly");
 
             fOut.cd("HF_quarks/PowhegOnly");
-            
+
             h_PtY_Charm_quark_PowhegOnly->Write(0,2,0);
             h_NCharm_event_PowhegOnly->Write(0, 2, 0);
             h_NCharm_event_fwd_PowhegOnly->Write(0, 2, 0);
-            
+
             h_PtY_Beauty_quark_PowhegOnly->Write(0,2,0);
             h_NBeauty_event_PowhegOnly->Write(0, 2, 0);
             h_NBeauty_event_fwd_PowhegOnly->Write(0, 2, 0);
