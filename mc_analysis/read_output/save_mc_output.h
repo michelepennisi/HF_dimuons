@@ -33,6 +33,7 @@ Int_t fInitial_Parton_rec[fMuons_dim];  // check muon gen orecin
 Int_t PDG_HFquark_gen[fMuons_dim];   // single gen c/cbar PDG mum
 Double_t Pt_HFquark_gen[fMuons_dim]; // single gen c/cbar or b/bbar HFquark pT
 Double_t Y_HFquark_gen[fMuons_dim];  // single gen c/cbar or b/bbar HFquark y
+Int_t Mother_index[fMuons_dim];     // single gen c/cbar or b/bbar HFquark y
 
 Double_t fPt_gamma[fMuons_dim]; // Gamma star pt
 Double_t fM_gamma[fMuons_dim];  // Gamma star M
@@ -526,6 +527,8 @@ TChain *Importing_Tree(TString dir_filename, TString filename, TString Generator
         tree->SetBranchAddress("PDG_HFquark_gen", PDG_HFquark_gen);
         tree->SetBranchAddress("Pt_HFquark_gen", Pt_HFquark_gen);
         tree->SetBranchAddress("Y_HFquark_gen", Y_HFquark_gen);
+        if (Generator.Contains("Powheg"))
+            tree->SetBranchAddress("Mother_index", Mother_index);
         tree->SetBranchAddress("NHadrons_gen", &NHadrons_gen);
         tree->SetBranchAddress("PDGmum_Hadron_gen", PDGmum_Hadron_gen);
         tree->SetBranchAddress("PDG_Hadron_gen", PDG_Hadron_gen);
