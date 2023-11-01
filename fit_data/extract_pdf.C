@@ -1,14 +1,4 @@
-#include "RooRealVar.h"
-#include "RooDataSet.h"
-#include "RooGaussian.h"
-#include "RooConstVar.h"
-#include "RooChebychev.h"
-#include "RooAddPdf.h"
-#include "RooSimultaneous.h"
-#include "RooCategory.h"
-#include "TCanvas.h"
-#include "TAxis.h"
-#include "RooPlot.h"
+#include "/home/michele_pennisi/cernbox/common_include.h"
 using namespace RooFit;
 
 // Define Pt and mass value to sample MC distributions
@@ -33,12 +23,14 @@ TCanvas *printRooPlot_ratio(Int_t choice_Kin_Cut, RooPlot *frame, TString roohis
 TCanvas *printRooPlot(Int_t choice_Kin_Cut, RooPlot *frame, TString roohist_name[3], TString pdf_name[3], Int_t option);
 TCanvas *printMC_ratio(RooPlot *frame, TH1 *data, TF1 *pdf, Color_t color, Int_t minx = 0, Int_t max_x = 30);
 
-void extract_pdf(Int_t Low_Mass = 4, Int_t High_Mass = 30, Int_t Low_Pt = 0, Int_t High_Pt = 30)
+void extract_pdf(Int_t Low_Mass = 11, Int_t High_Mass = 30, Int_t Low_Pt = 0, Int_t High_Pt = 30)
 {
-  gROOT->ProcessLineSync(".x /home/michele_pennisi/dimuon_HF_pp/fit_data/fit_library/PtMassExpPdf.cxx+");
-  gROOT->ProcessLineSync(".x /home/michele_pennisi/dimuon_HF_pp/fit_data/fit_library/PtMassPol1ExpPdf.cxx+");
+    gROOT->ProcessLineSync(".x /home/michele_pennisi/dimuon_HF_pp/fit_data/fit_library/PtMassExpPdf.cxx+");
+    gROOT->ProcessLineSync(".x /home/michele_pennisi/dimuon_HF_pp/fit_data/fit_library/PtMassPol1ExpPdf.cxx+");
 
-  TFile *fIn = new TFile("/home/michele_pennisi/dimuon_HF_pp/data/LHC18p/Hist_MC/3_11_22/HF/Tree_HF_MCDimuHFTree_merged.root", "READ");
+  // TFile *fIn = new TFile("/home/michele_pennisi/dimuon_HF_pp/data/LHC18p/Hist_MC/3_11_22/HF/Tree_HF_MCDimuHFTree_merged.root", "READ");
+
+  TFile *fIn = new TFile("/home/michele_pennisi/cernbox/output_HF_dimuons/mc_analysis_output/Hist_fromSim/Version1/HF/Tree_HF_MCDimuHFTree_merged.root", "READ");
 
   const Int_t n_DiMuSelection = 3;
   TString name_DiMuSelection[n_DiMuSelection];
@@ -81,8 +73,8 @@ void extract_pdf(Int_t Low_Mass = 4, Int_t High_Mass = 30, Int_t Low_Pt = 0, Int
   {
     mass_range.Form("");
     //  mass_range.Form("_withcut");
-    Binning_m = 13;
-    Binning_pt = 15;
+    Binning_m = 26;
+    Binning_pt = 30;
   }
 
   TTree *pt_tree_MC[n_DiMuSelection];
@@ -120,9 +112,9 @@ void extract_pdf(Int_t Low_Mass = 4, Int_t High_Mass = 30, Int_t Low_Pt = 0, Int
 
   for (Int_t i = 0; i < n_DiMuSelection; i++)
   {
-    m_tree_MC[i] = (TTree *)fIn->Get(Form("rec_tree_mu%s%s", name_DiMuSelection[i].Data(), mass_range.Data()));
+    m_tree_MC[i] = (TTree *)fIn->Get(Form("Rec/rec_tree_mu%s%s", name_DiMuSelection[i].Data(), mass_range.Data()));
     printf("%s", Form("rec_tree_mu%s%s\n", name_DiMuSelection[i].Data(), mass_range.Data()));
-    pt_tree_MC[i] = (TTree *)fIn->Get(Form("rec_tree_mu%s%s", name_DiMuSelection[i].Data(), mass_range.Data()));
+    pt_tree_MC[i] = (TTree *)fIn->Get(Form("Rec/rec_tree_mu%s%s", name_DiMuSelection[i].Data(), mass_range.Data()));
 
     M_Dimu[i] = new RooDataSet(Form("M_Dimu_%s", name_DiMuSelection[i].Data()), Form("M_Dimu_%s", name_DiMuSelection[i].Data()), RooArgSet(*m), Import(*m_tree_MC[i]));
 
@@ -203,7 +195,7 @@ void extract_pdf(Int_t Low_Mass = 4, Int_t High_Mass = 30, Int_t Low_Pt = 0, Int
     n2_DimuPt[i] = w->var(Form("n2_DimuPtFrom%s", name_2DiMuSelection[i].Data()));
     n2_DimuPt[i]->setConstant(kTRUE);
 
-    Param_Pt_unbinned[i] = new TH1D(Form("Param_Pt_unbinned_from%s", name_2DiMuSelection[i].Data()), Form("Param_Pt_unbinned_from%s", name_2DiMuSelection[i].Data()), 4, 0, 4);
+    Param_Pt_unbinned[i] = new TH1D(Form("Param_Pt_unbinned_from%s%s", name_2DiMuSelection[i].Data(),mass_range.Data()), Form("Param_Pt_unbinned_from%s_%s", name_2DiMuSelection[i].Data(),mass_range.Data()), 4, 0, 4);
     Param_Pt_unbinned[i]->SetBinContent(1, B_DimuPt[i]->getVal());
     Param_Pt_unbinned[i]->SetBinContent(2, n1_DimuPt[i]->getVal());
     Param_Pt_unbinned[i]->SetBinContent(3, n2_DimuPt[i]->getVal());
@@ -214,7 +206,7 @@ void extract_pdf(Int_t Low_Mass = 4, Int_t High_Mass = 30, Int_t Low_Pt = 0, Int
     Param_Pt_unbinned[i]->SetBinError(3, n2_DimuPt[i]->getError());
     Param_Pt_unbinned[i]->SetBinError(4, 1);
 
-    Param_M_unbinned[i] = new TH1D(Form("Param_M_unbinned_from%s", name_2DiMuSelection[i].Data()), Form("Param_M_unbinned_from%s", name_2DiMuSelection[i].Data()), 4, 0, 4);
+    Param_M_unbinned[i] = new TH1D(Form("Param_M_unbinned_from%s%s", name_2DiMuSelection[i].Data(),mass_range.Data()), Form("Param_M_unbinned_from%s_%s", name_2DiMuSelection[i].Data(),mass_range.Data()), 4, 0, 4);
     Param_M_unbinned[i]->SetBinContent(1, B_DimuMass[i]->getVal());
     Param_M_unbinned[i]->SetBinContent(2, n1_DimuMass[i]->getVal());
     Param_M_unbinned[i]->SetBinContent(3, n2_DimuMass[i]->getVal());
@@ -230,29 +222,52 @@ void extract_pdf(Int_t Low_Mass = 4, Int_t High_Mass = 30, Int_t Low_Pt = 0, Int
     RooArgSet *pt_modelobs = pt_modelcopied.getObservables(*Pt_Dimu[i]);
     RooArgSet *pt_modelPars = pt_modelcopied.getParameters(*pt_modelobs);
     pt_Func[i] = pt_modelcopied.asTF(*pt_modelobs, *pt_modelPars, *pt);
-
+    
     RooArgSet *m_model = static_cast<RooArgSet *>(RooArgSet(*pdfDimuM[i]).snapshot(true));                               // True means copy the PDF and everything it depends on
     auto &m_modelcopied = static_cast<RooAbsPdf &>((*m_model)[Form("pdfDimuMassFrom%s", name_DiMuSelection[i].Data())]); // Get back the copied pdf. It lives in the RooArgSet "copyOfEverything"
     RooArgSet *m_modelobs = m_modelcopied.getObservables(*M_Dimu[i]);
     RooArgSet *m_modelPars = m_modelcopied.getParameters(*m_modelobs);
     m_Func[i] = m_modelcopied.asTF(*m_modelobs, *m_modelPars, *m);
-
+    gStyle->SetImageScaling(3.);
     m_canvas[i] = printMC_ratio(frameDimuMass[i], m_histo[i], m_Func[i], color[i], Low_Mass, High_Mass);
-    m_canvas[i]->SetTitle(Form("plot/m_canvas_%s_unbinned", name_DiMuSelection[i].Data()));
-    m_canvas[i]->SetName(Form("plot/m_canvas_%s_unbinned", name_DiMuSelection[i].Data()));
-    m_canvas[i]->SaveAs(Form("plot/m_canvas_%s_unbinned%s.pdf", name_DiMuSelection[i].Data(), mass_range.Data()));
+    m_canvas[i]->SetTitle(Form("m_canvas_%s_unbinned", name_DiMuSelection[i].Data()));
+    m_canvas[i]->SetName(Form("m_canvas_%s_unbinned", name_DiMuSelection[i].Data()));
+    m_canvas[i]->SaveAs(Form("/home/michele_pennisi/cernbox/output_HF_dimuons/fit_data_output/plot/m_canvas_%s_unbinned%s.pdf", name_DiMuSelection[i].Data(), mass_range.Data()));
+    m_canvas[i]->SaveAs(Form("/home/michele_pennisi/cernbox/output_HF_dimuons/fit_data_output/plot/m_canvas_%s_unbinned%s.png", name_DiMuSelection[i].Data(), mass_range.Data()));
 
     pt_canvas[i] = printMC_ratio(frameDimuPt[i], pt_histo[i], pt_Func[i], color[i], Low_Pt, High_Pt);
-    pt_canvas[i]->SetTitle(Form("plot/pt_canvas_%s_unbinned", name_DiMuSelection[i].Data()));
-    pt_canvas[i]->SetName(Form("plot/pt_canvas_%s_unbinned", name_DiMuSelection[i].Data()));
-    pt_canvas[i]->SaveAs(Form("plot/pt_canvas_%s_unbinned%s.pdf", name_DiMuSelection[i].Data(), mass_range.Data()));
+    pt_canvas[i]->SetTitle(Form("pt_canvas_%s_unbinned", name_DiMuSelection[i].Data()));
+    pt_canvas[i]->SetName(Form("pt_canvas_%s_unbinned", name_DiMuSelection[i].Data()));
+    pt_canvas[i]->SaveAs(Form("/home/michele_pennisi/cernbox/output_HF_dimuons/fit_data_output/plot/pt_canvas_%s_unbinned%s.pdf", name_DiMuSelection[i].Data(), mass_range.Data()));
+    pt_canvas[i]->SaveAs(Form("/home/michele_pennisi/cernbox/output_HF_dimuons/fit_data_output/plot/pt_canvas_%s_unbinned%s.png", name_DiMuSelection[i].Data(), mass_range.Data()));
   }
-  w->writeToFile(Form("root_files/pdfMC_unbinned%s.root", mass_range.Data()));
+  printf("B_DimuMassFromCharm %0.3f\n", B_DimuMass[0]->getVal());
+  printf("n1_DimuMassFromCharm %0.3f\n", n1_DimuMass[0]->getVal());
+  printf("n2_DimuMassFromCharm %0.3f\n", n2_DimuMass[0]->getVal());
+  printf("B_DimuPtFromCharm %0.3f\n", B_DimuPt[0]->getVal());
+  printf("n1_DimuPtFromCharm %0.3f\n", n1_DimuPt[0]->getVal());
+  printf("n2_DimuPtFromCharm %0.3f\n", n2_DimuPt[0]->getVal());
+
+  printf("B_DimuMassFromBeauty %0.3f\n", B_DimuMass[1]->getVal());
+  printf("n1_DimuMassFromBeauty %0.3f\n", n1_DimuMass[1]->getVal());
+  printf("n2_DimuMassFromBeauty %0.3f\n", n2_DimuMass[1]->getVal());
+  printf("B_DimuPtFromBeauty %0.3f\n", B_DimuPt[1]->getVal());
+  printf("n1_DimuPtFromBeauty %0.3f\n", B_DimuPt[1]->getVal());
+  printf("n2_DimuPtFromBeauty %0.3f\n", B_DimuPt[1]->getVal());
+
+  printf("B_DimuMassFromMixed %0.3f\n", B_DimuMass[2]->getVal());
+  printf("n1_DimuMassFromMixed %0.3f\n", n1_DimuMass[2]->getVal());
+  printf("n2_DimuMassFromMixed %0.3f\n", n2_DimuMass[2]->getVal());
+  printf("B_DimuPtFromMixed %0.3f\n", B_DimuPt[2]->getVal());
+  printf("n1_DimuPtFromMixed %0.3f\n", B_DimuPt[2]->getVal());
+  printf("n2_DimuPtFromMixed %0.3f\n", B_DimuPt[2]->getVal());
+
+  w->writeToFile(Form("/home/michele_pennisi/cernbox/output_HF_dimuons/fit_data_output/root_files/pdfMC_unbinned%s.root", mass_range.Data()));
 
   w->Print();
   gDirectory->Add(w);
 
-  TFile *fOut_param = new TFile("signal_extraction_systematic_pdf.root", "UPDATE");
+  TFile *fOut_param = new TFile(Form("/home/michele_pennisi/cernbox/output_HF_dimuons/fit_data_output/root_files/signal_extraction_systematic_pdf%s.root",mass_range.Data()), "UPDATE");
   fOut_param->cd();
 
   for (Int_t i = 0; i < n_DiMuSelection; i++)
@@ -302,7 +317,7 @@ TCanvas *printMC_ratio(RooPlot *frame, TH1 *data, TF1 *pdf, Color_t color, Int_t
     data->GetYaxis()->SetTitle("d#it{N}/d#it{p}_{T} (GeV/#it{c})^{-1}");
   }
 
-  TH2D *h_grid = new TH2D("h_grid", "", 100, minx, max_x, 100, Lowy, Maxy);
+  TH2D *h_grid = new TH2D("h_grid", "", 100, minx, max_x, 100, Lowy, frame->GetMaximum()*1000);
   h_grid->SetTitle("");
 
   h_grid->GetXaxis()->SetTitleOffset(1.3);
