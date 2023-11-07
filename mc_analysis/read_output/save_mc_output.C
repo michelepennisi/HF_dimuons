@@ -2,16 +2,16 @@
 
 void save_mc_output(
     // TString RunMode = "test_new_prompt_LHC22b3",
-    TString RunMode = "LHC23i1",
-    TString dir_fileIn = "/home/michele_pennisi/cernbox/HF_dimuons/mc_analysis/analysis_grid/grid_sim/LHC23i1_Version3_AOD",
+    TString RunMode = "powheg_charm_nocut_test",
+    TString dir_fileIn = "/home/michele_pennisi/cernbox/HF_dimuons/mc_analysis/analysis_grid/grid_sim/powheg_charm_nocut_Version3_AliAOD_LF_HF",
     // TString dir_fileIn = "/home/michele_pennisi/cernbox/HF_dimuons/pythia_stand/sim",
     // TString dir_fileIn = "/home/michele_pennisi/cernbox/HF_dimuons/mc_analysis/analysis_grid/grid_sim/LF_test",
     // TString dir_fileIn = "/home/michele_pennisi/cernbox/HF_dimuons/mc_analysis/analysis_grid/grid_sim/test_beauty_sim_2",
     // TString dir_fileIn = "/home/michele_pennisi/cernbox/HF_dimuons/mc_analysis/analysis_grid/grid_sim/test_charm_sim",
     // TString dir_fileIn = "/home/michele_pennisi/cernbox/HF_dimuons/mc_analysis/analysis_grid/grid_sim/LHC18p_DY_100k_Version2_AOD",
-    TString dir_fileOut = "test_new_sim",
-    Int_t RunNumber = 294009,
-    TString Generator = "Powheg_Rec",
+    TString dir_fileOut = "/home/michele_pennisi/cernbox/HF_dimuons/mc_analysis/analysis_grid/grid_sim/powheg_charm_nocut_Version3_AliAOD_LF_HF",
+    Int_t RunNumber = 294915,
+    TString Generator = "Powheg_Rec_HF",
     TString prefix_filename = "MCDimuHFTree"
     // TString prefix_filename = "pythia_sim_1611_DefaultBR"
 )
@@ -136,7 +136,7 @@ void save_mc_output(
     for (Int_t i_Event = 0; i_Event < total_entries; i_Event++)
     {
         h_Nevents->Fill(1);
-        if (i_Event % (Int_t)(total_entries * 0.05) == 0)
+        if (i_Event % (Int_t)(total_entries * 0.15) == 0)
         {
             progress_status(i_Event, total_entries);
         }
@@ -246,16 +246,26 @@ void save_mc_output(
                     h_PdgY_HFHadron_prompt->Fill(TMath::Abs(PDG_Hadron), Y_Hadron);
 
                     h_PdgPtY_HFHadron_prompt->Fill(TMath::Abs(PDG_Hadron), Pt_Hadron, Y_Hadron);
-                    if (Generator.Contains("Powheg") && IsHadronfromPowheg == -1)
-                        h_PdgPtY_HFHadron_prompt_PowhegOnly->Fill(TMath::Abs(PDG_Hadron), Pt_Hadron, Y_Hadron);
+                    if (Generator.Contains("Powheg"))
+                    {
+                        if (IsHadronfromPowheg == -1)
+                            h_PdgPtY_HFHadron_prompt_PowhegOnly->Fill(TMath::Abs(PDG_Hadron), Pt_Hadron, Y_Hadron);
+                        else
+                            h_PdgPtY_HFHadron_prompt_PYTHIAOnly->Fill(TMath::Abs(PDG_Hadron), Pt_Hadron, Y_Hadron);
+                    }
                 }
                 else
                 {
                     h_PdgPtY_HFHadron_notprompt->Fill(TMath::Abs(PDG_Hadron), Pt_Hadron, Y_Hadron);
                     h_PdgPt_HFHadron_notprompt->Fill(TMath::Abs(PDG_Hadron), Pt_Hadron);
                     h_PdgY_HFHadron_notprompt->Fill(TMath::Abs(PDG_Hadron), Y_Hadron);
-                    if (Generator.Contains("Powheg") && IsHadronfromPowheg == -1)
-                        h_PdgPtY_HFHadron_notprompt_PowhegOnly->Fill(TMath::Abs(PDG_Hadron), Pt_Hadron, Y_Hadron);
+                    if (Generator.Contains("Powheg"))
+                    {
+                        if (IsHadronfromPowheg == -1)
+                            h_PdgPtY_HFHadron_notprompt_PowhegOnly->Fill(TMath::Abs(PDG_Hadron), Pt_Hadron, Y_Hadron);
+                        else
+                            h_PdgPtY_HFHadron_notprompt_PYTHIAOnly->Fill(TMath::Abs(PDG_Hadron), Pt_Hadron, Y_Hadron);
+                    }
                 }
             }
             else
@@ -263,8 +273,13 @@ void save_mc_output(
                 h_PdgPtY_HFHadron_prompt->Fill(TMath::Abs(PDG_Hadron), Pt_Hadron, Y_Hadron);
                 h_PdgPt_HFHadron_prompt->Fill(TMath::Abs(PDG_Hadron), Pt_Hadron);
                 h_PdgY_HFHadron_prompt->Fill(TMath::Abs(PDG_Hadron), Y_Hadron);
-                if (Generator.Contains("Powheg") && IsHadronfromPowheg == -1)
-                    h_PdgPtY_HFHadron_prompt_PowhegOnly->Fill(TMath::Abs(PDG_Hadron), Pt_Hadron, Y_Hadron);
+                if (Generator.Contains("Powheg"))
+                {
+                    if (IsHadronfromPowheg == -1)
+                        h_PdgPtY_HFHadron_prompt_PowhegOnly->Fill(TMath::Abs(PDG_Hadron), Pt_Hadron, Y_Hadron);
+                    else
+                        h_PdgPtY_HFHadron_prompt_PYTHIAOnly->Fill(TMath::Abs(PDG_Hadron), Pt_Hadron, Y_Hadron);
+                }
             }
 
             // printf("i) %d | PDG %d | PDG mum %d | Pt %f | Y %f\n", i_NHadron_gen, PDG_Hadron,PDGmum_Hadron, Pt_Hadron, Y_Hadron);
@@ -405,6 +420,7 @@ void save_mc_output(
             Bool_t Selection_Muon[n_Muon_origin] = {kFALSE};
 
             Selection_Muon[0] = kTRUE; // Selection All Muons
+
             if ((TMath::Abs(PDG_Mu) > 400 && TMath::Abs(PDG_Mu) < 500) || (TMath::Abs(PDG_Mu) > 4000 && TMath::Abs(PDG_Mu) < 5000))
             {
                 Selection_Muon[1] = kTRUE;
@@ -959,10 +975,10 @@ void save_mc_output(
         }
     }
     // printf("counter_test %i\n", counter_test);
-
     TFile fOut_Tree(Form("%s/%s", dir_fileOut.Data(), file_out_tree.Data()), "RECREATE");
     fOut_Tree.cd();
     h_Nevents->Write();
+
     for (Int_t i_Dimuon_origin = 0; i_Dimuon_origin < n_DiMuon_origin; i_Dimuon_origin++)
     {
         if (Tree_DiMuon_Rec[i_Dimuon_origin]->GetEntries() > 0)
@@ -1278,6 +1294,8 @@ void save_mc_output(
         {
             h_PdgPtY_HFHadron_prompt_PowhegOnly->Write(0, 2, 0);
             h_PdgPtY_HFHadron_notprompt_PowhegOnly->Write(0, 2, 0);
+            h_PdgPtY_HFHadron_notprompt_PYTHIAOnly->Write(0, 2, 0);
+            h_PdgPtY_HFHadron_prompt_PYTHIAOnly->Write(0, 2, 0);
         }
         h_PdgPt_HFHadron_prompt->Write(0, 2, 0);
         h_PdgY_HFHadron_prompt->Write(0, 2, 0);

@@ -266,6 +266,15 @@ TH2F *h_PdgY_HFHadron_notprompt;
 TH3F *h_PdgPtY_HFHadron_prompt;
 TH3F *h_PdgPtY_HFHadron_notprompt;
 
+//----- "" for pythia only ------------//
+
+TH2F *h_PdgPt_HFHadron_prompt_PYTHIAOnly;
+TH2F *h_PdgPt_HFHadron_notprompt_PYTHIAOnly;
+TH2F *h_PdgY_HFHadron_prompt_PYTHIAOnly;
+TH2F *h_PdgY_HFHadron_notprompt_PYTHIAOnly;
+TH3F *h_PdgPtY_HFHadron_prompt_PYTHIAOnly;
+TH3F *h_PdgPtY_HFHadron_notprompt_PYTHIAOnly;
+
 //----- "" for powheg only ------------//
 
 TH2F *h_PdgPt_HFHadron_prompt_PowhegOnly;
@@ -445,12 +454,9 @@ void Set_Histograms(TString Generator)
     //------ Inizialization hist for HF hadrons----------------//
 
     h_PdgPtY_HFHadron_prompt = new TH3F("h_PdgPtY_HFHadron_prompt", "; PDG hadron; #it{p}_{T} (GeV/#it{c}) ; #it{y}", n_PDG_selection - 1, PDG_Selection, n_bin_pt, low_bin_pt, n_bin_Y_Gen, low_bin_Y_Gen);
-
     h_PdgPtY_HFHadron_notprompt = new TH3F("h_PdgPtY_HFHadron_notprompt", "; PDG hadron; #it{p}_{T} (GeV/#it{c}) ; #it{y}", n_PDG_selection - 1, PDG_Selection, n_bin_pt, low_bin_pt, n_bin_Y_Gen, low_bin_Y_Gen);
-
     h_PdgPt_HFHadron_prompt = new TH2F("h_PdgPt_HFHadron_prompt", "; PDG hadron; #it{p}_{T} (GeV/#it{c})", n_PDG_selection - 1, PDG_Selection, n_bin_pt, low_bin_pt);
     h_PdgY_HFHadron_prompt = new TH2F("h_PdgY_HFHadron_prompt", "; PDG hadron; #it{y}", n_PDG_selection - 1, PDG_Selection, n_bin_Y_Gen, low_bin_Y_Gen);
-
     h_PdgPt_HFHadron_notprompt = new TH2F("h_PdgPt_HFHadron_notprompt", "; PDG hadron; #it{p}_{T} (GeV/#it{c})", n_PDG_selection - 1, PDG_Selection, n_bin_pt, low_bin_pt);
     h_PdgY_HFHadron_notprompt = new TH2F("h_PdgY_HFHadron_notprompt", "; PDG hadron; #it{y}", n_PDG_selection - 1, PDG_Selection, n_bin_Y_Gen, low_bin_Y_Gen);
 
@@ -458,6 +464,9 @@ void Set_Histograms(TString Generator)
     {
         h_PdgPtY_HFHadron_prompt_PowhegOnly = (TH3F *)h_PdgPtY_HFHadron_prompt->Clone(Form("%s_PowhegOnly", h_PdgPtY_HFHadron_prompt->GetName()));
         h_PdgPtY_HFHadron_notprompt_PowhegOnly = (TH3F *)h_PdgPtY_HFHadron_notprompt->Clone(Form("%s_PowhegOnly", h_PdgPtY_HFHadron_notprompt->GetName()));
+
+        h_PdgPtY_HFHadron_prompt_PYTHIAOnly = (TH3F *)h_PdgPtY_HFHadron_prompt->Clone(Form("%s_PYTHIAOnly", h_PdgPtY_HFHadron_prompt->GetName()));
+        h_PdgPtY_HFHadron_notprompt_PYTHIAOnly = (TH3F *)h_PdgPtY_HFHadron_notprompt->Clone(Form("%s_PYTHIAOnly", h_PdgPtY_HFHadron_notprompt->GetName()));
     }
     // if (forZ_sim)
     // {
