@@ -551,14 +551,14 @@ TChain *Importing_Tree(TString dir_filename, TString filename, TString Generator
         if (Generator.Contains("Powheg"))
             tree->SetBranchAddress("HadronFrom_Powheg_gen", fHadronFrom_Powheg_gen);
     }
-    else if (Generator.Contains("DY"))
+    if (Generator.Contains("DY"))
     {
         tree->SetBranchAddress("N_gamma_gen", &fN_gamma);
         tree->SetBranchAddress("Pt_gamma_gen", fPt_gamma);
         tree->SetBranchAddress("M_gamma_gen", fM_gamma);
         tree->SetBranchAddress("Y_gamma_gen", fY_gamma);
     }
-    else if (Generator.Contains("Rec"))
+    if (Generator.Contains("Rec"))
     {
         tree->SetBranchAddress("NDimu_rec", &NDimu_rec);
         tree->SetBranchAddress("DimuMu_rec", DimuMu_rec);
@@ -593,7 +593,7 @@ TChain *Importing_Tree(TString dir_filename, TString filename, TString Generator
         tree->SetBranchAddress("From_Powheg_rec", fFrom_Powheg_rec);
         tree->SetBranchAddress("Initial_Parton_rec", fInitial_Parton_rec);
     }
-    else if (Generator.Contains("Powheg"))
+    if (Generator.Contains("Powheg"))
     {
         tree->SetBranchAddress("From_Powheg_gen", fFrom_Powheg_gen);
         tree->SetBranchAddress("Initial_Parton_gen", fInitial_Parton_gen);
