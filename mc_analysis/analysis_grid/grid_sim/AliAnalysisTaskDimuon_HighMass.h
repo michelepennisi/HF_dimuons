@@ -103,6 +103,8 @@ private:
     Double_t fTheta_rec[fMuons_dim];         // single rec mu theta
     Int_t fFrom_Powheg_rec[fMuons_dim];      // check muon rec origin
     Int_t fInitial_Parton_rec[fMuons_dim];   // check muon rec original parton
+    Int_t fFrom_Geant_rec[fMuons_dim];       // check muon gen origin
+    Double_t fVzmother_rec[fMuons_dim]; // check muon gen origin
 
     Int_t fPDG_HFquark_gen[fMuons_dim];   // single gen c/cbar PDG mum
     Double_t fPx_HFquark_gen[fMuons_dim]; // single gen c/cbar or b/bbar HFquark pT
@@ -112,30 +114,36 @@ private:
     Double_t fY_HFquark_gen[fMuons_dim];  // single gen c/cbar or b/bbar HFquark y
     Int_t fMother_index[fMuons_dim];      // single gen c/cbar or b/bbar HFquark y
 
-    Int_t fPDGmum_gen[fMuons_dim];   // single gen mu PDG mum
-    Double_t fPt_gen[fMuons_dim];    // single gen mu pT
-    Double_t fE_gen[fMuons_dim];     // single gen mu E
-    Double_t fPx_gen[fMuons_dim];    // single gen mu px
-    Double_t fPy_gen[fMuons_dim];    // single gen mu py
-    Double_t fPz_gen[fMuons_dim];    // single gen mu pz
-    Double_t fY_gen[fMuons_dim];     // single gen mu y
-    Double_t fEta_gen[fMuons_dim];   // single gen mu eta
-    Int_t fCharge_gen[fMuons_dim];   // single gen mu charge
-    Double_t fPhi_gen[fMuons_dim];   // single gen mu phi
-    Double_t fTheta_gen[fMuons_dim]; // single gen mu theta
-    Int_t fFrom_Powheg_gen[fMuons_dim]; // check muon gen origin
+    Int_t fPDGmum_gen[fMuons_dim];         // single gen mu PDG mum
+    Double_t fPt_gen[fMuons_dim];          // single gen mu pT
+    Double_t fE_gen[fMuons_dim];           // single gen mu E
+    Double_t fPx_gen[fMuons_dim];          // single gen mu px
+    Double_t fPy_gen[fMuons_dim];          // single gen mu py
+    Double_t fPz_gen[fMuons_dim];          // single gen mu pz
+    Double_t fY_gen[fMuons_dim];           // single gen mu y
+    Double_t fEta_gen[fMuons_dim];         // single gen mu eta
+    Int_t fCharge_gen[fMuons_dim];         // single gen mu charge
+    Double_t fPhi_gen[fMuons_dim];         // single gen mu phi
+    Double_t fTheta_gen[fMuons_dim];       // single gen mu theta
+    Int_t fFrom_Powheg_gen[fMuons_dim];    // check muon gen origin
     Int_t fInitial_Parton_gen[fMuons_dim]; // check muon gen original parton
+    Double_t fRadius_gen[fMuons_dim];      // radius muon production vertex
+    Double_t fVz_gen[fMuons_dim];
+    Int_t fFrom_Geant_gen[fMuons_dim];  // check muon gen origin
+    Double_t fVzmother_gen[fMuons_dim]; // check muon gen origin
 
-    Int_t fPDGmum_Hadron_gen[fMuons_dim]; // gen Hadron PDG mum
-    Int_t fPDG_Hadron_gen[fMuons_dim];    // gen Hadron PDG
-    Double_t fPt_Hadron_gen[fMuons_dim];  // gen Hadron pT
-    Double_t fE_Hadron_gen[fMuons_dim];   // gen Hadron E
-    Double_t fPx_Hadron_gen[fMuons_dim];  // gen Hadron px
-    Double_t fPy_Hadron_gen[fMuons_dim];  // gen Hadron py
-    Double_t fPz_Hadron_gen[fMuons_dim];  // gen Hadron pz
-    Double_t fY_Hadron_gen[fMuons_dim];   // gen Hadron y
-    Double_t fEta_Hadron_gen[fMuons_dim]; // gen Hadron eta
+    Int_t fPDGmum_Hadron_gen[fMuons_dim];     // gen Hadron PDG mum
+    Int_t fPDG_Hadron_gen[fMuons_dim];        // gen Hadron PDG
+    Double_t fPt_Hadron_gen[fMuons_dim];      // gen Hadron pT
+    Double_t fE_Hadron_gen[fMuons_dim];       // gen Hadron E
+    Double_t fPx_Hadron_gen[fMuons_dim];      // gen Hadron px
+    Double_t fPy_Hadron_gen[fMuons_dim];      // gen Hadron py
+    Double_t fPz_Hadron_gen[fMuons_dim];      // gen Hadron pz
+    Double_t fY_Hadron_gen[fMuons_dim];       // gen Hadron y
+    Double_t fEta_Hadron_gen[fMuons_dim];     // gen Hadron eta
     Int_t fHadronFrom_Powheg_gen[fMuons_dim]; // check muon gen origin
+    Int_t fHadronFrom_Geant_gen[fMuons_dim];  // check muon gen origin
+    Double_t fVzHadron_gen[fMuons_dim];
 
     Int_t fDimuMu_gen[fDimu_dim][2];   // reference to single gen mus
     Double_t fDimuPt_gen[fDimu_dim];   // gen dimuon pT
