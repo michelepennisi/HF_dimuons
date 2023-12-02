@@ -1,20 +1,34 @@
 #include "save_mc_output.h"
+// sistema bene powheg muoni dentro not geant nel caso rec
+// fai lo stesso per dimuoni
+// salvo low mass muons
 
 void save_mc_output(
     // TString RunMode = "test_new_prompt_LHC22b3",
-    TString RunMode = "powheg_charm_nocut_test",
-    TString dir_fileIn = "/home/michele_pennisi/cernbox/HF_dimuons/mc_analysis/analysis_grid/grid_sim/powheg_charm_nocut_Version3_AliAOD_LF_HF",
-    // TString dir_fileIn = "/home/michele_pennisi/cernbox/HF_dimuons/pythia_stand/sim",
+    // TString RunMode = "pythia8_purifykineoff_test",
+    // TString RunMode = "SoftQCD_inel_LFoff_Def",
+    TString RunMode = "Merged_LHC22c1",
+    // TString RunMode = "LHC23i1",
+    // TString RunMode = "SoftQCD_inel_Def",
+    // TString dir_fileIn = "/home/michele_pennisi/cernbox/HF_dimuons/mc_analysis/analysis_grid/grid_sim/LHC23i1_Version5_AliAOD_HF_LF",
+    TString dir_fileIn = "/home/michele_pennisi/cernbox/HF_dimuons/mc_analysis/analysis_grid/grid_sim/LHC22c1/294009/output",
+    // TString dir_fileIn = "/home/michele_pennisi/cernbox/HF_dimuons/mc_analysis/analysis_grid/grid_sim/pythia8_purifykineoff_test",
+    // TString dir_fileIn = "/home/michele_pennisi/cernbox/HF_dimuons/pythia_stand/new_pythia_sim",
     // TString dir_fileIn = "/home/michele_pennisi/cernbox/HF_dimuons/mc_analysis/analysis_grid/grid_sim/LF_test",
     // TString dir_fileIn = "/home/michele_pennisi/cernbox/HF_dimuons/mc_analysis/analysis_grid/grid_sim/test_beauty_sim_2",
     // TString dir_fileIn = "/home/michele_pennisi/cernbox/HF_dimuons/mc_analysis/analysis_grid/grid_sim/test_charm_sim",
     // TString dir_fileIn = "/home/michele_pennisi/cernbox/HF_dimuons/mc_analysis/analysis_grid/grid_sim/LHC18p_DY_100k_Version2_AOD",
-    TString dir_fileOut = "/home/michele_pennisi/cernbox/HF_dimuons/mc_analysis/analysis_grid/grid_sim/powheg_charm_nocut_Version3_AliAOD_LF_HF",
-    Int_t RunNumber = 294915,
-    TString Generator = "Powheg_Rec_HF",
+    // TString dir_fileOut = "/home/michele_pennisi/cernbox/HF_dimuons/mc_analysis/analysis_grid/grid_sim/LHC23i1_Version5_AliAOD_HF_LF",
+    TString dir_fileOut = "/home/michele_pennisi/cernbox/HF_dimuons/mc_analysis/analysis_grid/grid_sim/LHC22c1/294009/output",
+    // TString dir_fileOut = "/home/michele_pennisi/cernbox/HF_dimuons/mc_analysis/analysis_grid/grid_sim/pythia8_purifykineoff_test",
+    // TString dir_fileOut = "/home/michele_pennisi/cernbox/HF_dimuons/pythia_stand/new_pythia_sim",
+    // TString dir_fileOut = "/home/michele_pennisi/cernbox/HF_dimuons/pythia_stand/sim",
+    // Int_t RunNumber = 100000,
+    Int_t RunNumber = 294009,
+    TString Generator = "Geant_HF",
     TString prefix_filename = "MCDimuHFTree"
-    // TString prefix_filename = "pythia_sim_1611_DefaultBR"
-)
+    // TString prefix_filename = "pythia_sim_74_DefaultBR"
+    )
 {
 
     Set_Histograms(Generator);
@@ -136,17 +150,25 @@ void save_mc_output(
     for (Int_t i_Event = 0; i_Event < total_entries; i_Event++)
     {
         h_Nevents->Fill(1);
-        if (i_Event % (Int_t)(total_entries * 0.15) == 0)
+        if (i_Event % (Int_t)(total_entries * 0.125) == 0)
         {
             progress_status(i_Event, total_entries);
         }
         input_tree->GetEntry(i_Event);
         Int_t n_Muon_Gen[n_Muon_origin] = {0};
         Int_t n_Muon_Gen_PowhegOnly[n_Muon_origin] = {0};
+        Int_t n_Muon_Gen_PYTHIAOnly[n_Muon_origin] = {0};
+        Int_t n_Muon_Gen_GeantOnly[n_Muon_origin] = {0};
+
         Int_t n_Muon_Gen_DQcut[n_Muon_origin] = {0};
         Int_t n_Muon_Gen_DQcut_PowhegOnly[n_Muon_origin] = {0};
+        Int_t n_Muon_Gen_DQcut_PYTHIAOnly[n_Muon_origin] = {0};
+        Int_t n_Muon_Gen_DQcut_GeantOnly[n_Muon_origin] = {0};
+
         Int_t n_Muon_Rec[n_Muon_origin] = {0};
         Int_t n_Muon_Rec_PowhegOnly[n_Muon_origin] = {0};
+        Int_t n_Muon_Rec_PYTHIAOnly[n_Muon_origin] = {0};
+        Int_t n_Muon_Rec_GeantOnly[n_Muon_origin] = {0};
 
         Int_t n_DiMuon_Gen[n_DiMuon_origin] = {0};
         Int_t n_DiMuon_Gen_DQcut[n_DiMuon_origin] = {0};
@@ -237,48 +259,135 @@ void save_mc_output(
             Double_t Y_Hadron = Y_Hadron_gen[i_NHadron_gen];                  // gen Hadron y
             Double_t Eta_Hadron = Eta_Hadron_gen[i_NHadron_gen];              // gen Hadron eta
             Int_t IsHadronfromPowheg = fHadronFrom_Powheg_gen[i_NHadron_gen]; // check muon gen origin
+            Double_t VzHadron = fVzHadron_gen[i_NHadron_gen];
+            Int_t IsHadronfromGeant = fHadronFrom_Geant_gen[i_NHadron_gen];
 
-            if ((TMath::Abs(PDG_Hadron) > 400 && TMath::Abs(PDG_Hadron) < 500) || (TMath::Abs(PDG_Hadron) > 4000 && TMath::Abs(PDG_Hadron) < 5000))
+            // if ((TMath::Abs(PDG_Hadron) > 100 && TMath::Abs(PDG_Hadron) < 400) || (TMath::Abs(PDG_Hadron) > 1000 && TMath::Abs(PDG_Hadron) < 4000))
+            // {
+            //     if (IsHadronfromGeant == -1)
+            //         h_VzHadronEta_Hadron_Gen_LF_Geant->Fill(VzHadron, Eta_Hadron);
+            //     else
+            //         h_VzHadronEta_Hadron_Gen_LF_PYTHIA->Fill(VzHadron, Eta_Hadron);
+            // }
+            // else if ((TMath::Abs(PDG_Hadron) > 400 && TMath::Abs(PDG_Hadron) < 500) || (TMath::Abs(PDG_Hadron) > 4000 && TMath::Abs(PDG_Hadron) < 5000))
+            // {
+            //     if ((PDGmum_Hadron == 0) || (PDGmum_Hadron == 4) || (TMath::Abs(PDGmum_Hadron) > 400 && TMath::Abs(PDGmum_Hadron) < 500) || (TMath::Abs(PDGmum_Hadron) > 4000 && TMath::Abs(PDGmum_Hadron) < 5000))
+            //     {
+            //         if (IsHadronfromGeant == -1)
+            //             h_VzHadronEta_Hadron_Gen_Charm_Geant->Fill(VzHadron, Eta_Hadron);
+            //         else
+            //             h_VzHadronEta_Hadron_Gen_Charm_PYTHIA->Fill(VzHadron, Eta_Hadron);
+            //     }
+            // }
+            // else if ((TMath::Abs(PDG_Hadron) > 500 && TMath::Abs(PDG_Hadron) < 600) || (TMath::Abs(PDG_Hadron) > 5000 && TMath::Abs(PDG_Hadron) < 6000))
+            // {
+            //     if (IsHadronfromGeant == -1)
+            //         h_VzHadronEta_Hadron_Gen_Beauty_Geant->Fill(VzHadron, Eta_Hadron);
+            //     else
+            //         h_VzHadronEta_Hadron_Gen_Beauty_PYTHIA->Fill(VzHadron, Eta_Hadron);
+            // }
+
+            if ((TMath::Abs(PDG_Hadron) > 400 && TMath::Abs(PDG_Hadron) < 600) || (TMath::Abs(PDG_Hadron) > 4000 && TMath::Abs(PDG_Hadron) < 6000))
             {
                 if ((PDGmum_Hadron == 0) || (PDGmum_Hadron == 4) || (TMath::Abs(PDGmum_Hadron) > 400 && TMath::Abs(PDGmum_Hadron) < 500) || (TMath::Abs(PDGmum_Hadron) > 4000 && TMath::Abs(PDGmum_Hadron) < 5000))
                 {
+                    h_PdgPtY_HFHadron_prompt->Fill(TMath::Abs(PDG_Hadron), Pt_Hadron, Y_Hadron);
+
                     h_PdgPt_HFHadron_prompt->Fill(TMath::Abs(PDG_Hadron), Pt_Hadron);
                     h_PdgY_HFHadron_prompt->Fill(TMath::Abs(PDG_Hadron), Y_Hadron);
+                    h_PdgEta_HFHadron_prompt->Fill(TMath::Abs(PDG_Hadron), Eta_Hadron);
 
-                    h_PdgPtY_HFHadron_prompt->Fill(TMath::Abs(PDG_Hadron), Pt_Hadron, Y_Hadron);
-                    if (Generator.Contains("Powheg"))
+                    if (Generator.Contains("Geant"))
                     {
-                        if (IsHadronfromPowheg == -1)
-                            h_PdgPtY_HFHadron_prompt_PowhegOnly->Fill(TMath::Abs(PDG_Hadron), Pt_Hadron, Y_Hadron);
+                        if (IsHadronfromGeant == -1)
+                        {
+                            h_PdgY_HFHadron_prompt_GeantOnly->Fill(TMath::Abs(PDG_Hadron), Y_Hadron);
+                            h_PdgEta_HFHadron_prompt_GeantOnly->Fill(TMath::Abs(PDG_Hadron), Eta_Hadron);
+                            h_PdgPt_HFHadron_prompt_GeantOnly->Fill(TMath::Abs(PDG_Hadron), Pt_Hadron);
+                        }
                         else
-                            h_PdgPtY_HFHadron_prompt_PYTHIAOnly->Fill(TMath::Abs(PDG_Hadron), Pt_Hadron, Y_Hadron);
+                        {
+                            if (Generator.Contains("Powheg") && IsHadronfromPowheg == -1)
+                            {
+
+                                h_PdgY_HFHadron_prompt_PowhegOnly->Fill(TMath::Abs(PDG_Hadron), Y_Hadron);
+                                h_PdgEta_HFHadron_prompt_PowhegOnly->Fill(TMath::Abs(PDG_Hadron), Eta_Hadron);
+                                h_PdgPt_HFHadron_prompt_PowhegOnly->Fill(TMath::Abs(PDG_Hadron), Pt_Hadron);
+                            }
+                            else
+                            {
+                                h_PdgY_HFHadron_prompt_PYTHIAOnly->Fill(TMath::Abs(PDG_Hadron), Y_Hadron);
+                                h_PdgEta_HFHadron_prompt_PYTHIAOnly->Fill(TMath::Abs(PDG_Hadron), Eta_Hadron);
+                                h_PdgPt_HFHadron_prompt_PYTHIAOnly->Fill(TMath::Abs(PDG_Hadron), Pt_Hadron);
+                            }
+                        }
                     }
                 }
                 else
                 {
                     h_PdgPtY_HFHadron_notprompt->Fill(TMath::Abs(PDG_Hadron), Pt_Hadron, Y_Hadron);
+
                     h_PdgPt_HFHadron_notprompt->Fill(TMath::Abs(PDG_Hadron), Pt_Hadron);
                     h_PdgY_HFHadron_notprompt->Fill(TMath::Abs(PDG_Hadron), Y_Hadron);
-                    if (Generator.Contains("Powheg"))
+                    h_PdgEta_HFHadron_notprompt->Fill(TMath::Abs(PDG_Hadron), Eta_Hadron);
+                    if (Generator.Contains("Geant"))
                     {
-                        if (IsHadronfromPowheg == -1)
-                            h_PdgPtY_HFHadron_notprompt_PowhegOnly->Fill(TMath::Abs(PDG_Hadron), Pt_Hadron, Y_Hadron);
+                        if (IsHadronfromGeant == -1)
+                        {
+                            h_PdgY_HFHadron_notprompt_GeantOnly->Fill(TMath::Abs(PDG_Hadron), Y_Hadron);
+                            h_PdgEta_HFHadron_notprompt_GeantOnly->Fill(TMath::Abs(PDG_Hadron), Eta_Hadron);
+                            h_PdgPt_HFHadron_notprompt_GeantOnly->Fill(TMath::Abs(PDG_Hadron), Pt_Hadron);
+                        }
                         else
-                            h_PdgPtY_HFHadron_notprompt_PYTHIAOnly->Fill(TMath::Abs(PDG_Hadron), Pt_Hadron, Y_Hadron);
+                        {
+                            if (Generator.Contains("Powheg") && IsHadronfromPowheg == -1)
+                            {
+
+                                h_PdgY_HFHadron_notprompt_PowhegOnly->Fill(TMath::Abs(PDG_Hadron), Y_Hadron);
+                                h_PdgEta_HFHadron_notprompt_PowhegOnly->Fill(TMath::Abs(PDG_Hadron), Eta_Hadron);
+                                h_PdgPt_HFHadron_notprompt_PowhegOnly->Fill(TMath::Abs(PDG_Hadron), Pt_Hadron);
+                            }
+                            else
+                            {
+                                h_PdgY_HFHadron_notprompt_PYTHIAOnly->Fill(TMath::Abs(PDG_Hadron), Y_Hadron);
+                                h_PdgEta_HFHadron_notprompt_PYTHIAOnly->Fill(TMath::Abs(PDG_Hadron), Eta_Hadron);
+                                h_PdgPt_HFHadron_notprompt_PYTHIAOnly->Fill(TMath::Abs(PDG_Hadron), Pt_Hadron);
+                            }
+                        }
                     }
                 }
             }
             else
             {
                 h_PdgPtY_HFHadron_prompt->Fill(TMath::Abs(PDG_Hadron), Pt_Hadron, Y_Hadron);
+
                 h_PdgPt_HFHadron_prompt->Fill(TMath::Abs(PDG_Hadron), Pt_Hadron);
                 h_PdgY_HFHadron_prompt->Fill(TMath::Abs(PDG_Hadron), Y_Hadron);
-                if (Generator.Contains("Powheg"))
+                h_PdgEta_HFHadron_prompt->Fill(TMath::Abs(PDG_Hadron), Eta_Hadron);
+                if (Generator.Contains("Geant"))
                 {
-                    if (IsHadronfromPowheg == -1)
-                        h_PdgPtY_HFHadron_prompt_PowhegOnly->Fill(TMath::Abs(PDG_Hadron), Pt_Hadron, Y_Hadron);
+                    if (IsHadronfromGeant == -1)
+                    {
+                        h_PdgY_HFHadron_prompt_GeantOnly->Fill(TMath::Abs(PDG_Hadron), Y_Hadron);
+                        h_PdgEta_HFHadron_prompt_GeantOnly->Fill(TMath::Abs(PDG_Hadron), Eta_Hadron);
+                        h_PdgPt_HFHadron_prompt_GeantOnly->Fill(TMath::Abs(PDG_Hadron), Pt_Hadron);
+                    }
                     else
-                        h_PdgPtY_HFHadron_prompt_PYTHIAOnly->Fill(TMath::Abs(PDG_Hadron), Pt_Hadron, Y_Hadron);
+                    {
+                        if (Generator.Contains("Powheg") && IsHadronfromPowheg == -1)
+                        {
+
+                            h_PdgY_HFHadron_prompt_PowhegOnly->Fill(TMath::Abs(PDG_Hadron), Y_Hadron);
+                            h_PdgEta_HFHadron_prompt_PowhegOnly->Fill(TMath::Abs(PDG_Hadron), Eta_Hadron);
+                            h_PdgPt_HFHadron_prompt_PowhegOnly->Fill(TMath::Abs(PDG_Hadron), Pt_Hadron);
+                        }
+                        else
+                        {
+                            h_PdgY_HFHadron_prompt_PYTHIAOnly->Fill(TMath::Abs(PDG_Hadron), Y_Hadron);
+                            h_PdgEta_HFHadron_prompt_PYTHIAOnly->Fill(TMath::Abs(PDG_Hadron), Eta_Hadron);
+                            h_PdgPt_HFHadron_prompt_PYTHIAOnly->Fill(TMath::Abs(PDG_Hadron), Pt_Hadron);
+                        }
+                    }
                 }
             }
 
@@ -299,6 +408,19 @@ void save_mc_output(
             Double_t Theta_Mu = Theta_gen[i_NMuons_gen];              // single gen mu theta
             Double_t Charge_Mu = Charge_gen[i_NMuons_gen];            // single gen mu theta
             Int_t IsFrom_Powheg_gen = fFrom_Powheg_gen[i_NMuons_gen]; // single gen mu theta
+            Double_t Radius_gen = 999;
+            Double_t Vz_gen = 999;
+            Double_t Vzmother_gen = 999;
+            Int_t IsFrom_Geant_gen = 999;
+
+            if (Generator.Contains("Geant"))
+            {
+                Radius_gen = fRadius_gen[i_NMuons_gen] / 1e+03;
+                Vz_gen = fVz_gen[i_NMuons_gen];
+                Vzmother_gen = fVzmother_gen[i_NMuons_gen];
+                IsFrom_Geant_gen = fFrom_Geant_gen[i_NMuons_gen];
+            }
+
             Int_t Initial_parton = fInitial_Parton_gen[i_NMuons_gen]; // single gen mu theta
 
             Bool_t DQ_Muon = kFALSE;
@@ -322,18 +444,53 @@ void save_mc_output(
                 Selection_Muon[4] = kTRUE;
             }
 
-            // printf("Initial_parton %d\n",Initial_parton);
-            if (Selection_Muon[3] && Generator.Contains("Powheg"))
+            h_PtPdg_Muon_Gen->Fill(Pt_Mu, TMath::Abs(PDG_Mu));
+            h_YPdg_Muon_Gen->Fill(Y_Mu, TMath::Abs(PDG_Mu));
+            h_EtaPdg_Muon_Gen->Fill(Eta_Mu, TMath::Abs(PDG_Mu));
+
+            // Separating PYTHIA, GEANT and POWHEG (if necessary) components for generated muons in centralized simulations
+            if (Generator.Contains("Geant"))
             {
-                if (IsFrom_Powheg_gen == -1)
+                if (IsFrom_Geant_gen == -1)
                 {
-                    h_PtQ_Muon_Gen_LF_Powheg->Fill(Pt_Mu, Initial_parton);
-                    h_YQ_Muon_Gen_LF_Powheg->Fill(Y_Mu, Initial_parton);
+                    h_PtPdg_Muon_Gen_GeantOnly->Fill(Pt_Mu, TMath::Abs(PDG_Mu));
+                    h_YPdg_Muon_Gen_GeantOnly->Fill(Y_Mu, TMath::Abs(PDG_Mu));
+                    h_EtaPdg_Muon_Gen_GeantOnly->Fill(Eta_Mu, TMath::Abs(PDG_Mu));
                 }
                 else
                 {
-                    h_PtQ_Muon_Gen_LF_Pythia->Fill(Pt_Mu, Initial_parton);
-                    h_YQ_Muon_Gen_LF_Pythia->Fill(Y_Mu, Initial_parton);
+                    if (Generator.Contains("Powheg") && (IsFrom_Powheg_gen == -1))
+                    {
+
+                        h_PtPdg_Muon_Gen_PowhegOnly->Fill(Pt_Mu, PDG_Mu);
+                        h_YPdg_Muon_Gen_PowhegOnly->Fill(Y_Mu, PDG_Mu);
+                        // h_EtaPdg_Muon_Gen_PowhegOnly->Fill(Y_Mu, PDG_Mu);
+                    }
+                    else
+                    {
+                        h_PtPdg_Muon_Gen_PYTHIAOnly->Fill(Pt_Mu, TMath::Abs(PDG_Mu));
+                        h_YPdg_Muon_Gen_PYTHIAOnly->Fill(Y_Mu, TMath::Abs(PDG_Mu));
+                        h_EtaPdg_Muon_Gen_PYTHIAOnly->Fill(Eta_Mu, TMath::Abs(PDG_Mu));
+                    }
+                }
+            }
+
+            if (Selection_Muon[3] && (Generator.Contains("Geant")))
+            {
+                h_RadiusEta_Muon_Gen_LF->Fill(Radius_gen, Eta_Mu);
+                h_VzEta_Muon_Gen_LF->Fill(Vz_gen, Eta_Mu);
+                if (Generator.Contains("Powheg"))
+                {
+                    if (IsFrom_Powheg_gen == -1)
+                    {
+                        h_PtQ_Muon_Gen_LF_Powheg->Fill(Pt_Mu, Initial_parton);
+                        h_YQ_Muon_Gen_LF_Powheg->Fill(Y_Mu, Initial_parton);
+                    }
+                    else
+                    {
+                        h_PtQ_Muon_Gen_LF_Pythia->Fill(Pt_Mu, Initial_parton);
+                        h_YQ_Muon_Gen_LF_Pythia->Fill(Y_Mu, Initial_parton);
+                    }
                 }
             }
 
@@ -342,35 +499,72 @@ void save_mc_output(
                 if (Selection_Muon[i_Muon_origin])
                 {
                     h_PtY_Muon_Gen[i_Muon_origin]->Fill(Pt_Mu, Y_Mu);
+                    h_PtEta_Muon_Gen[i_Muon_origin]->Fill(Pt_Mu, Eta_Mu);
                     n_Muon_Gen[i_Muon_origin]++;
-                    if (Generator.Contains("Powheg") && IsFrom_Powheg_gen == -1)
+
+                    if (!(Generator.Contains("Geant")))
+                        continue;
+
+                    if (IsFrom_Geant_gen == -1)
                     {
-                        h_PtY_Muon_Gen_PowhegOnly[i_Muon_origin]->Fill(Pt_Mu, Y_Mu);
-                        n_Muon_Gen_PowhegOnly[i_Muon_origin]++;
+                        h_VzmotherEta_Muon_Gen_Geant[i_Muon_origin]->Fill(Vzmother_gen, Eta_Mu);
+                        h_PtY_Muon_Gen_GeantOnly[i_Muon_origin]->Fill(Pt_Mu, Y_Mu);
+                        h_PtEta_Muon_Gen_GeantOnly[i_Muon_origin]->Fill(Pt_Mu, Eta_Mu);
+                        n_Muon_Gen_GeantOnly[i_Muon_origin]++;
+                    }
+                    else
+                    {
+                        if (Generator.Contains("Powheg") && (IsFrom_Powheg_gen == -1))
+                        {
+                            h_PtY_Muon_Gen_PowhegOnly[i_Muon_origin]->Fill(Pt_Mu, Y_Mu);
+                            h_PtEta_Muon_Gen_PowhegOnly[i_Muon_origin]->Fill(Pt_Mu, Eta_Mu);
+                            n_Muon_Gen_PowhegOnly[i_Muon_origin]++;
+                        }
+                        else
+                        {
+                            h_VzmotherEta_Muon_Gen_PYTHIA[i_Muon_origin]->Fill(Vzmother_gen, Eta_Mu);
+                            h_PtY_Muon_Gen_PYTHIAOnly[i_Muon_origin]->Fill(Pt_Mu, Y_Mu);
+                            h_PtEta_Muon_Gen_PYTHIAOnly[i_Muon_origin]->Fill(Pt_Mu, Eta_Mu);
+                            n_Muon_Gen_PYTHIAOnly[i_Muon_origin]++;
+                        }
                     }
                 }
             }
 
-            h_PtPdg_Muon_Gen->Fill(Pt_Mu, PDG_Mu);
-            h_YPdg_Muon_Gen->Fill(Y_Mu, PDG_Mu);
-            if (Generator.Contains("Powheg") && IsFrom_Powheg_gen == -1)
-            {
-                h_PtPdg_Muon_Gen_PowhegOnly->Fill(Pt_Mu, PDG_Mu);
-                h_YPdg_Muon_Gen_PowhegOnly->Fill(Y_Mu, PDG_Mu);
-            }
-
-            if (Eta_Mu > -4.0 && Eta_Mu < -2.5)
+            if ((Eta_Mu > -4.0 && Eta_Mu < -2.5) && Pt_Mu > 0.5)
                 DQ_Muon = kTRUE;
             if (!DQ_Muon)
                 continue;
 
-            h_PtPdg_Muon_Gen_DQcut->Fill(Pt_Mu, PDG_Mu);
-            h_YPdg_Muon_Gen_DQcut->Fill(Y_Mu, PDG_Mu);
+            // Separating PYTHIA, GEANT and POWHEG (if necessary) components for generated muons with DQ cuts in centralized simulations
 
-            if (Generator.Contains("Powheg") && IsFrom_Powheg_gen == -1)
+            h_PtPdg_Muon_Gen_DQcut->Fill(Pt_Mu, TMath::Abs(PDG_Mu));
+            h_YPdg_Muon_Gen_DQcut->Fill(Y_Mu, TMath::Abs(PDG_Mu));
+            h_EtaPdg_Muon_Gen_DQcut->Fill(Eta_Mu, TMath::Abs(PDG_Mu));
+
+            if (Generator.Contains("Geant"))
             {
-                h_PtPdg_Muon_Gen_DQcut_PowhegOnly->Fill(Pt_Mu, PDG_Mu);
-                h_YPdg_Muon_Gen_DQcut_PowhegOnly->Fill(Y_Mu, PDG_Mu);
+                if (IsFrom_Geant_gen == -1)
+                {
+                    h_PtPdg_Muon_Gen_DQcut_GeantOnly->Fill(Pt_Mu, TMath::Abs(PDG_Mu));
+                    h_YPdg_Muon_Gen_DQcut_GeantOnly->Fill(Y_Mu, TMath::Abs(PDG_Mu));
+                    h_EtaPdg_Muon_Gen_DQcut_GeantOnly->Fill(Eta_Mu, TMath::Abs(PDG_Mu));
+                }
+                else
+                {
+                    if (Generator.Contains("Powheg") && (IsFrom_Powheg_gen == -1))
+                    {
+
+                        h_PtPdg_Muon_Gen_DQcut_PowhegOnly->Fill(Pt_Mu, PDG_Mu);
+                        h_YPdg_Muon_Gen_DQcut_PowhegOnly->Fill(Y_Mu, PDG_Mu);
+                    }
+                    else
+                    {
+                        h_PtPdg_Muon_Gen_DQcut_PYTHIAOnly->Fill(Pt_Mu, TMath::Abs(PDG_Mu));
+                        h_YPdg_Muon_Gen_DQcut_PYTHIAOnly->Fill(Y_Mu, TMath::Abs(PDG_Mu));
+                        h_EtaPdg_Muon_Gen_DQcut_PYTHIAOnly->Fill(Eta_Mu, TMath::Abs(PDG_Mu));
+                    }
+                }
             }
 
             for (Int_t i_Muon_origin = 0; i_Muon_origin < n_Muon_origin; i_Muon_origin++)
@@ -378,11 +572,32 @@ void save_mc_output(
                 if (Selection_Muon[i_Muon_origin])
                 {
                     h_PtY_Muon_Gen_DQcut[i_Muon_origin]->Fill(Pt_Mu, Y_Mu);
+                    h_PtEta_Muon_Gen_DQcut[i_Muon_origin]->Fill(Pt_Mu, Eta_Mu);
                     n_Muon_Gen_DQcut[i_Muon_origin]++;
-                    if (Generator.Contains("Powheg") && IsFrom_Powheg_gen == -1)
+
+                    if (Generator.Contains("Geant"))
                     {
-                        n_Muon_Gen_DQcut_PowhegOnly[i_Muon_origin]++;
-                        h_PtY_Muon_Gen_DQcut_PowhegOnly[i_Muon_origin]->Fill(Pt_Mu, Y_Mu);
+                        if (IsFrom_Geant_gen == -1)
+                        {
+                            n_Muon_Gen_DQcut_GeantOnly[i_Muon_origin]++;
+                            h_PtY_Muon_Gen_DQcut_GeantOnly[i_Muon_origin]->Fill(Pt_Mu, Y_Mu);
+                            h_PtEta_Muon_Gen_DQcut_GeantOnly[i_Muon_origin]->Fill(Pt_Mu, Eta_Mu);
+                        }
+                        else
+                        {
+                            if (Generator.Contains("Powheg") && (IsFrom_Powheg_gen == -1))
+                            {
+                                n_Muon_Gen_DQcut_PowhegOnly[i_Muon_origin]++;
+                                h_PtY_Muon_Gen_DQcut_PowhegOnly[i_Muon_origin]->Fill(Pt_Mu, Y_Mu);
+                                h_PtEta_Muon_Gen_DQcut_PowhegOnly[i_Muon_origin]->Fill(Pt_Mu, Eta_Mu);
+                            }
+                            else
+                            {
+                                n_Muon_Gen_DQcut_PYTHIAOnly[i_Muon_origin]++;
+                                h_PtY_Muon_Gen_DQcut_PYTHIAOnly[i_Muon_origin]->Fill(Pt_Mu, Y_Mu);
+                                h_PtEta_Muon_Gen_DQcut_PYTHIAOnly[i_Muon_origin]->Fill(Pt_Mu, Eta_Mu);
+                            }
+                        }
                     }
                 }
             }
@@ -392,15 +607,27 @@ void save_mc_output(
         {
             h_Nperevent_Muon_Gen[i_Muon_Origin]->Fill(n_Muon_Gen[i_Muon_Origin]);
             h_Nperevent_Muon_Gen_DQcut[i_Muon_Origin]->Fill(n_Muon_Gen_DQcut[i_Muon_Origin]);
-            if (Generator.Contains("Powheg"))
+            if (Generator.Contains("Geant"))
             {
-                h_Nperevent_Muon_Gen_PowhegOnly[i_Muon_Origin]->Fill(n_Muon_Gen_PowhegOnly[i_Muon_Origin]);
-                h_Nperevent_Muon_Gen_DQcut_PowhegOnly[i_Muon_Origin]->Fill(n_Muon_Gen_DQcut_PowhegOnly[i_Muon_Origin]);
+                h_Nperevent_Muon_Gen_PYTHIAOnly[i_Muon_Origin]->Fill(n_Muon_Gen_PYTHIAOnly[i_Muon_Origin]);
+                h_Nperevent_Muon_Gen_DQcut_PYTHIAOnly[i_Muon_Origin]->Fill(n_Muon_Gen_DQcut_PYTHIAOnly[i_Muon_Origin]);
+
+                h_Nperevent_Muon_Gen_GeantOnly[i_Muon_Origin]->Fill(n_Muon_Gen_GeantOnly[i_Muon_Origin]);
+                h_Nperevent_Muon_Gen_DQcut_GeantOnly[i_Muon_Origin]->Fill(n_Muon_Gen_DQcut_GeantOnly[i_Muon_Origin]);
+
+                if (Generator.Contains("Powheg"))
+                {
+                    h_Nperevent_Muon_Gen_PowhegOnly[i_Muon_Origin]->Fill(n_Muon_Gen_PowhegOnly[i_Muon_Origin]);
+                    h_Nperevent_Muon_Gen_DQcut_PowhegOnly[i_Muon_Origin]->Fill(n_Muon_Gen_DQcut_PowhegOnly[i_Muon_Origin]);
+                }
             }
         }
 
         for (Int_t i_NMuons_rec = 0; i_NMuons_rec < NMuons_rec; i_NMuons_rec++)
         {
+            if (!(Generator.Contains("Geant")))
+                continue;
+
             Int_t PDG_Mu = PDGmum_rec[i_NMuons_rec];       // single rec mu PDG mum
             Double_t Pt_Mu = Pt_rec[i_NMuons_rec];         // single rec mu pT
             Double_t E_Mu = E_rec[i_NMuons_rec];           // single rec mu E
@@ -418,6 +645,8 @@ void save_mc_output(
             Int_t IsFromPowheg = fFrom_Powheg_rec[i_NMuons_rec];
             Bool_t DQ_Muon = kFALSE;
             Bool_t Selection_Muon[n_Muon_origin] = {kFALSE};
+            Double_t Vzmother_rec = fVzmother_rec[i_NMuons_rec];
+            Int_t IsFrom_Geant_rec = fFrom_Geant_rec[i_NMuons_rec];
 
             Selection_Muon[0] = kTRUE; // Selection All Muons
 
@@ -447,12 +676,33 @@ void save_mc_output(
             if (!DQ_Muon)
                 continue;
             // printf("Pt_Mu %f Y_Mu %f PDG_Mu %d",Pt_Mu,Y_Mu,PDG_Mu);
-            h_PtPdg_Muon_Rec->Fill(Pt_Mu, PDG_Mu);
-            h_YPdg_Muon_Rec->Fill(Y_Mu, PDG_Mu);
-            if (Generator.Contains("Powheg") && IsFromPowheg == -1)
+            h_PtPdg_Muon_Rec->Fill(Pt_Mu, TMath::Abs(PDG_Mu));
+            h_YPdg_Muon_Rec->Fill(Y_Mu, TMath::Abs(PDG_Mu));
+            h_EtaPdg_Muon_Rec->Fill(Eta_Mu, TMath::Abs(PDG_Mu));
+
+            if (Generator.Contains("Geant"))
             {
-                h_PtPdg_Muon_Rec_PowhegOnly->Fill(Pt_Mu, PDG_Mu);
-                h_YPdg_Muon_Rec_PowhegOnly->Fill(Y_Mu, PDG_Mu);
+                if (IsFrom_Geant_rec == -1)
+                {
+                    h_PtPdg_Muon_Rec_GeantOnly->Fill(Pt_Mu, TMath::Abs(PDG_Mu));
+                    h_YPdg_Muon_Rec_GeantOnly->Fill(Y_Mu, TMath::Abs(PDG_Mu));
+                    h_EtaPdg_Muon_Rec_GeantOnly->Fill(Eta_Mu, TMath::Abs(PDG_Mu));
+                }
+                else
+                {
+                    if (Generator.Contains("Powheg") && (IsFromPowheg == -1))
+                    {
+                        h_PtPdg_Muon_Rec_PowhegOnly->Fill(Pt_Mu, TMath::Abs(PDG_Mu));
+                        h_YPdg_Muon_Rec_PowhegOnly->Fill(Y_Mu, TMath::Abs(PDG_Mu));
+                        h_EtaPdg_Muon_Rec_PowhegOnly->Fill(Eta_Mu, TMath::Abs(PDG_Mu));
+                    }
+                    else
+                    {
+                        h_PtPdg_Muon_Rec_PYTHIAOnly->Fill(Pt_Mu, TMath::Abs(PDG_Mu));
+                        h_YPdg_Muon_Rec_PYTHIAOnly->Fill(Y_Mu, TMath::Abs(PDG_Mu));
+                        h_EtaPdg_Muon_Rec_PYTHIAOnly->Fill(Eta_Mu, TMath::Abs(PDG_Mu));
+                    }
+                }
             }
 
             for (Int_t i_Muon_origin = 0; i_Muon_origin < n_Muon_origin; i_Muon_origin++)
@@ -460,11 +710,35 @@ void save_mc_output(
                 if (Selection_Muon[i_Muon_origin])
                 {
                     h_PtY_Muon_Rec[i_Muon_origin]->Fill(Pt_Mu, Y_Mu);
+                    h_PtEta_Muon_Rec[i_Muon_origin]->Fill(Pt_Mu, Eta_Mu);
                     n_Muon_Rec[i_Muon_origin]++;
-                    if (Generator.Contains("Powheg") && IsFromPowheg == -1)
+                    if (!(Generator.Contains("Geant")))
+                        continue;
+
+                    if (IsFrom_Geant_rec == -1)
                     {
-                        h_PtY_Muon_Rec_PowhegOnly[i_Muon_origin]->Fill(Pt_Mu, Y_Mu);
-                        n_Muon_Rec_PowhegOnly[i_Muon_origin]++;
+                        h_VzmotherEta_Muon_Rec_Geant[i_Muon_origin]->Fill(Vzmother_rec, Eta_Mu);
+                        h_PtY_Muon_Rec_GeantOnly[i_Muon_origin]->Fill(Pt_Mu, Y_Mu);
+                        h_PtEta_Muon_Rec_GeantOnly[i_Muon_origin]->Fill(Pt_Mu, Eta_Mu);
+                        n_Muon_Rec_GeantOnly[i_Muon_origin]++;
+                    }
+                    else
+                    {
+
+                        if (Generator.Contains("Powheg") && (IsFromPowheg == -1))
+                        {
+
+                            h_PtY_Muon_Rec_PowhegOnly[i_Muon_origin]->Fill(Pt_Mu, Y_Mu);
+                            h_PtEta_Muon_Rec_PowhegOnly[i_Muon_origin]->Fill(Pt_Mu, Eta_Mu);
+                            n_Muon_Rec_PowhegOnly[i_Muon_origin]++;
+                        }
+                        else
+                        {
+                            h_VzmotherEta_Muon_Rec_PYTHIA[i_Muon_origin]->Fill(Vzmother_rec, Eta_Mu);
+                            h_PtY_Muon_Rec_PYTHIAOnly[i_Muon_origin]->Fill(Pt_Mu, Y_Mu);
+                            h_PtEta_Muon_Rec_PYTHIAOnly[i_Muon_origin]->Fill(Pt_Mu, Eta_Mu);
+                            n_Muon_Rec_PYTHIAOnly[i_Muon_origin]++;
+                        }
                     }
                 }
             }
@@ -473,6 +747,10 @@ void save_mc_output(
         for (Int_t i_Muon_Origin = 0; i_Muon_Origin < n_Muon_origin; i_Muon_Origin++)
         {
             h_Nperevent_Muon_Rec[i_Muon_Origin]->Fill(n_Muon_Rec[i_Muon_Origin]);
+            if (!(Generator.Contains("Geant")))
+                continue;
+            h_Nperevent_Muon_Rec_GeantOnly[i_Muon_Origin]->Fill(n_Muon_Rec_GeantOnly[i_Muon_Origin]);
+            h_Nperevent_Muon_Rec_PYTHIAOnly[i_Muon_Origin]->Fill(n_Muon_Rec_PYTHIAOnly[i_Muon_Origin]);
             if (Generator.Contains("Powheg"))
                 h_Nperevent_Muon_Rec_PowhegOnly[i_Muon_Origin]->Fill(n_Muon_Rec_PowhegOnly[i_Muon_Origin]);
         }
@@ -745,7 +1023,7 @@ void save_mc_output(
             Double_t pDCA_Mu0 = pDCA_rec[DimuMu_rec[i_NDimu_rec][0]];
             Double_t Eta_Mu0 = Eta_rec[DimuMu_rec[i_NDimu_rec][0]];
             Double_t Phi_Mu0 = Phi_rec[DimuMu_rec[i_NDimu_rec][0]];
-            Int_t IsFromPowheg_Mu0 = fFrom_Powheg_rec[DimuMu_rec[i_NDimu_rec][0]];
+            Int_t IsFromPowheg_Mu0 = 999;
 
             Double_t Y_Mu1 = Y_rec[DimuMu_rec[i_NDimu_rec][1]];
             Double_t Pt_Mu1 = Pt_rec[DimuMu_rec[i_NDimu_rec][1]];
@@ -755,7 +1033,29 @@ void save_mc_output(
             Double_t pDCA_Mu1 = pDCA_rec[DimuMu_rec[i_NDimu_rec][1]];
             Double_t Eta_Mu1 = Eta_rec[DimuMu_rec[i_NDimu_rec][1]];
             Double_t Phi_Mu1 = Phi_rec[DimuMu_rec[i_NDimu_rec][1]];
-            Int_t IsFromPowheg_Mu1 = fFrom_Powheg_rec[DimuMu_rec[i_NDimu_rec][1]];
+            Int_t IsFromPowheg_Mu1 = 999;
+
+            Int_t IsFrom_Geant_gen_Mu0 = 999;
+            Int_t IsFrom_Geant_gen_Mu1 = 999;
+
+            Bool_t LF_Generator[n_LF_DiMuon_Generator] = {kFALSE};
+
+            if (Generator.Contains("Geant"))
+            {
+                IsFrom_Geant_gen_Mu0 = fFrom_Geant_gen[DimuMu_rec[i_NDimu_rec][0]];
+                IsFrom_Geant_gen_Mu1 = fFrom_Geant_gen[DimuMu_rec[i_NDimu_rec][1]];
+                if (IsFrom_Geant_gen_Mu0 == -1 && IsFrom_Geant_gen_Mu1 == -1)
+                    LF_Generator[0] = kTRUE;
+                else if ((IsFrom_Geant_gen_Mu0 == -1 && IsFrom_Geant_gen_Mu1 == 0) || (IsFrom_Geant_gen_Mu1 == -1 && IsFrom_Geant_gen_Mu0 == 0))
+                    LF_Generator[1] = kTRUE;
+                else
+                    LF_Generator[2] = kTRUE;
+                if (Generator.Contains("Powheg"))
+                {
+                    IsFromPowheg_Mu0 = fFrom_Powheg_rec[DimuMu_rec[i_NDimu_rec][0]];
+                    IsFromPowheg_Mu1 = fFrom_Powheg_rec[DimuMu_rec[i_NDimu_rec][1]];
+                }
+            }
 
             /*
             printf("PDG_Mu0 %0.2f\n", Eta_Mu0);
@@ -890,6 +1190,18 @@ void save_mc_output(
                     h_PtM_DiMuon_Rec[i_DiMuon_origin]->Fill(Pt_DiMu, M_DiMu);
                     h_PtY_DiMuon_Rec[i_DiMuon_origin]->Fill(Pt_DiMu, Y_DiMu);
                     n_DiMuon_Rec[i_DiMuon_origin]++;
+
+                    if (i_DiMuon_origin == 3) // selecting LF
+                    {
+                        for (Int_t i_LF_Generator = 0; i_LF_Generator < n_LF_DiMuon_Generator; i_LF_Generator++)
+                        {
+                            if (LF_Generator[i_LF_Generator])
+                            {
+                                h_PtM_DiMuon_Rec_fromLF[i_LF_Generator]->Fill(Pt_DiMu, M_DiMu);
+                                h_PtY_DiMuon_Rec_fromLF[i_LF_Generator]->Fill(Pt_DiMu, Y_DiMu);
+                            }
+                        }
+                    }
 
                     if (Generator.Contains("Powheg") && IsFromPowheg_Mu0 == -1 && IsFromPowheg_Mu1 == -1)
                     {
@@ -1036,10 +1348,10 @@ void save_mc_output(
 
         if (Generator.Contains("Powheg"))
         {
-            if (!fOut.GetDirectory("HF_quarks/PowhegOnly"))
-                fOut.mkdir("HF_quarks/PowhegOnly");
+            if (!fOut.GetDirectory("HF_quarks/Powheg"))
+                fOut.mkdir("HF_quarks/Powheg");
 
-            fOut.cd("HF_quarks/PowhegOnly");
+            fOut.cd("HF_quarks/Powheg");
 
             h_PtY_Charm_quark_PowhegOnly->Write(0, 2, 0);
             h_NCharm_event_PowhegOnly->Write(0, 2, 0);
@@ -1063,52 +1375,139 @@ void save_mc_output(
     if (!fOut.GetDirectory("DiMuon_Rec"))
         fOut.mkdir("DiMuon_Rec");
 
-    if (Generator.Contains("Powheg"))
+    if (Generator.Contains("Geant"))
     {
-        if (!fOut.GetDirectory("Muon_Gen/PowhegOnly"))
-            fOut.mkdir("Muon_Gen/PowhegOnly");
-        if (!fOut.GetDirectory("Muon_Rec/PowhegOnly"))
-            fOut.mkdir("Muon_Rec/PowhegOnly");
+        if (!fOut.GetDirectory("Muon_Gen/Geant"))
+            fOut.mkdir("Muon_Gen/Geant");
 
-        if (!fOut.GetDirectory("DiMuon_Gen/PowhegOnly"))
-            fOut.mkdir("DiMuon_Gen/PowhegOnly");
-        if (!fOut.GetDirectory("DiMuon_Rec/PowhegOnly"))
-            fOut.mkdir("DiMuon_Rec/PowhegOnly");
+        if (!fOut.GetDirectory("Muon_Gen/PYTHIA"))
+            fOut.mkdir("Muon_Gen/PYTHIA");
+
+        if (!fOut.GetDirectory("Muon_Rec/Geant"))
+            fOut.mkdir("Muon_Rec/Geant");
+
+        if (!fOut.GetDirectory("Muon_Rec/PYTHIA"))
+            fOut.mkdir("Muon_Rec/PYTHIA");
+
+        if (!fOut.GetDirectory("DiMuon_Rec/LF_origin"))
+            fOut.mkdir("DiMuon_Rec/LF_origin");
+
+        if (Generator.Contains("Powheg"))
+        {
+            if (!fOut.GetDirectory("Muon_Gen/Powheg"))
+                fOut.mkdir("Muon_Gen/Powheg");
+            if (!fOut.GetDirectory("Muon_Rec/Powheg"))
+                fOut.mkdir("Muon_Rec/Powheg");
+
+            if (!fOut.GetDirectory("DiMuon_Gen/Powheg"))
+                fOut.mkdir("DiMuon_Gen/Powheg");
+            if (!fOut.GetDirectory("DiMuon_Rec/Powheg"))
+                fOut.mkdir("DiMuon_Rec/Powheg");
+        }
     }
 
     fOut.cd("Muon_Gen");
-    if (Generator.Contains("Powheg"))
-    {
-        h_PtQ_Muon_Gen_LF_Powheg->Write();
-        h_PtQ_Muon_Gen_LF_Pythia->Write();
-        h_YQ_Muon_Gen_LF_Powheg->Write();
-        h_YQ_Muon_Gen_LF_Pythia->Write();
-    }
-
     h_PtPdg_Muon_Gen->Write(0, 2, 0);
     h_YPdg_Muon_Gen->Write(0, 2, 0);
+    h_EtaPdg_Muon_Gen->Write(0, 2, 0);
 
     h_PtPdg_Muon_Gen_DQcut->Write(0, 2, 0);
     h_YPdg_Muon_Gen_DQcut->Write(0, 2, 0);
+    h_EtaPdg_Muon_Gen_DQcut->Write(0, 2, 0);
 
-    if (Generator.Contains("Powheg"))
+    h_RadiusEta_Muon_Gen_LF->Write(0, 2, 0);
+    h_VzEta_Muon_Gen_LF->Write(0, 2, 0);
+
+    if (fOut.GetDirectory("Muon_Gen/Powheg"))
     {
-        fOut.cd("Muon_Gen/PowhegOnly");
-        h_PtPdg_Muon_Gen_PowhegOnly->Write(0, 2, 0);
-        h_YPdg_Muon_Gen_PowhegOnly->Write(0, 2, 0);
-        h_PtPdg_Muon_Gen_DQcut_PowhegOnly->Write(0, 2, 0);
-        h_YPdg_Muon_Gen_DQcut_PowhegOnly->Write(0, 2, 0);
+        fOut.cd("Muon_Gen/Powheg");
+        if (h_PtQ_Muon_Gen_LF_Powheg->GetEntries())
+        {
+            h_PtQ_Muon_Gen_LF_Powheg->Write();
+            h_PtQ_Muon_Gen_LF_Pythia->Write();
+            h_YQ_Muon_Gen_LF_Powheg->Write();
+            h_YQ_Muon_Gen_LF_Pythia->Write();
+        }
+        if (h_PtPdg_Muon_Gen_PowhegOnly->GetEntries() > 0.0)
+        {
+            h_PtPdg_Muon_Gen_PowhegOnly->Write(0, 2, 0);
+            h_YPdg_Muon_Gen_PowhegOnly->Write(0, 2, 0);
+            h_PtPdg_Muon_Gen_DQcut_PowhegOnly->Write(0, 2, 0);
+            h_YPdg_Muon_Gen_DQcut_PowhegOnly->Write(0, 2, 0);
+        }
+    }
+
+    if (fOut.GetDirectory("Muon_Gen/Geant"))
+    {
+        fOut.cd("Muon_Gen/Geant");
+        if (h_PtPdg_Muon_Gen_GeantOnly->GetEntries() > 0.0)
+        {
+            h_PtPdg_Muon_Gen_GeantOnly->Write(0, 2, 0);
+            h_YPdg_Muon_Gen_GeantOnly->Write(0, 2, 0);
+            h_EtaPdg_Muon_Gen_GeantOnly->Write(0, 2, 0);
+        }
+        if (h_PtPdg_Muon_Gen_DQcut_GeantOnly->GetEntries() > 0.0)
+        {
+            h_PtPdg_Muon_Gen_DQcut_GeantOnly->Write(0, 2, 0);
+            h_YPdg_Muon_Gen_DQcut_GeantOnly->Write(0, 2, 0);
+            h_EtaPdg_Muon_Gen_DQcut_GeantOnly->Write(0, 2, 0);
+        }
+    }
+
+    if (fOut.GetDirectory("Muon_Gen/PYTHIA"))
+    {
+        fOut.cd("Muon_Gen/PYTHIA");
+        if (h_PtPdg_Muon_Gen_PYTHIAOnly->GetEntries() > 0.0)
+        {
+            h_PtPdg_Muon_Gen_PYTHIAOnly->Write(0, 2, 0);
+            h_YPdg_Muon_Gen_PYTHIAOnly->Write(0, 2, 0);
+            h_EtaPdg_Muon_Gen_PYTHIAOnly->Write(0, 2, 0);
+        }
+        if (h_PtPdg_Muon_Gen_DQcut_PYTHIAOnly->GetEntries() > 0.0)
+        {
+            h_PtPdg_Muon_Gen_DQcut_PYTHIAOnly->Write(0, 2, 0);
+            h_YPdg_Muon_Gen_DQcut_PYTHIAOnly->Write(0, 2, 0);
+            h_EtaPdg_Muon_Gen_DQcut_PYTHIAOnly->Write(0, 2, 0);
+        }
     }
 
     fOut.cd();
     fOut.cd("Muon_Rec");
     h_PtPdg_Muon_Rec->Write(0, 2, 0);
     h_YPdg_Muon_Rec->Write(0, 2, 0);
-    if (Generator.Contains("Powheg"))
+    h_EtaPdg_Muon_Rec->Write(0, 2, 0);
+
+    if (fOut.GetDirectory("Muon_Rec/Powheg"))
     {
-        fOut.cd("Muon_Rec/PowhegOnly");
-        h_PtPdg_Muon_Rec_PowhegOnly->Write(0, 2, 0);
-        h_YPdg_Muon_Rec_PowhegOnly->Write(0, 2, 0);
+        fOut.cd("Muon_Rec/Powheg");
+        if (h_PtPdg_Muon_Rec_PowhegOnly->GetEntries() > 0.0)
+        {
+            h_PtPdg_Muon_Rec_PowhegOnly->Write(0, 2, 0);
+            h_YPdg_Muon_Rec_PowhegOnly->Write(0, 2, 0);
+            h_EtaPdg_Muon_Rec_PowhegOnly->Write(0, 2, 0);
+        }
+    }
+
+    if (fOut.GetDirectory("Muon_Rec/PYTHIA"))
+    {
+        fOut.cd("Muon_Rec/PYTHIA");
+        if (h_PtPdg_Muon_Rec_PYTHIAOnly->GetEntries() > 0.0)
+        {
+            h_PtPdg_Muon_Rec_PYTHIAOnly->Write(0, 2, 0);
+            h_YPdg_Muon_Rec_PYTHIAOnly->Write(0, 2, 0);
+            h_EtaPdg_Muon_Rec_PYTHIAOnly->Write(0, 2, 0);
+        }
+    }
+
+    if (fOut.GetDirectory("Muon_Rec/Geant"))
+    {
+        fOut.cd("Muon_Rec/Geant");
+        if (h_PtPdg_Muon_Rec_GeantOnly->GetEntries() > 0.0)
+        {
+            h_PtPdg_Muon_Rec_GeantOnly->Write(0, 2, 0);
+            h_YPdg_Muon_Rec_GeantOnly->Write(0, 2, 0);
+            h_EtaPdg_Muon_Rec_GeantOnly->Write(0, 2, 0);
+        }
     }
 
     for (Int_t i_Muon_Origin = 0; i_Muon_Origin < n_Muon_origin; i_Muon_Origin++)
@@ -1116,52 +1515,110 @@ void save_mc_output(
         // Gen Muon saving
         fOut.cd();
         fOut.cd("Muon_Gen");
-        if (h_Nperevent_Muon_Gen[i_Muon_Origin]->GetMean() > 0)
+        if (h_Nperevent_Muon_Gen[i_Muon_Origin]->GetMean() > 0.0)
+        {
             h_Nperevent_Muon_Gen[i_Muon_Origin]->Write(0, 2, 0);
-
-        if (h_PtY_Muon_Gen[i_Muon_Origin]->GetMean() > 0)
             h_PtY_Muon_Gen[i_Muon_Origin]->Write(0, 2, 0);
-
-        if (h_Nperevent_Muon_Gen_DQcut[i_Muon_Origin]->GetMean() > 0)
+            h_PtEta_Muon_Gen[i_Muon_Origin]->Write(0, 2, 0);
             h_Nperevent_Muon_Gen_DQcut[i_Muon_Origin]->Write(0, 2, 0);
-
-        if (h_PtY_Muon_Gen_DQcut[i_Muon_Origin]->GetMean() > 0)
             h_PtY_Muon_Gen_DQcut[i_Muon_Origin]->Write(0, 2, 0);
+        }
 
         // Gen Muon from Powheg saving
 
-        if (Generator.Contains("Powheg"))
+        if (fOut.GetDirectory("Muon_Gen/Geant"))
         {
-            fOut.cd("Muon_Gen/PowhegOnly");
-            if (h_Nperevent_Muon_Gen_PowhegOnly[i_Muon_Origin]->GetMean() > 0)
+            fOut.cd("Muon_Gen/Geant");
+            if (h_Nperevent_Muon_Gen_GeantOnly[i_Muon_Origin]->GetMean() > 0.0)
+            {
+                h_VzmotherEta_Muon_Gen_Geant[i_Muon_Origin]->Write(0, 2, 0);
+
+                h_Nperevent_Muon_Gen_GeantOnly[i_Muon_Origin]->Write(0, 2, 0);
+                h_PtY_Muon_Gen_GeantOnly[i_Muon_Origin]->Write(0, 2, 0);
+                h_PtEta_Muon_Gen_GeantOnly[i_Muon_Origin]->Write(0, 2, 0);
+
+                h_VzmotherEta_Muon_Gen_PYTHIA[i_Muon_Origin]->Write(0, 2, 0);
+
+                h_Nperevent_Muon_Gen_DQcut_GeantOnly[i_Muon_Origin]->Write(0, 2, 0);
+                h_PtY_Muon_Gen_DQcut_GeantOnly[i_Muon_Origin]->Write(0, 2, 0);
+                h_PtEta_Muon_Gen_DQcut_GeantOnly[i_Muon_Origin]->Write(0, 2, 0);
+            }
+        }
+
+        if (fOut.GetDirectory("Muon_Gen/PYTHIA"))
+        {
+            fOut.cd("Muon_Gen/PYTHIA");
+            if (h_Nperevent_Muon_Gen_PYTHIAOnly[i_Muon_Origin]->GetMean() > 0.0)
+            {
+                h_Nperevent_Muon_Gen_PYTHIAOnly[i_Muon_Origin]->Write(0, 2, 0);
+                h_PtY_Muon_Gen_PYTHIAOnly[i_Muon_Origin]->Write(0, 2, 0);
+                h_PtEta_Muon_Gen_PYTHIAOnly[i_Muon_Origin]->Write(0, 2, 0);
+
+                h_Nperevent_Muon_Gen_DQcut_PYTHIAOnly[i_Muon_Origin]->Write(0, 2, 0);
+                h_PtY_Muon_Gen_DQcut_PYTHIAOnly[i_Muon_Origin]->Write(0, 2, 0);
+                h_PtEta_Muon_Gen_DQcut_PYTHIAOnly[i_Muon_Origin]->Write(0, 2, 0);
+            }
+        }
+
+        if (fOut.GetDirectory("Muon_Gen/Powheg"))
+        {
+            fOut.cd("Muon_Gen/Powheg");
+            if (h_Nperevent_Muon_Gen_PowhegOnly[i_Muon_Origin]->GetMean() > 0.0)
+            {
                 h_Nperevent_Muon_Gen_PowhegOnly[i_Muon_Origin]->Write(0, 2, 0);
-
-            if (h_PtY_Muon_Gen_PowhegOnly[i_Muon_Origin]->GetMean() > 0)
                 h_PtY_Muon_Gen_PowhegOnly[i_Muon_Origin]->Write(0, 2, 0);
+                h_PtEta_Muon_Gen_PowhegOnly[i_Muon_Origin]->Write(0, 2, 0);
 
-            if (h_Nperevent_Muon_Gen_DQcut_PowhegOnly[i_Muon_Origin]->GetMean() > 0)
                 h_Nperevent_Muon_Gen_DQcut_PowhegOnly[i_Muon_Origin]->Write(0, 2, 0);
-
-            if (h_PtY_Muon_Gen_DQcut_PowhegOnly[i_Muon_Origin]->GetMean() > 0)
                 h_PtY_Muon_Gen_DQcut_PowhegOnly[i_Muon_Origin]->Write(0, 2, 0);
+                h_PtEta_Muon_Gen_DQcut_PowhegOnly[i_Muon_Origin]->Write(0, 2, 0);
+            }
         }
         // Rec Muon saving
         fOut.cd();
         fOut.cd("Muon_Rec");
-        if (h_PtY_Muon_Rec[i_Muon_Origin]->GetMean() > 0)
-            h_PtY_Muon_Rec[i_Muon_Origin]->Write(0, 2, 0);
-
-        if (h_Nperevent_Muon_Rec[i_Muon_Origin]->GetMean() > 0)
-            h_Nperevent_Muon_Rec[i_Muon_Origin]->Write(0, 2, 0);
-        // Rec Muon from Powheg saving
-        if (Generator.Contains("Powheg"))
+        if (h_PtY_Muon_Rec[i_Muon_Origin]->GetEntries() > 0.0)
         {
-            fOut.cd("Muon_Rec/PowhegOnly");
-            if (h_PtY_Muon_Rec_PowhegOnly[i_Muon_Origin]->GetMean() > 0)
-                h_PtY_Muon_Rec_PowhegOnly[i_Muon_Origin]->Write(0, 2, 0);
+            h_PtY_Muon_Rec[i_Muon_Origin]->Write(0, 2, 0);
+            h_PtEta_Muon_Rec[i_Muon_Origin]->Write(0, 2, 0);
+            h_Nperevent_Muon_Rec[i_Muon_Origin]->Write(0, 2, 0);
+        }
 
-            if (h_Nperevent_Muon_Rec_PowhegOnly[i_Muon_Origin]->GetMean() > 0)
+        // Rec Muon from Powheg saving
+        if (fOut.GetDirectory("Muon_Rec/Powheg"))
+        {
+            fOut.cd("Muon_Rec/Powheg");
+
+            if (h_PtY_Muon_Rec_PowhegOnly[i_Muon_Origin]->GetEntries() > 0.0)
+            {
+                h_PtY_Muon_Rec_PowhegOnly[i_Muon_Origin]->Write(0, 2, 0);
+                h_PtEta_Muon_Rec_PowhegOnly[i_Muon_Origin]->Write(0, 2, 0);
                 h_Nperevent_Muon_Rec_PowhegOnly[i_Muon_Origin]->Write(0, 2, 0);
+            }
+        }
+
+        if (fOut.GetDirectory("Muon_Rec/Geant"))
+        {
+            fOut.cd("Muon_Rec/Geant");
+            if (h_PtY_Muon_Rec_GeantOnly[i_Muon_Origin]->GetEntries() > 0.0)
+            {
+                h_VzmotherEta_Muon_Rec_Geant[i_Muon_Origin]->Write(0, 2, 0);
+                h_PtY_Muon_Rec_GeantOnly[i_Muon_Origin]->Write(0, 2, 0);
+                h_PtEta_Muon_Rec_GeantOnly[i_Muon_Origin]->Write(0, 2, 0);
+                h_Nperevent_Muon_Rec_GeantOnly[i_Muon_Origin]->Write(0, 2, 0);
+            }
+        }
+
+        if (fOut.GetDirectory("Muon_Rec/PYTHIA"))
+        {
+            fOut.cd("Muon_Rec/PYTHIA");
+            if (h_PtY_Muon_Rec_PYTHIAOnly[i_Muon_Origin]->GetEntries() > 0.0)
+            {
+                h_PtY_Muon_Rec_PYTHIAOnly[i_Muon_Origin]->Write(0, 2, 0);
+                h_PtEta_Muon_Rec_PYTHIAOnly[i_Muon_Origin]->Write(0, 2, 0);
+                h_VzmotherEta_Muon_Rec_PYTHIA[i_Muon_Origin]->Write(0, 2, 0);
+                h_Nperevent_Muon_Rec_PYTHIAOnly[i_Muon_Origin]->Write(0, 2, 0);
+            }
         }
     }
 
@@ -1185,56 +1642,68 @@ void save_mc_output(
     for (Int_t i_DiMuon_origin = 0; i_DiMuon_origin < n_DiMuon_origin; i_DiMuon_origin++)
     {
         fOut.cd("DiMuon_Gen");
-        if (h_Nperevent_DiMuon_Gen[i_DiMuon_origin]->GetMean() > 0)
+        if (h_Nperevent_DiMuon_Gen[i_DiMuon_origin]->GetEntries() > 0.0)
+        {
             h_Nperevent_DiMuon_Gen[i_DiMuon_origin]->Write(0, 2, 0);
-        if (h_PtM_DiMuon_Gen[i_DiMuon_origin]->GetMean() > 0)
             h_PtM_DiMuon_Gen[i_DiMuon_origin]->Write(0, 2, 0);
-        if (h_PtY_DiMuon_Gen[i_DiMuon_origin]->GetMean() > 0)
             h_PtY_DiMuon_Gen[i_DiMuon_origin]->Write(0, 2, 0);
+        }
 
-        if (h_Nperevent_DiMuon_Gen_DQcut[i_DiMuon_origin]->GetMean() > 0)
+        if (h_Nperevent_DiMuon_Gen_DQcut[i_DiMuon_origin]->GetMean() > 0.0)
+        {
             h_Nperevent_DiMuon_Gen_DQcut[i_DiMuon_origin]->Write(0, 2, 0);
-        if (h_PtM_DiMuon_Gen_DQcut[i_DiMuon_origin]->GetMean() > 0)
             h_PtM_DiMuon_Gen_DQcut[i_DiMuon_origin]->Write(0, 2, 0);
-        if (h_PtY_DiMuon_Gen_DQcut[i_DiMuon_origin]->GetMean() > 0)
             h_PtY_DiMuon_Gen_DQcut[i_DiMuon_origin]->Write(0, 2, 0);
+        }
 
         if (Generator.Contains("Powheg"))
         {
-            fOut.cd("DiMuon_Gen/PowhegOnly");
-            if (h_Nperevent_DiMuon_Gen_PowhegOnly[i_DiMuon_origin]->GetMean() > 0)
+            fOut.cd("DiMuon_Gen/Powheg");
+            if (h_Nperevent_DiMuon_Gen_PowhegOnly[i_DiMuon_origin]->GetEntries() > 0.0)
+            {
                 h_Nperevent_DiMuon_Gen_PowhegOnly[i_DiMuon_origin]->Write(0, 2, 0);
-            if (h_PtM_DiMuon_Gen_PowhegOnly[i_DiMuon_origin]->GetMean() > 0)
                 h_PtM_DiMuon_Gen_PowhegOnly[i_DiMuon_origin]->Write(0, 2, 0);
-            if (h_PtY_DiMuon_Gen_PowhegOnly[i_DiMuon_origin]->GetMean() > 0)
                 h_PtY_DiMuon_Gen_PowhegOnly[i_DiMuon_origin]->Write(0, 2, 0);
-
-            if (h_Nperevent_DiMuon_Gen_DQcut_PowhegOnly[i_DiMuon_origin]->GetMean() > 0)
+            }
+            if (h_Nperevent_DiMuon_Gen_DQcut_PowhegOnly[i_DiMuon_origin]->GetEntries() > 0.0)
+            {
                 h_Nperevent_DiMuon_Gen_DQcut_PowhegOnly[i_DiMuon_origin]->Write(0, 2, 0);
-            if (h_PtM_DiMuon_Gen_DQcut_PowhegOnly[i_DiMuon_origin]->GetMean() > 0)
                 h_PtM_DiMuon_Gen_DQcut_PowhegOnly[i_DiMuon_origin]->Write(0, 2, 0);
-            if (h_PtY_DiMuon_Gen_DQcut_PowhegOnly[i_DiMuon_origin]->GetMean() > 0)
                 h_PtY_DiMuon_Gen_DQcut_PowhegOnly[i_DiMuon_origin]->Write(0, 2, 0);
+            }
         }
 
         fOut.cd();
         fOut.cd("DiMuon_Rec");
-        if (h_PtM_DiMuon_Rec[i_DiMuon_origin]->GetMean() > 0)
+        if (h_PtM_DiMuon_Rec[i_DiMuon_origin]->GetEntries() > 0.0)
+        {
             h_PtM_DiMuon_Rec[i_DiMuon_origin]->Write(0, 2, 0);
-        if (h_PtY_DiMuon_Rec[i_DiMuon_origin]->GetMean() > 0)
             h_PtY_DiMuon_Rec[i_DiMuon_origin]->Write(0, 2, 0);
-        if (h_Nperevent_DiMuon_Rec[i_DiMuon_origin]->GetMean() > 0)
             h_Nperevent_DiMuon_Rec[i_DiMuon_origin]->Write(0, 2, 0);
+        }
 
         if (Generator.Contains("Powheg"))
         {
-            fOut.cd("DiMuon_Rec/PowhegOnly");
-            if (h_Nperevent_DiMuon_Rec_PowhegOnly[i_DiMuon_origin]->GetMean() > 0)
+            fOut.cd("DiMuon_Rec/Powheg");
+            if (h_Nperevent_DiMuon_Rec_PowhegOnly[i_DiMuon_origin]->GetEntries() > 0.0)
+            {
                 h_Nperevent_DiMuon_Rec_PowhegOnly[i_DiMuon_origin]->Write(0, 2, 0);
-            if (h_PtM_DiMuon_Rec_PowhegOnly[i_DiMuon_origin]->GetMean() > 0)
                 h_PtM_DiMuon_Rec_PowhegOnly[i_DiMuon_origin]->Write(0, 2, 0);
-            if (h_PtY_DiMuon_Rec_PowhegOnly[i_DiMuon_origin]->GetMean() > 0)
                 h_PtY_DiMuon_Rec_PowhegOnly[i_DiMuon_origin]->Write(0, 2, 0);
+            }
+        }
+    }
+
+    if (fOut.GetDirectory("DiMuon_Rec/LF_origin"))
+    {
+        fOut.cd("DiMuon_Rec/LF_origin");
+        for (Int_t i_LF_Generator = 0; i_LF_Generator < n_LF_DiMuon_Generator; i_LF_Generator++)
+        {
+            if (h_PtM_DiMuon_Rec_fromLF[i_LF_Generator]->GetEntries() > 0.0)
+            {
+                h_PtM_DiMuon_Rec_fromLF[i_LF_Generator]->Write(0, 2, 0);
+                h_PtY_DiMuon_Rec_fromLF[i_LF_Generator]->Write(0, 2, 0);
+            }
         }
     }
     // if (Sim_for_Z)
@@ -1285,22 +1754,67 @@ void save_mc_output(
         h_PtY_DiMuon_Gen_DQcut_Charm_corrected->Write(0, 2, 0);
 
         fOut.cd();
-        if (!fOut.GetDirectory("HF_Hadron"))
-            fOut.mkdir("HF_Hadron");
-        fOut.cd("HF_Hadron");
+        if (!fOut.GetDirectory("Hadron"))
+            fOut.mkdir("Hadron");
+        fOut.cd("Hadron");
+
+        if (Generator.Contains("Geant"))
+        {
+            if (!fOut.GetDirectory("Hadron/Geant"))
+                fOut.mkdir("Hadron/Geant");
+
+            if (!fOut.GetDirectory("Hadron/Pythia"))
+                fOut.mkdir("Hadron/Pythia");
+            fOut.cd("Hadron/Pythia");
+
+            if (Generator.Contains("Powheg"))
+            {
+                if (!fOut.GetDirectory("Hadron/Pythia/Powheg"))
+                    fOut.mkdir("Hadron/Pythia/Powheg");
+            }
+
+            fOut.cd("Hadron/Geant");
+            h_PdgPt_HFHadron_prompt_GeantOnly->Write(0, 2, 0);
+            h_PdgY_HFHadron_prompt_GeantOnly->Write(0, 2, 0);
+            h_PdgEta_HFHadron_prompt_GeantOnly->Write(0, 2, 0);
+
+            h_PdgPt_HFHadron_notprompt_GeantOnly->Write(0, 2, 0);
+            h_PdgY_HFHadron_notprompt_GeantOnly->Write(0, 2, 0);
+            h_PdgEta_HFHadron_notprompt_GeantOnly->Write(0, 2, 0);
+
+            fOut.cd("Hadron/Pythia");
+            h_PdgPt_HFHadron_prompt_PYTHIAOnly->Write(0, 2, 0);
+            h_PdgY_HFHadron_prompt_PYTHIAOnly->Write(0, 2, 0);
+            h_PdgEta_HFHadron_prompt_PYTHIAOnly->Write(0, 2, 0);
+
+            h_PdgPt_HFHadron_notprompt_PYTHIAOnly->Write(0, 2, 0);
+            h_PdgY_HFHadron_notprompt_PYTHIAOnly->Write(0, 2, 0);
+            h_PdgEta_HFHadron_notprompt_PYTHIAOnly->Write(0, 2, 0);
+
+            if (Generator.Contains("Powheg"))
+            {
+                fOut.cd("Hadron/Pythia/Powheg");
+                h_PdgPt_HFHadron_prompt_PowhegOnly->Write(0, 2, 0);
+                h_PdgY_HFHadron_prompt_PowhegOnly->Write(0, 2, 0);
+                h_PdgEta_HFHadron_prompt_PowhegOnly->Write(0, 2, 0);
+
+                h_PdgPt_HFHadron_notprompt_PowhegOnly->Write(0, 2, 0);
+                h_PdgY_HFHadron_notprompt_PowhegOnly->Write(0, 2, 0);
+                h_PdgEta_HFHadron_notprompt_PowhegOnly->Write(0, 2, 0);
+            }
+        }
+        fOut.cd("Hadron");
+
         h_PdgPtY_HFHadron_prompt->Write(0, 2, 0);
         h_PdgPtY_HFHadron_notprompt->Write(0, 2, 0);
-        if (Generator.Contains("Powheg"))
-        {
-            h_PdgPtY_HFHadron_prompt_PowhegOnly->Write(0, 2, 0);
-            h_PdgPtY_HFHadron_notprompt_PowhegOnly->Write(0, 2, 0);
-            h_PdgPtY_HFHadron_notprompt_PYTHIAOnly->Write(0, 2, 0);
-            h_PdgPtY_HFHadron_prompt_PYTHIAOnly->Write(0, 2, 0);
-        }
+
         h_PdgPt_HFHadron_prompt->Write(0, 2, 0);
         h_PdgY_HFHadron_prompt->Write(0, 2, 0);
+        h_PdgEta_HFHadron_prompt->Write(0, 2, 0);
+
         h_PdgPt_HFHadron_notprompt->Write(0, 2, 0);
         h_PdgY_HFHadron_notprompt->Write(0, 2, 0);
+        h_PdgEta_HFHadron_notprompt->Write(0, 2, 0);
     }
 
     fOut.Close();
