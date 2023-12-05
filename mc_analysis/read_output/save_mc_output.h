@@ -297,11 +297,9 @@ TH2F *h_PtM_DiMuon_Rec[n_DiMuon_origin];
 TH2F *h_PtY_DiMuon_Rec[n_DiMuon_origin];
 TH1F *h_Nperevent_DiMuon_Rec[n_DiMuon_origin];
 
-const Int_t n_LF_DiMuon_Generator = 3;
-
-TH2F *h_PtM_DiMuon_Rec_fromLF[n_LF_DiMuon_Generator];
-TH2F *h_PtY_DiMuon_Rec_fromLF[n_LF_DiMuon_Generator];
-TH1F *h_Nperevent_DiMuon_Rec_fromLF[n_LF_DiMuon_Generator];
+TH2F **h_PtM_DiMuon_Rec_fromLF;
+TH2F **h_PtY_DiMuon_Rec_fromLF;
+TH1F **h_Nperevent_DiMuon_Rec_fromLF;
 
 TH3F *h_Pdg1Pdg2Pt_DiMuon_Rec_PowhegOnly;
 TH3F *h_Pdg1Pdg2Y_DiMuon_Rec_PowhegOnly;
@@ -351,7 +349,7 @@ TH1F *h_Nperevent_DiMuon_Rec_Z_ptmucut20;
 //---------------------------------//
 
 TString DiMuon_origin[n_DiMuon_origin];
-TString DiMuon_fromLF_Generator[n_LF_DiMuon_Generator];
+TString *DiMuon_fromLF_Generator;
 
 const Int_t n_PDG_selection = 46;
 Double_t PDG_Selection[n_PDG_selection] = {0, 23, 24, 125, 135, 200, 210, 220, 230, 240, 250, 300, 310, 320, 330, 340, 400, 410, 420, 430, 440, 450, 500, 510, 520, 530, 540, 550, 600, 2000, 3000, 4000, 4000, 4100, 4120, 4130, 4140, 4200, 4230, 4240, 4300, 5000, 5100, 5200, 5300, 6000};
@@ -650,9 +648,24 @@ void Set_Histograms(TString Generator)
     }
     // ---------------------- Inizialization hist for Dimuons from LF study, separating PYTHIA, GEANT and PYTHIA-GEANT components ---------------------------//
 
-    DiMuon_fromLF_Generator[0].Form("GeantOnly");
-    DiMuon_fromLF_Generator[1].Form("PYTHIAGeant");
-    DiMuon_fromLF_Generator[2].Form("PYTHIAOnly");
+    Int_t n_LF_DiMuon_Generator = 999;
+
+    if (Generator.Contains("Powheg"))
+    {
+        n_LF_DiMuon_Generator = 6;
+        DiMuon_fromLF_Generator = new TString[n_LF_DiMuon_Generator]{"GeantOnly", "PYTHIAGeant", "PYTHIAOnly", "PowhegOnly", "PowhegGeant", "PowhegPYTHIA"};
+    }
+    else if (Generator.Contains("Geant"))
+    {
+        n_LF_DiMuon_Generator = 3;
+        DiMuon_fromLF_Generator = new TString[n_LF_DiMuon_Generator]{"GeantOnly", "PYTHIAGeant", "PYTHIAOnly"};
+    }
+    else
+        n_LF_DiMuon_Generator = 0;
+
+    h_PtM_DiMuon_Rec_fromLF = new TH2F *[n_LF_DiMuon_Generator];
+    h_PtY_DiMuon_Rec_fromLF = new TH2F *[n_LF_DiMuon_Generator];
+    h_Nperevent_DiMuon_Rec_fromLF = new TH1F *[n_LF_DiMuon_Generator];
 
     for (Int_t i_LF_DiMuon_Generator = 0; i_LF_DiMuon_Generator < n_LF_DiMuon_Generator; i_LF_DiMuon_Generator++)
     {

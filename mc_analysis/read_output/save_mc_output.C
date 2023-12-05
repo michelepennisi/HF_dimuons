@@ -7,28 +7,28 @@ void save_mc_output(
     // TString RunMode = "test_new_prompt_LHC22b3",
     // TString RunMode = "pythia8_purifykineoff_test",
     // TString RunMode = "SoftQCD_inel_LFoff_Def",
-    TString RunMode = "Merged_LHC22c1",
-    // TString RunMode = "LHC23i1",
+    // TString RunMode = "Merged_LHC22c1",
+    TString RunMode = "LHC23i1",
     // TString RunMode = "SoftQCD_inel_Def",
-    // TString dir_fileIn = "/home/michele_pennisi/cernbox/HF_dimuons/mc_analysis/analysis_grid/grid_sim/LHC23i1_Version5_AliAOD_HF_LF",
-    TString dir_fileIn = "/home/michele_pennisi/cernbox/HF_dimuons/mc_analysis/analysis_grid/grid_sim/LHC22c1/294009/output",
+    TString dir_fileIn = "/home/michele_pennisi/cernbox/HF_dimuons/mc_analysis/analysis_grid/grid_sim/LHC23i1_Version5_AliAOD_HF_LF",
+    // TString dir_fileIn = "/home/michele_pennisi/cernbox/HF_dimuons/mc_analysis/analysis_grid/grid_sim/LHC22c1/294009/output",
     // TString dir_fileIn = "/home/michele_pennisi/cernbox/HF_dimuons/mc_analysis/analysis_grid/grid_sim/pythia8_purifykineoff_test",
     // TString dir_fileIn = "/home/michele_pennisi/cernbox/HF_dimuons/pythia_stand/new_pythia_sim",
     // TString dir_fileIn = "/home/michele_pennisi/cernbox/HF_dimuons/mc_analysis/analysis_grid/grid_sim/LF_test",
     // TString dir_fileIn = "/home/michele_pennisi/cernbox/HF_dimuons/mc_analysis/analysis_grid/grid_sim/test_beauty_sim_2",
     // TString dir_fileIn = "/home/michele_pennisi/cernbox/HF_dimuons/mc_analysis/analysis_grid/grid_sim/test_charm_sim",
     // TString dir_fileIn = "/home/michele_pennisi/cernbox/HF_dimuons/mc_analysis/analysis_grid/grid_sim/LHC18p_DY_100k_Version2_AOD",
-    // TString dir_fileOut = "/home/michele_pennisi/cernbox/HF_dimuons/mc_analysis/analysis_grid/grid_sim/LHC23i1_Version5_AliAOD_HF_LF",
-    TString dir_fileOut = "/home/michele_pennisi/cernbox/HF_dimuons/mc_analysis/analysis_grid/grid_sim/LHC22c1/294009/output",
+    TString dir_fileOut = "/home/michele_pennisi/cernbox/HF_dimuons/mc_analysis/analysis_grid/grid_sim/LHC23i1_Version5_AliAOD_HF_LF",
+    // TString dir_fileOut = "/home/michele_pennisi/cernbox/HF_dimuons/mc_analysis/analysis_grid/grid_sim/LHC22c1/294009/output",
     // TString dir_fileOut = "/home/michele_pennisi/cernbox/HF_dimuons/mc_analysis/analysis_grid/grid_sim/pythia8_purifykineoff_test",
     // TString dir_fileOut = "/home/michele_pennisi/cernbox/HF_dimuons/pythia_stand/new_pythia_sim",
     // TString dir_fileOut = "/home/michele_pennisi/cernbox/HF_dimuons/pythia_stand/sim",
     // Int_t RunNumber = 100000,
     Int_t RunNumber = 294009,
-    TString Generator = "Geant_HF",
+    TString Generator = "Powheg_Geant_HF",
     TString prefix_filename = "MCDimuHFTree"
     // TString prefix_filename = "pythia_sim_74_DefaultBR"
-    )
+)
 {
 
     Set_Histograms(Generator);
@@ -146,7 +146,16 @@ void save_mc_output(
 
     Bool_t Verbose = kFALSE;
     Int_t counter_test = 0;
+    Int_t n_LF_DiMuon_Generator = 0;
 
+    if (Generator.Contains("Powheg"))
+        n_LF_DiMuon_Generator = 6;
+
+    else if (Generator.Contains("Geant"))
+        n_LF_DiMuon_Generator = 3;
+
+    else
+        n_LF_DiMuon_Generator = 0;
     for (Int_t i_Event = 0; i_Event < total_entries; i_Event++)
     {
         h_Nevents->Fill(1);
@@ -1038,7 +1047,7 @@ void save_mc_output(
             Int_t IsFrom_Geant_gen_Mu0 = 999;
             Int_t IsFrom_Geant_gen_Mu1 = 999;
 
-            Bool_t LF_Generator[n_LF_DiMuon_Generator] = {kFALSE};
+            Bool_t *LF_Generator = new Bool_t[n_LF_DiMuon_Generator]{kFALSE};
 
             if (Generator.Contains("Geant"))
             {
