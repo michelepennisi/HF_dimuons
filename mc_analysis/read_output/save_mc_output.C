@@ -10,7 +10,7 @@ void save_mc_output(
     // TString RunMode = "Merged_LHC22c1",
     TString RunMode = "LHC23i1",
     // TString RunMode = "SoftQCD_inel_Def",
-    TString dir_fileIn = "/home/michele_pennisi/cernbox/HF_dimuons/mc_analysis/analysis_grid/grid_sim/LHC23i1_Version5_AliAOD_HF_LF",
+    TString dir_fileIn = "/home/michele_pennisi/cernbox/HF_dimuons/mc_analysis/analysis_grid/grid_sim/LHC23i1_Version_5_AliAOD",
     // TString dir_fileIn = "/home/michele_pennisi/cernbox/HF_dimuons/mc_analysis/analysis_grid/grid_sim/LHC22c1/294009/output",
     // TString dir_fileIn = "/home/michele_pennisi/cernbox/HF_dimuons/mc_analysis/analysis_grid/grid_sim/pythia8_purifykineoff_test",
     // TString dir_fileIn = "/home/michele_pennisi/cernbox/HF_dimuons/pythia_stand/new_pythia_sim",
@@ -18,7 +18,7 @@ void save_mc_output(
     // TString dir_fileIn = "/home/michele_pennisi/cernbox/HF_dimuons/mc_analysis/analysis_grid/grid_sim/test_beauty_sim_2",
     // TString dir_fileIn = "/home/michele_pennisi/cernbox/HF_dimuons/mc_analysis/analysis_grid/grid_sim/test_charm_sim",
     // TString dir_fileIn = "/home/michele_pennisi/cernbox/HF_dimuons/mc_analysis/analysis_grid/grid_sim/LHC18p_DY_100k_Version2_AOD",
-    TString dir_fileOut = "/home/michele_pennisi/cernbox/HF_dimuons/mc_analysis/analysis_grid/grid_sim/LHC23i1_Version5_AliAOD_HF_LF",
+    TString dir_fileOut = "/home/michele_pennisi/cernbox/HF_dimuons/mc_analysis/analysis_grid/grid_sim/LHC23i1_Version_5_AliAOD",
     // TString dir_fileOut = "/home/michele_pennisi/cernbox/HF_dimuons/mc_analysis/analysis_grid/grid_sim/LHC22c1/294009/output",
     // TString dir_fileOut = "/home/michele_pennisi/cernbox/HF_dimuons/mc_analysis/analysis_grid/grid_sim/pythia8_purifykineoff_test",
     // TString dir_fileOut = "/home/michele_pennisi/cernbox/HF_dimuons/pythia_stand/new_pythia_sim",
@@ -270,7 +270,7 @@ void save_mc_output(
             Int_t IsHadronfromPowheg = fHadronFrom_Powheg_gen[i_NHadron_gen]; // check muon gen origin
             Double_t VzHadron = fVzHadron_gen[i_NHadron_gen];
             Int_t IsHadronfromGeant = fHadronFrom_Geant_gen[i_NHadron_gen];
-
+            // cout<<IsHadronfromPowheg<<endl;
             // if ((TMath::Abs(PDG_Hadron) > 100 && TMath::Abs(PDG_Hadron) < 400) || (TMath::Abs(PDG_Hadron) > 1000 && TMath::Abs(PDG_Hadron) < 4000))
             // {
             //     if (IsHadronfromGeant == -1)
@@ -301,7 +301,6 @@ void save_mc_output(
                 if ((PDGmum_Hadron == 0) || (PDGmum_Hadron == 4) || (TMath::Abs(PDGmum_Hadron) > 400 && TMath::Abs(PDGmum_Hadron) < 500) || (TMath::Abs(PDGmum_Hadron) > 4000 && TMath::Abs(PDGmum_Hadron) < 5000))
                 {
                     h_PdgPtY_HFHadron_prompt->Fill(TMath::Abs(PDG_Hadron), Pt_Hadron, Y_Hadron);
-
                     h_PdgPt_HFHadron_prompt->Fill(TMath::Abs(PDG_Hadron), Pt_Hadron);
                     h_PdgY_HFHadron_prompt->Fill(TMath::Abs(PDG_Hadron), Y_Hadron);
                     h_PdgEta_HFHadron_prompt->Fill(TMath::Abs(PDG_Hadron), Eta_Hadron);
@@ -1051,6 +1050,7 @@ void save_mc_output(
 
             if (Generator.Contains("Geant"))
             {
+                // DiMuon_fromLF_Generator = new TString[n_LF_DiMuon_Generator]{"GeantOnly", "PYTHIAGeant", "PYTHIAOnly", "PowhegOnly", "PowhegGeant", "PowhegPYTHIA"};
                 IsFrom_Geant_gen_Mu0 = fFrom_Geant_gen[DimuMu_rec[i_NDimu_rec][0]];
                 IsFrom_Geant_gen_Mu1 = fFrom_Geant_gen[DimuMu_rec[i_NDimu_rec][1]];
                 if (IsFrom_Geant_gen_Mu0 == -1 && IsFrom_Geant_gen_Mu1 == -1)
@@ -1063,6 +1063,12 @@ void save_mc_output(
                 {
                     IsFromPowheg_Mu0 = fFrom_Powheg_rec[DimuMu_rec[i_NDimu_rec][0]];
                     IsFromPowheg_Mu1 = fFrom_Powheg_rec[DimuMu_rec[i_NDimu_rec][1]];
+                    if (IsFromPowheg_Mu0 == -1 && IsFromPowheg_Mu1 == -1)
+                        LF_Generator[3] = kTRUE;
+                    else if ((IsFromPowheg_Mu0 == -1 && IsFrom_Geant_gen_Mu1 == -1) || (IsFromPowheg_Mu1 == -1 && IsFrom_Geant_gen_Mu0 == -1))
+                        LF_Generator[4] = kTRUE;
+                    else if ((IsFromPowheg_Mu0 == -1 && IsFrom_Geant_gen_Mu1 == -1) || (IsFromPowheg_Mu1 == -1 && IsFrom_Geant_gen_Mu0 == -1))
+                        LF_Generator[5] = kTRUE;
                 }
             }
 
@@ -1706,6 +1712,7 @@ void save_mc_output(
     if (fOut.GetDirectory("DiMuon_Rec/LF_origin"))
     {
         fOut.cd("DiMuon_Rec/LF_origin");
+        
         for (Int_t i_LF_Generator = 0; i_LF_Generator < n_LF_DiMuon_Generator; i_LF_Generator++)
         {
             if (h_PtM_DiMuon_Rec_fromLF[i_LF_Generator]->GetEntries() > 0.0)
@@ -1772,14 +1779,14 @@ void save_mc_output(
             if (!fOut.GetDirectory("Hadron/Geant"))
                 fOut.mkdir("Hadron/Geant");
 
-            if (!fOut.GetDirectory("Hadron/Pythia"))
-                fOut.mkdir("Hadron/Pythia");
-            fOut.cd("Hadron/Pythia");
+            if (!fOut.GetDirectory("Hadron/PYTHIA"))
+                fOut.mkdir("Hadron/PYTHIA");
+            fOut.cd("Hadron/PYTHIA");
 
             if (Generator.Contains("Powheg"))
             {
-                if (!fOut.GetDirectory("Hadron/Pythia/Powheg"))
-                    fOut.mkdir("Hadron/Pythia/Powheg");
+                if (!fOut.GetDirectory("Hadron/Powheg"))
+                    fOut.mkdir("Hadron/Powheg");
             }
 
             fOut.cd("Hadron/Geant");
@@ -1791,7 +1798,7 @@ void save_mc_output(
             h_PdgY_HFHadron_notprompt_GeantOnly->Write(0, 2, 0);
             h_PdgEta_HFHadron_notprompt_GeantOnly->Write(0, 2, 0);
 
-            fOut.cd("Hadron/Pythia");
+            fOut.cd("Hadron/PYTHIA");
             h_PdgPt_HFHadron_prompt_PYTHIAOnly->Write(0, 2, 0);
             h_PdgY_HFHadron_prompt_PYTHIAOnly->Write(0, 2, 0);
             h_PdgEta_HFHadron_prompt_PYTHIAOnly->Write(0, 2, 0);
@@ -1802,7 +1809,7 @@ void save_mc_output(
 
             if (Generator.Contains("Powheg"))
             {
-                fOut.cd("Hadron/Pythia/Powheg");
+                fOut.cd("Hadron/Powheg");
                 h_PdgPt_HFHadron_prompt_PowhegOnly->Write(0, 2, 0);
                 h_PdgY_HFHadron_prompt_PowhegOnly->Write(0, 2, 0);
                 h_PdgEta_HFHadron_prompt_PowhegOnly->Write(0, 2, 0);
