@@ -1067,7 +1067,7 @@ void save_mc_output(
                         LF_Generator[3] = kTRUE;
                     else if ((IsFromPowheg_Mu0 == -1 && IsFrom_Geant_gen_Mu1 == -1) || (IsFromPowheg_Mu1 == -1 && IsFrom_Geant_gen_Mu0 == -1))
                         LF_Generator[4] = kTRUE;
-                    else if ((IsFromPowheg_Mu0 == -1 && IsFrom_Geant_gen_Mu1 == -1) || (IsFromPowheg_Mu1 == -1 && IsFrom_Geant_gen_Mu0 == -1))
+                    else if ((IsFromPowheg_Mu0 == -1 && IsFrom_Geant_gen_Mu1 == 0) || (IsFromPowheg_Mu1 == -1 && IsFrom_Geant_gen_Mu0 == 0))
                         LF_Generator[5] = kTRUE;
                 }
             }
@@ -1712,7 +1712,7 @@ void save_mc_output(
     if (fOut.GetDirectory("DiMuon_Rec/LF_origin"))
     {
         fOut.cd("DiMuon_Rec/LF_origin");
-        
+
         for (Int_t i_LF_Generator = 0; i_LF_Generator < n_LF_DiMuon_Generator; i_LF_Generator++)
         {
             if (h_PtM_DiMuon_Rec_fromLF[i_LF_Generator]->GetEntries() > 0.0)
