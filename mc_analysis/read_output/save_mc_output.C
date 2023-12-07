@@ -1057,7 +1057,7 @@ void save_mc_output(
                     LF_Generator[0] = kTRUE;
                 else if ((IsFrom_Geant_gen_Mu0 == -1 && IsFrom_Geant_gen_Mu1 == 0) || (IsFrom_Geant_gen_Mu1 == -1 && IsFrom_Geant_gen_Mu0 == 0))
                     LF_Generator[1] = kTRUE;
-                else
+                else if (IsFrom_Geant_gen_Mu0 == 0 && IsFrom_Geant_gen_Mu1 == 0)
                     LF_Generator[2] = kTRUE;
                 if (Generator.Contains("Powheg"))
                 {
