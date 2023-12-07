@@ -1057,7 +1057,7 @@ void save_mc_output(
                     LF_Generator[0] = kTRUE;
                 else if ((IsFrom_Geant_gen_Mu0 == -1 && IsFrom_Geant_gen_Mu1 == 0) || (IsFrom_Geant_gen_Mu1 == -1 && IsFrom_Geant_gen_Mu0 == 0))
                     LF_Generator[1] = kTRUE;
-                else if (IsFrom_Geant_gen_Mu0 == 0 && IsFrom_Geant_gen_Mu1 == 0 && IsFromPowheg_Mu0 > 0 && IsFrom_Geant_gen_Mu1 > 0)
+                else if (IsFrom_Geant_gen_Mu0 == 0 && IsFrom_Geant_gen_Mu1 == 0 && IsFromPowheg_Mu0 > 0 && IsFromPowheg_Mu1 > 0)
                     LF_Generator[2] = kTRUE;
                 if (Generator.Contains("Powheg"))
                 {
@@ -1715,8 +1715,10 @@ void save_mc_output(
 
         for (Int_t i_LF_Generator = 0; i_LF_Generator < n_LF_DiMuon_Generator; i_LF_Generator++)
         {
+            cout<<DiMuon_fromLF_Generator[i_LF_Generator].Data()<<endl;
             if (h_PtM_DiMuon_Rec_fromLF[i_LF_Generator]->GetEntries() > 0.0)
             {
+                
                 h_PtM_DiMuon_Rec_fromLF[i_LF_Generator]->Write(0, 2, 0);
                 h_PtY_DiMuon_Rec_fromLF[i_LF_Generator]->Write(0, 2, 0);
             }
