@@ -1053,26 +1053,30 @@ void save_mc_output(
                 // DiMuon_fromLF_Generator = new TString[n_LF_DiMuon_Generator]{"GeantOnly", "PYTHIAGeant", "PYTHIAOnly", "PowhegOnly", "PowhegGeant", "PowhegPYTHIA"};
                 IsFrom_Geant_gen_Mu0 = fFrom_Geant_gen[DimuMu_rec[i_NDimu_rec][0]];
                 IsFrom_Geant_gen_Mu1 = fFrom_Geant_gen[DimuMu_rec[i_NDimu_rec][1]];
-                if (IsFrom_Geant_gen_Mu0 == -1 && IsFrom_Geant_gen_Mu1 == -1)
+                if (IsFrom_Geant_gen_Mu0 == -1 && IsFrom_Geant_gen_Mu1 == -1) //Both muons from geant hadrons
                     LF_Generator[0] = kTRUE;
                 else
                 {
-                    if (Generator.Contains("Powheg"))
+
+                    IsFromPowheg_Mu0 = fFrom_Powheg_rec[DimuMu_rec[i_NDimu_rec][0]];
+                    IsFromPowheg_Mu1 = fFrom_Powheg_rec[DimuMu_rec[i_NDimu_rec][1]];
+                    if (IsFromPowheg_Mu0 > -1 && IsFromPowheg_Mu1 > -1) //No hadron from powheg parton condition
                     {
-                        IsFromPowheg_Mu0 = fFrom_Powheg_rec[DimuMu_rec[i_NDimu_rec][0]];
-                        IsFromPowheg_Mu1 = fFrom_Powheg_rec[DimuMu_rec[i_NDimu_rec][1]];
-                        if (IsFromPowheg_Mu0 == -1 && IsFromPowheg_Mu1 == -1)
+                        if ((IsFrom_Geant_gen_Mu0 == -1 && IsFrom_Geant_gen_Mu1 == 0) || (IsFrom_Geant_gen_Mu1 == -1 && IsFrom_Geant_gen_Mu0 == 0)) // PYTHIA-Geant combination
+                            LF_Generator[1] = kTRUE;
+                        else if (IsFrom_Geant_gen_Mu0 == 0 && IsFrom_Geant_gen_Mu1 == 0) //PYTHIA Only
+                            LF_Generator[2] = kTRUE;
+                    }
+                    else if (Generator.Contains("Powheg"))
+                    {
+
+                        if (IsFromPowheg_Mu0 == -1 && IsFromPowheg_Mu1 == -1) //POHWEG only
                             LF_Generator[3] = kTRUE;
-                        else if ((IsFromPowheg_Mu0 == -1 && IsFrom_Geant_gen_Mu1 == -1) || (IsFromPowheg_Mu1 == -1 && IsFrom_Geant_gen_Mu0 == -1))
+                        else if ((IsFromPowheg_Mu0 == -1 && IsFrom_Geant_gen_Mu1 == -1) || (IsFromPowheg_Mu1 == -1 && IsFrom_Geant_gen_Mu0 == -1)) //POHWEG-Geant combination
                             LF_Generator[4] = kTRUE;
-                        else if ((IsFromPowheg_Mu0 == -1 && IsFrom_Geant_gen_Mu1 == 0) || (IsFromPowheg_Mu1 == -1 && IsFrom_Geant_gen_Mu0 == 0))
+                        else if ((IsFromPowheg_Mu0 == -1 && IsFrom_Geant_gen_Mu1 == 0) || (IsFromPowheg_Mu1 == -1 && IsFrom_Geant_gen_Mu0 == 0)) //POHWEG-PYTHIA combination
                             LF_Generator[5] = kTRUE;
                     }
-                    
-                    if ((IsFrom_Geant_gen_Mu0 == -1 && IsFrom_Geant_gen_Mu1 == 0) || (IsFrom_Geant_gen_Mu1 == -1 && IsFrom_Geant_gen_Mu0 == 0))
-                        LF_Generator[1] = kTRUE;
-                    else if (IsFrom_Geant_gen_Mu0 == 0 && IsFrom_Geant_gen_Mu1 == 0 && IsFromPowheg_Mu0 > 0 && IsFromPowheg_Mu1 > 0)
-                        LF_Generator[2] = kTRUE;
                 }
             }
 
