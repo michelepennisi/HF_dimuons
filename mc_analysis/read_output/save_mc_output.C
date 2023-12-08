@@ -1057,19 +1057,10 @@ void save_mc_output(
                     LF_Generator[0] = kTRUE;
                 else
                 {
-
-                    IsFromPowheg_Mu0 = fFrom_Powheg_rec[DimuMu_rec[i_NDimu_rec][0]];
-                    IsFromPowheg_Mu1 = fFrom_Powheg_rec[DimuMu_rec[i_NDimu_rec][1]];
-                    if (IsFromPowheg_Mu0 > 0 && IsFromPowheg_Mu1 > 0)
+                    if (Generator.Contains("Powheg"))
                     {
-                        if ((IsFrom_Geant_gen_Mu0 == -1 && IsFrom_Geant_gen_Mu1 == 0) || (IsFrom_Geant_gen_Mu1 == -1 && IsFrom_Geant_gen_Mu0 == 0))
-                            LF_Generator[1] = kTRUE;
-                        else if (IsFrom_Geant_gen_Mu0 == 0 && IsFrom_Geant_gen_Mu1 == 0 && IsFromPowheg_Mu0 > 0 && IsFromPowheg_Mu1 > 0)
-                            LF_Generator[2] = kTRUE;
-                    }
-                    else if (Generator.Contains("Powheg"))
-                    {
-
+                        IsFromPowheg_Mu0 = fFrom_Powheg_rec[DimuMu_rec[i_NDimu_rec][0]];
+                        IsFromPowheg_Mu1 = fFrom_Powheg_rec[DimuMu_rec[i_NDimu_rec][1]];
                         if (IsFromPowheg_Mu0 == -1 && IsFromPowheg_Mu1 == -1)
                             LF_Generator[3] = kTRUE;
                         else if ((IsFromPowheg_Mu0 == -1 && IsFrom_Geant_gen_Mu1 == -1) || (IsFromPowheg_Mu1 == -1 && IsFrom_Geant_gen_Mu0 == -1))
@@ -1077,6 +1068,11 @@ void save_mc_output(
                         else if ((IsFromPowheg_Mu0 == -1 && IsFrom_Geant_gen_Mu1 == 0) || (IsFromPowheg_Mu1 == -1 && IsFrom_Geant_gen_Mu0 == 0))
                             LF_Generator[5] = kTRUE;
                     }
+                    
+                    if ((IsFrom_Geant_gen_Mu0 == -1 && IsFrom_Geant_gen_Mu1 == 0) || (IsFrom_Geant_gen_Mu1 == -1 && IsFrom_Geant_gen_Mu0 == 0))
+                        LF_Generator[1] = kTRUE;
+                    else if (IsFrom_Geant_gen_Mu0 == 0 && IsFrom_Geant_gen_Mu1 == 0 && IsFromPowheg_Mu0 > 0 && IsFromPowheg_Mu1 > 0)
+                        LF_Generator[2] = kTRUE;
                 }
             }
 
