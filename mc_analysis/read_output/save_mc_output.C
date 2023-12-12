@@ -25,7 +25,7 @@ void save_mc_output(
     // TString dir_fileOut = "/home/michele_pennisi/cernbox/HF_dimuons/pythia_stand/sim",
     // Int_t RunNumber = 100000,
     Int_t RunNumber = 294009,
-    TString Generator = "Powheg_Geant_HF",
+    TString Generator = "Powheg_Geant",
     TString prefix_filename = "MCDimuHFTree"
     // TString prefix_filename = "pythia_sim_74_DefaultBR"
 )
@@ -1053,28 +1053,28 @@ void save_mc_output(
                 // DiMuon_fromLF_Generator = new TString[n_LF_DiMuon_Generator]{"GeantOnly", "PYTHIAGeant", "PYTHIAOnly", "PowhegOnly", "PowhegGeant", "PowhegPYTHIA"};
                 IsFrom_Geant_gen_Mu0 = fFrom_Geant_gen[DimuMu_rec[i_NDimu_rec][0]];
                 IsFrom_Geant_gen_Mu1 = fFrom_Geant_gen[DimuMu_rec[i_NDimu_rec][1]];
-                if (IsFrom_Geant_gen_Mu0 == -1 && IsFrom_Geant_gen_Mu1 == -1) //Both muons from geant hadrons
+                if (IsFrom_Geant_gen_Mu0 == -1 && IsFrom_Geant_gen_Mu1 == -1) // Both muons from geant hadrons
                     LF_Generator[0] = kTRUE;
                 else
                 {
 
                     IsFromPowheg_Mu0 = fFrom_Powheg_rec[DimuMu_rec[i_NDimu_rec][0]];
                     IsFromPowheg_Mu1 = fFrom_Powheg_rec[DimuMu_rec[i_NDimu_rec][1]];
-                    if (IsFromPowheg_Mu0 > -1 && IsFromPowheg_Mu1 > -1) //No hadron from powheg parton condition
+                    if (IsFromPowheg_Mu0 > -1 && IsFromPowheg_Mu1 > -1) // No hadron from powheg parton condition
                     {
                         if ((IsFrom_Geant_gen_Mu0 == -1 && IsFrom_Geant_gen_Mu1 == 0) || (IsFrom_Geant_gen_Mu1 == -1 && IsFrom_Geant_gen_Mu0 == 0)) // PYTHIA-Geant combination
                             LF_Generator[1] = kTRUE;
-                        else if (IsFrom_Geant_gen_Mu0 == 0 && IsFrom_Geant_gen_Mu1 == 0) //PYTHIA Only
+                        else if (IsFrom_Geant_gen_Mu0 == 0 && IsFrom_Geant_gen_Mu1 == 0) // PYTHIA Only
                             LF_Generator[2] = kTRUE;
                     }
                     else if (Generator.Contains("Powheg"))
                     {
 
-                        if (IsFromPowheg_Mu0 == -1 && IsFromPowheg_Mu1 == -1) //POHWEG only
+                        if (IsFromPowheg_Mu0 == -1 && IsFromPowheg_Mu1 == -1) // POHWEG only
                             LF_Generator[3] = kTRUE;
-                        else if ((IsFromPowheg_Mu0 == -1 && IsFrom_Geant_gen_Mu1 == -1) || (IsFromPowheg_Mu1 == -1 && IsFrom_Geant_gen_Mu0 == -1)) //POHWEG-Geant combination
+                        else if ((IsFromPowheg_Mu0 == -1 && IsFrom_Geant_gen_Mu1 == -1) || (IsFromPowheg_Mu1 == -1 && IsFrom_Geant_gen_Mu0 == -1)) // POHWEG-Geant combination
                             LF_Generator[4] = kTRUE;
-                        else if ((IsFromPowheg_Mu0 == -1 && IsFrom_Geant_gen_Mu1 == 0) || (IsFromPowheg_Mu1 == -1 && IsFrom_Geant_gen_Mu0 == 0)) //POHWEG-PYTHIA combination
+                        else if ((IsFromPowheg_Mu0 == -1 && IsFrom_Geant_gen_Mu1 == 0) || (IsFromPowheg_Mu1 == -1 && IsFrom_Geant_gen_Mu0 == 0)) // POHWEG-PYTHIA combination
                             LF_Generator[5] = kTRUE;
                     }
                 }
@@ -1222,6 +1222,17 @@ void save_mc_output(
                             {
                                 h_PtM_DiMuon_Rec_fromLF[i_LF_Generator]->Fill(Pt_DiMu, M_DiMu);
                                 h_PtY_DiMuon_Rec_fromLF[i_LF_Generator]->Fill(Pt_DiMu, Y_DiMu);
+                            }
+                        }
+                    }
+                    else if (i_DiMuon_origin == 4) // selecting LF-HF Mixed
+                    {
+                        for (Int_t i_LF_Generator = 0; i_LF_Generator < n_LF_DiMuon_Generator; i_LF_Generator++)
+                        {
+                            if (LF_Generator[i_LF_Generator])
+                            {
+                                h_PtM_DiMuon_Rec_fromLF_HF_Mixed[i_LF_Generator]->Fill(Pt_DiMu, M_DiMu);
+                                h_PtY_DiMuon_Rec_fromLF_HF_Mixed[i_LF_Generator]->Fill(Pt_DiMu, Y_DiMu);
                             }
                         }
                     }
@@ -1414,6 +1425,9 @@ void save_mc_output(
 
         if (!fOut.GetDirectory("DiMuon_Rec/LF_origin"))
             fOut.mkdir("DiMuon_Rec/LF_origin");
+
+        if (!fOut.GetDirectory("DiMuon_Rec/LF_HF_Mixed_origin"))
+            fOut.mkdir("DiMuon_Rec/LF_HF_Mixed_origin");
 
         if (Generator.Contains("Powheg"))
         {
@@ -1729,6 +1743,22 @@ void save_mc_output(
 
                 h_PtM_DiMuon_Rec_fromLF[i_LF_Generator]->Write(0, 2, 0);
                 h_PtY_DiMuon_Rec_fromLF[i_LF_Generator]->Write(0, 2, 0);
+            }
+        }
+    }
+
+    if (fOut.GetDirectory("DiMuon_Rec/LF_HF_Mixed_origin"))
+    {
+        fOut.cd("DiMuon_Rec/LF_HF_Mixed_origin");
+
+        for (Int_t i_LF_Generator = 0; i_LF_Generator < n_LF_DiMuon_Generator; i_LF_Generator++)
+        {
+            cout << DiMuon_fromLF_Generator[i_LF_Generator].Data() << endl;
+            if (h_PtM_DiMuon_Rec_fromLF_HF_Mixed[i_LF_Generator]->GetEntries() > 0.0)
+            {
+
+                h_PtM_DiMuon_Rec_fromLF_HF_Mixed[i_LF_Generator]->Write(0, 2, 0);
+                h_PtY_DiMuon_Rec_fromLF_HF_Mixed[i_LF_Generator]->Write(0, 2, 0);
             }
         }
     }

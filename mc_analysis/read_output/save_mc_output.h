@@ -301,6 +301,10 @@ TH2F **h_PtM_DiMuon_Rec_fromLF;
 TH2F **h_PtY_DiMuon_Rec_fromLF;
 TH1F **h_Nperevent_DiMuon_Rec_fromLF;
 
+TH2F **h_PtM_DiMuon_Rec_fromLF_HF_Mixed;
+TH2F **h_PtY_DiMuon_Rec_fromLF_HF_Mixed;
+TH1F **h_Nperevent_DiMuon_Rec_fromLF_HF_Mixed;
+
 TH3F *h_Pdg1Pdg2Pt_DiMuon_Rec_PowhegOnly;
 TH3F *h_Pdg1Pdg2Y_DiMuon_Rec_PowhegOnly;
 TH3F *h_Pdg1Pdg2M_DiMuon_Rec_PowhegOnly;
@@ -667,11 +671,19 @@ void Set_Histograms(TString Generator)
     h_PtY_DiMuon_Rec_fromLF = new TH2F *[n_LF_DiMuon_Generator];
     h_Nperevent_DiMuon_Rec_fromLF = new TH1F *[n_LF_DiMuon_Generator];
 
+    h_PtM_DiMuon_Rec_fromLF_HF_Mixed = new TH2F *[n_LF_DiMuon_Generator];
+    h_PtY_DiMuon_Rec_fromLF_HF_Mixed = new TH2F *[n_LF_DiMuon_Generator];
+    h_Nperevent_DiMuon_Rec_fromLF_HF_Mixed = new TH1F *[n_LF_DiMuon_Generator];
+
     for (Int_t i_LF_DiMuon_Generator = 0; i_LF_DiMuon_Generator < n_LF_DiMuon_Generator; i_LF_DiMuon_Generator++)
     {
         h_PtM_DiMuon_Rec_fromLF[i_LF_DiMuon_Generator] = new TH2F(Form("h_PtM_DiMuon_Rec_fromLF_%s", DiMuon_fromLF_Generator[i_LF_DiMuon_Generator].Data()), ";#it{p}_{T} (GeV/#it{c}) ; #it{m}_{#mu#mu} (GeV/#it{c}^{2})", 400, 0, 40.0, 400, 0, 40);
-        h_PtY_DiMuon_Rec_fromLF[i_LF_DiMuon_Generator] = new TH2F(Form("h_PtY_DiMuon_Rec_fromLF_%s", DiMuon_fromLF_Generator[i_LF_DiMuon_Generator].Data()), ";#it{p}_{T} (GeV/#it{c}) ; #it{y}_{#mu#mu}", 400, 0, 40.0, 160, -8.0, 8.0);
+        h_PtY_DiMuon_Rec_fromLF[i_LF_DiMuon_Generator] = new TH2F(Form("h_PtY_DiMuon_Rec_fromLF_%s", DiMuon_fromLF_Generator[i_LF_DiMuon_Generator].Data()), ";#it{p}_{T} (GeV/#it{c}) ; #it{y}_{#mu#mu}", 400, 0, 40.0, 150, -4.0, -2.5);
         h_Nperevent_DiMuon_Rec_fromLF[i_LF_DiMuon_Generator] = new TH1F(Form("h_Nperevent_DiMuon_Rec_fromLF_%s", DiMuon_fromLF_Generator[i_LF_DiMuon_Generator].Data()), "; #mu#mu x ev", 10, -0.5, 9.5);
+
+        h_PtM_DiMuon_Rec_fromLF_HF_Mixed[i_LF_DiMuon_Generator] = new TH2F(Form("h_PtM_DiMuon_Rec_fromLF_HF_Mixed_%s", DiMuon_fromLF_Generator[i_LF_DiMuon_Generator].Data()), ";#it{p}_{T} (GeV/#it{c}) ; #it{m}_{#mu#mu} (GeV/#it{c}^{2})", 400, 0, 40.0, 400, 0, 40);
+        h_PtY_DiMuon_Rec_fromLF_HF_Mixed[i_LF_DiMuon_Generator] = new TH2F(Form("h_PtY_DiMuon_Rec_fromLF_HF_Mixed_%s", DiMuon_fromLF_Generator[i_LF_DiMuon_Generator].Data()), ";#it{p}_{T} (GeV/#it{c}) ; #it{y}_{#mu#mu}", 400, 0, 40.0, 150, -4.0, -2.5);
+        h_Nperevent_DiMuon_Rec_fromLF_HF_Mixed[i_LF_DiMuon_Generator] = new TH1F(Form("h_Nperevent_DiMuon_Rec_fromLF_HF_Mixed_%s", DiMuon_fromLF_Generator[i_LF_DiMuon_Generator].Data()), "; #mu#mu x ev", 10, -0.5, 9.5);
     }
 
     // ---------------------- Inizialization hist for Dimuons ---------------------------//
@@ -851,7 +863,6 @@ TChain *Importing_Tree(TString dir_filename, TString filename, TString Generator
     if (Generator.Contains("Geant"))
     {
         tree->SetBranchAddress("HadronFrom_Geant_gen", fHadronFrom_Geant_gen);
-
         tree->SetBranchAddress("NDimu_rec", &NDimu_rec);
         tree->SetBranchAddress("DimuMu_rec", DimuMu_rec);
         tree->SetBranchAddress("DimuPt_rec", DimuPt_rec);
