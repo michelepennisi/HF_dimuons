@@ -78,8 +78,8 @@ private:
 
     Double_t fPercentV0M;
 
-    static const Int_t fMuons_dim = 5000;
-    static const Int_t fDimu_dim = 5000;
+    static const Int_t fMuons_dim = 20000;
+    static const Int_t fDimu_dim = 20000;
 
     Double_t fPt_gamma[fMuons_dim]; // Gamma star pt
     Double_t fM_gamma[fMuons_dim];  // Gamma star M

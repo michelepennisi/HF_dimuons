@@ -371,19 +371,28 @@ void AliAnalysisTaskDimuon_HighMass::UserCreateOutputObjects()
         fOutputTree->Branch("M_gamma_gen", fM_gamma, "M_gamma_gen[N_gamma_gen]/D");
         fOutputTree->Branch("Y_gamma_gen", fY_gamma, "Y_gamma_gen[N_gamma_gen]/D");
     }
-    if (fSaving_opt.Contains("lightMu"))
+    if (fSaving_opt.Contains("skimmed"))
     {
         fOutputTree->Branch("NMuons_gen", &fNMuons_gen, "NMuons_gen/I");
         fOutputTree->Branch("PDGmum_gen", fPDGmum_gen, "PDGmum_gen[NMuons_gen]/I");
         fOutputTree->Branch("Pt_gen", fPt_gen, "Pt_gen[NMuons_gen]/D");
+        fOutputTree->Branch("E_gen", fE_gen, "E_gen[NMuons_gen]/D");
+        fOutputTree->Branch("Px_gen", fPx_gen, "Px_gen[NMuons_gen]/D");
+        fOutputTree->Branch("Py_gen", fPy_gen, "Py_gen[NMuons_gen]/D");
+        fOutputTree->Branch("Pz_gen", fPz_gen, "Pz_gen[NMuons_gen]/D");
         fOutputTree->Branch("Y_gen", fY_gen, "Y_gen[NMuons_gen]/D");
         fOutputTree->Branch("Eta_gen", fEta_gen, "Eta_gen[NMuons_gen]/D");
         fOutputTree->Branch("Charge_gen", fCharge_gen, "Charge_gen[NMuons_gen]/I");
-        fOutputTree->Branch("From_Powheg_gen", fFrom_Powheg_gen, "From_Powheg_gen[NMuons_gen]/I");
+        if (fAOD_origin.Contains("Powheg"))
+            fOutputTree->Branch("From_Powheg_gen", fFrom_Powheg_gen, "From_Powheg_gen[NMuons_gen]/I");
 
         fOutputTree->Branch("NMuons_rec", &fNMuons_rec, "NMuons_rec/I");
         fOutputTree->Branch("PDGmum_rec", fPDGmum_rec, "PDGmum_rec[NMuons_rec]/I");
         fOutputTree->Branch("Pt_rec", fPt_rec, "Pt_rec[NMuons_rec]/D");
+        fOutputTree->Branch("E_rec", fE_rec, "E_rec[NMuons_rec]/D");
+        fOutputTree->Branch("Px_rec", fPx_rec, "Px_rec[NMuons_rec]/D");
+        fOutputTree->Branch("Py_rec", fPy_rec, "Py_rec[NMuons_rec]/D");
+        fOutputTree->Branch("Pz_rec", fPz_rec, "Pz_rec[NMuons_rec]/D");
         fOutputTree->Branch("Y_rec", fY_rec, "Y_rec[NMuons_rec]/D");
         fOutputTree->Branch("Eta_rec", fEta_rec, "Eta_rec[NMuons_rec]/D");
         fOutputTree->Branch("MatchTrig_rec", fMatchTrig_rec, "MatchTrig_rec[NMuons_rec]/I");
@@ -392,71 +401,91 @@ void AliAnalysisTaskDimuon_HighMass::UserCreateOutputObjects()
         fOutputTree->Branch("Charge_rec", fCharge_rec, "Charge_rec[NMuons_rec]/I");
         fOutputTree->Branch("RAtAbsEnd_rec", fRAtAbsEnd_rec, "RAtAbsEnd_rec[NMuons_rec]/D");
         fOutputTree->Branch("pDCA_rec", fpDCA_rec, "pDCA[NMuons_rec]/I");
-        fOutputTree->Branch("From_Powheg_rec", fFrom_Powheg_rec, "From_Powheg_rec[NMuons_rec]/I");
+        if (fAOD_origin.Contains("Powheg"))
+            fOutputTree->Branch("From_Powheg_rec", fFrom_Powheg_rec, "From_Powheg_rec[NMuons_rec]/I");
+
+        fOutputTree->Branch("NDimu_gen", &fNDimu_gen, "NDimu_gen/I");
+        fOutputTree->Branch("DimuMu_gen", fDimuMu_gen, "DimuMu_gen[NDimu_gen][2]/I");
+        fOutputTree->Branch("DimuPt_gen", fDimuPt_gen, "DimuPt_gen[NDimu_gen]/D");
+        fOutputTree->Branch("DimuY_gen", fDimuY_gen, "DimuY_gen[NDimu_gen]/D");
+        fOutputTree->Branch("DimuMass_gen", fDimuMass_gen, "DimuMass_gen[NDimu_gen]/D");
+        fOutputTree->Branch("DimuCharge_gen", fDimuCharge_gen, "DimuCharge_gen[NDimu_gen]/I");
+
+        fOutputTree->Branch("NDimu_rec", &fNDimu_rec, "NDimu_rec/I");
+        fOutputTree->Branch("DimuMu_rec", fDimuMu_rec, "DimuMu_rec[NDimu_rec][2]/I");
+        fOutputTree->Branch("DimuPt_rec", fDimuPt_rec, "DimuPt_rec[NDimu_rec]/D");
+        fOutputTree->Branch("DimuY_rec", fDimuY_rec, "DimuY_rec[NDimu_rec]/D");
+        fOutputTree->Branch("DimuMass_rec", fDimuMass_rec, "DimuMass_rec[NDimu_rec]/D");
+        fOutputTree->Branch("DimuCharge_rec", fDimuCharge_rec, "DimuCharge_rec[NDimu_rec]/I");
+        fOutputTree->Branch("DimuMatch_rec", fDimuMatch_rec, "DimuMatch_rec[NDimu_rec]/I");
     }
-    fOutputTree->Branch("NMuons_gen", &fNMuons_gen, "NMuons_gen/I");
-    fOutputTree->Branch("PDGmum_gen", fPDGmum_gen, "PDGmum_gen[NMuons_gen]/I");
-    fOutputTree->Branch("Pt_gen", fPt_gen, "Pt_gen[NMuons_gen]/D");
-    fOutputTree->Branch("E_gen", fE_gen, "E_gen[NMuons_gen]/D");
-    fOutputTree->Branch("Px_gen", fPx_gen, "Px_gen[NMuons_gen]/D");
-    fOutputTree->Branch("Py_gen", fPy_gen, "Py_gen[NMuons_gen]/D");
-    fOutputTree->Branch("Pz_gen", fPz_gen, "Pz_gen[NMuons_gen]/D");
-    fOutputTree->Branch("Y_gen", fY_gen, "Y_gen[NMuons_gen]/D");
-    fOutputTree->Branch("Eta_gen", fEta_gen, "Eta_gen[NMuons_gen]/D");
-    fOutputTree->Branch("Phi_gen", fPhi_gen, "Phi_gen[NMuons_gen]/D");
-    fOutputTree->Branch("Theta_gen", fTheta_gen, "Theta_gen[NMuons_gen]/D");
-    fOutputTree->Branch("Charge_gen", fCharge_gen, "Charge_gen[NMuons_gen]/I");
-    fOutputTree->Branch("From_Powheg_gen", fFrom_Powheg_gen, "From_Powheg_gen[NMuons_gen]/I");
-    fOutputTree->Branch("Initial_Parton_gen", fInitial_Parton_gen, "Initial_Parton_gen[NMuons_gen]/I");
-    fOutputTree->Branch("Radius_gen", fRadius_gen, "Radius_gen[NMuons_gen]/D");
-    fOutputTree->Branch("Vz_gen", fVz_gen, "Vz_gen[NMuons_gen]/D");
-    fOutputTree->Branch("From_Geant_gen", fFrom_Geant_gen, "From_Geant_gen[NMuons_gen]/I");
-    fOutputTree->Branch("Vzmother_gen", fVzmother_gen, "Vzmother_gen[NMuons_gen]/D");
+    else
+    {
 
-    fOutputTree->Branch("NMuons_rec", &fNMuons_rec, "NMuons_rec/I");
-    fOutputTree->Branch("PDGmum_rec", fPDGmum_rec, "PDGmum_rec[NMuons_rec]/I");
-    fOutputTree->Branch("Pt_rec", fPt_rec, "Pt_rec[NMuons_rec]/D");
-    fOutputTree->Branch("E_rec", fE_rec, "E_rec[NMuons_rec]/D");
-    fOutputTree->Branch("Px_rec", fPx_rec, "Px_rec[NMuons_rec]/D");
-    fOutputTree->Branch("Py_rec", fPy_rec, "Py_rec[NMuons_rec]/D");
-    fOutputTree->Branch("Pz_rec", fPz_rec, "Pz_rec[NMuons_rec]/D");
-    fOutputTree->Branch("Y_rec", fY_rec, "Y_rec[NMuons_rec]/D");
-    fOutputTree->Branch("Eta_rec", fEta_rec, "Eta_rec[NMuons_rec]/D");
-    fOutputTree->Branch("MatchTrig_rec", fMatchTrig_rec, "MatchTrig_rec[NMuons_rec]/I");
-    fOutputTree->Branch("TrackChi2_rec", fTrackChi2_rec, "TrackChi2_rec[NMuons_rec]/D");
-    fOutputTree->Branch("MatchTrigChi2_rec", fMatchTrigChi2_rec, "MatchTrigChi2_rec[NMuons_rec]/D");
-    fOutputTree->Branch("Charge_rec", fCharge_rec, "Charge_rec[NMuons_rec]/I");
-    fOutputTree->Branch("RAtAbsEnd_rec", fRAtAbsEnd_rec, "RAtAbsEnd_rec[NMuons_rec]/D");
-    fOutputTree->Branch("pDCA_rec", fpDCA_rec, "pDCA[NMuons_rec]/I");
-    fOutputTree->Branch("Phi_rec", fPhi_rec, "Phi_rec[NMuons_rec]/D");
-    fOutputTree->Branch("Theta_rec", fTheta_rec, "Theta_rec[NMuons_rec]/D");
-    fOutputTree->Branch("From_Powheg_rec", fFrom_Powheg_rec, "From_Powheg_rec[NMuons_rec]/I");
-    fOutputTree->Branch("Initial_Parton_rec", fInitial_Parton_rec, "Initial_Parton_rec[NMuons_rec]/I");
-    fOutputTree->Branch("From_Geant_rec", fFrom_Geant_rec, "From_Geant_rec[NMuons_rec]/I");
-    fOutputTree->Branch("Vzmother_rec", fVzmother_rec, "Vzmother_rec[NMuons_rec]/D");
+        fOutputTree->Branch("NMuons_gen", &fNMuons_gen, "NMuons_gen/I");
+        fOutputTree->Branch("PDGmum_gen", fPDGmum_gen, "PDGmum_gen[NMuons_gen]/I");
+        fOutputTree->Branch("Pt_gen", fPt_gen, "Pt_gen[NMuons_gen]/D");
+        fOutputTree->Branch("E_gen", fE_gen, "E_gen[NMuons_gen]/D");
+        fOutputTree->Branch("Px_gen", fPx_gen, "Px_gen[NMuons_gen]/D");
+        fOutputTree->Branch("Py_gen", fPy_gen, "Py_gen[NMuons_gen]/D");
+        fOutputTree->Branch("Pz_gen", fPz_gen, "Pz_gen[NMuons_gen]/D");
+        fOutputTree->Branch("Y_gen", fY_gen, "Y_gen[NMuons_gen]/D");
+        fOutputTree->Branch("Eta_gen", fEta_gen, "Eta_gen[NMuons_gen]/D");
+        fOutputTree->Branch("Phi_gen", fPhi_gen, "Phi_gen[NMuons_gen]/D");
+        fOutputTree->Branch("Theta_gen", fTheta_gen, "Theta_gen[NMuons_gen]/D");
+        fOutputTree->Branch("Charge_gen", fCharge_gen, "Charge_gen[NMuons_gen]/I");
+        fOutputTree->Branch("From_Powheg_gen", fFrom_Powheg_gen, "From_Powheg_gen[NMuons_gen]/I");
+        fOutputTree->Branch("Initial_Parton_gen", fInitial_Parton_gen, "Initial_Parton_gen[NMuons_gen]/I");
+        fOutputTree->Branch("Radius_gen", fRadius_gen, "Radius_gen[NMuons_gen]/D");
+        fOutputTree->Branch("Vz_gen", fVz_gen, "Vz_gen[NMuons_gen]/D");
+        fOutputTree->Branch("From_Geant_gen", fFrom_Geant_gen, "From_Geant_gen[NMuons_gen]/I");
+        fOutputTree->Branch("Vzmother_gen", fVzmother_gen, "Vzmother_gen[NMuons_gen]/D");
 
-    fOutputTree->Branch("NDimu_gen", &fNDimu_gen, "NDimu_gen/I");
-    fOutputTree->Branch("DimuMu_gen", fDimuMu_gen, "DimuMu_gen[NDimu_gen][2]/I");
-    fOutputTree->Branch("DimuPt_gen", fDimuPt_gen, "DimuPt_gen[NDimu_gen]/D");
-    fOutputTree->Branch("DimuPx_gen", fDimuPx_gen, "DimuPx_gen[NDimu_gen]/D");
-    fOutputTree->Branch("DimuPy_gen", fDimuPy_gen, "DimuPy_gen[NDimu_gen]/D");
-    fOutputTree->Branch("DimuPz_gen", fDimuPz_gen, "DimuPz_gen[NDimu_gen]/D");
-    fOutputTree->Branch("DimuY_gen", fDimuY_gen, "DimuY_gen[NDimu_gen]/D");
-    fOutputTree->Branch("DimuMass_gen", fDimuMass_gen, "DimuMass_gen[NDimu_gen]/D");
-    fOutputTree->Branch("DimuCharge_gen", fDimuCharge_gen, "DimuCharge_gen[NDimu_gen]/I");
+        fOutputTree->Branch("NMuons_rec", &fNMuons_rec, "NMuons_rec/I");
+        fOutputTree->Branch("PDGmum_rec", fPDGmum_rec, "PDGmum_rec[NMuons_rec]/I");
+        fOutputTree->Branch("Pt_rec", fPt_rec, "Pt_rec[NMuons_rec]/D");
+        fOutputTree->Branch("E_rec", fE_rec, "E_rec[NMuons_rec]/D");
+        fOutputTree->Branch("Px_rec", fPx_rec, "Px_rec[NMuons_rec]/D");
+        fOutputTree->Branch("Py_rec", fPy_rec, "Py_rec[NMuons_rec]/D");
+        fOutputTree->Branch("Pz_rec", fPz_rec, "Pz_rec[NMuons_rec]/D");
+        fOutputTree->Branch("Y_rec", fY_rec, "Y_rec[NMuons_rec]/D");
+        fOutputTree->Branch("Eta_rec", fEta_rec, "Eta_rec[NMuons_rec]/D");
+        fOutputTree->Branch("MatchTrig_rec", fMatchTrig_rec, "MatchTrig_rec[NMuons_rec]/I");
+        fOutputTree->Branch("TrackChi2_rec", fTrackChi2_rec, "TrackChi2_rec[NMuons_rec]/D");
+        fOutputTree->Branch("MatchTrigChi2_rec", fMatchTrigChi2_rec, "MatchTrigChi2_rec[NMuons_rec]/D");
+        fOutputTree->Branch("Charge_rec", fCharge_rec, "Charge_rec[NMuons_rec]/I");
+        fOutputTree->Branch("RAtAbsEnd_rec", fRAtAbsEnd_rec, "RAtAbsEnd_rec[NMuons_rec]/D");
+        fOutputTree->Branch("pDCA_rec", fpDCA_rec, "pDCA[NMuons_rec]/I");
+        fOutputTree->Branch("Phi_rec", fPhi_rec, "Phi_rec[NMuons_rec]/D");
+        fOutputTree->Branch("Theta_rec", fTheta_rec, "Theta_rec[NMuons_rec]/D");
+        fOutputTree->Branch("From_Powheg_rec", fFrom_Powheg_rec, "From_Powheg_rec[NMuons_rec]/I");
+        fOutputTree->Branch("Initial_Parton_rec", fInitial_Parton_rec, "Initial_Parton_rec[NMuons_rec]/I");
+        fOutputTree->Branch("From_Geant_rec", fFrom_Geant_rec, "From_Geant_rec[NMuons_rec]/I");
+        fOutputTree->Branch("Vzmother_rec", fVzmother_rec, "Vzmother_rec[NMuons_rec]/D");
 
-    fOutputTree->Branch("NDimu_rec", &fNDimu_rec, "NDimu_rec/I");
-    fOutputTree->Branch("DimuMu_rec", fDimuMu_rec, "DimuMu_rec[NDimu_rec][2]/I");
-    fOutputTree->Branch("DimuPt_rec", fDimuPt_rec, "DimuPt_rec[NDimu_rec]/D");
-    fOutputTree->Branch("DimuPx_rec", fDimuPx_rec, "DimuPx_rec[NDimu_rec]/D");
-    fOutputTree->Branch("DimuPy_rec", fDimuPy_rec, "DimuPy_rec[NDimu_rec]/D");
-    fOutputTree->Branch("DimuPz_rec", fDimuPz_rec, "DimuPz_rec[NDimu_rec]/D");
-    fOutputTree->Branch("DimuY_rec", fDimuY_rec, "DimuY_rec[NDimu_rec]/D");
-    fOutputTree->Branch("DimuMass_rec", fDimuMass_rec, "DimuMass_rec[NDimu_rec]/D");
-    fOutputTree->Branch("DimuCharge_rec", fDimuCharge_rec, "DimuCharge_rec[NDimu_rec]/I");
-    fOutputTree->Branch("DimuMatch_rec", fDimuMatch_rec, "DimuMatch_rec[NDimu_rec]/I");
-    fOutputTree->Branch("DimuPhi_rec", fDimuPhi_rec, "DimuPhi_rec[NDimu_rec]/D");
-    fOutputTree->Branch("DimuTheta_rec", fDimuTheta_rec, "DimuTheta_rec[NDimu_rec]/D");
+        fOutputTree->Branch("NDimu_gen", &fNDimu_gen, "NDimu_gen/I");
+        fOutputTree->Branch("DimuMu_gen", fDimuMu_gen, "DimuMu_gen[NDimu_gen][2]/I");
+        fOutputTree->Branch("DimuPt_gen", fDimuPt_gen, "DimuPt_gen[NDimu_gen]/D");
+        fOutputTree->Branch("DimuPx_gen", fDimuPx_gen, "DimuPx_gen[NDimu_gen]/D");
+        fOutputTree->Branch("DimuPy_gen", fDimuPy_gen, "DimuPy_gen[NDimu_gen]/D");
+        fOutputTree->Branch("DimuPz_gen", fDimuPz_gen, "DimuPz_gen[NDimu_gen]/D");
+        fOutputTree->Branch("DimuY_gen", fDimuY_gen, "DimuY_gen[NDimu_gen]/D");
+        fOutputTree->Branch("DimuMass_gen", fDimuMass_gen, "DimuMass_gen[NDimu_gen]/D");
+        fOutputTree->Branch("DimuCharge_gen", fDimuCharge_gen, "DimuCharge_gen[NDimu_gen]/I");
+
+        fOutputTree->Branch("NDimu_rec", &fNDimu_rec, "NDimu_rec/I");
+        fOutputTree->Branch("DimuMu_rec", fDimuMu_rec, "DimuMu_rec[NDimu_rec][2]/I");
+        fOutputTree->Branch("DimuPt_rec", fDimuPt_rec, "DimuPt_rec[NDimu_rec]/D");
+        fOutputTree->Branch("DimuPx_rec", fDimuPx_rec, "DimuPx_rec[NDimu_rec]/D");
+        fOutputTree->Branch("DimuPy_rec", fDimuPy_rec, "DimuPy_rec[NDimu_rec]/D");
+        fOutputTree->Branch("DimuPz_rec", fDimuPz_rec, "DimuPz_rec[NDimu_rec]/D");
+        fOutputTree->Branch("DimuY_rec", fDimuY_rec, "DimuY_rec[NDimu_rec]/D");
+        fOutputTree->Branch("DimuMass_rec", fDimuMass_rec, "DimuMass_rec[NDimu_rec]/D");
+        fOutputTree->Branch("DimuCharge_rec", fDimuCharge_rec, "DimuCharge_rec[NDimu_rec]/I");
+        fOutputTree->Branch("DimuMatch_rec", fDimuMatch_rec, "DimuMatch_rec[NDimu_rec]/I");
+        fOutputTree->Branch("DimuPhi_rec", fDimuPhi_rec, "DimuPhi_rec[NDimu_rec]/D");
+        fOutputTree->Branch("DimuTheta_rec", fDimuTheta_rec, "DimuTheta_rec[NDimu_rec]/D");
+    }
 
     fOutputTree->ls();
 
@@ -593,7 +622,6 @@ void AliAnalysisTaskDimuon_HighMass::UserExec(Option_t *)
     AliGenEventHeader *gh = (AliGenEventHeader *)MCHeader_list->At(0);
     Int_t Pythia_particles = gh->NProduced();
 
-
     // TString MCgen;
     // for (int igene = 0; igene < MCHeader_list->GetEntries(); igene++)
     // {
@@ -626,14 +654,14 @@ void AliAnalysisTaskDimuon_HighMass::UserExec(Option_t *)
     Int_t n_gamma = 0;
 
     Int_t n_MC_part = mcarray->GetEntries();
-    printf("n_MC_part total %d\n", n_MC_part);
-    printf("Pythia_particles %d\n", Pythia_particles);
+    // printf("n_MC_part total %d\n", n_MC_part);
+    // printf("Pythia_particles %d\n", Pythia_particles);
     // return;
-    Int_t *LabelOld1 = new Int_t[25000];
-    Int_t *LabelOld2 = new Int_t[25000];
-    Bool_t *GoodMuon = new Bool_t[25000];
+    Int_t *LabelOld1 = new Int_t[fDimu_dim];
+    Int_t *LabelOld2 = new Int_t[fDimu_dim];
+    Bool_t *GoodMuon = new Bool_t[fDimu_dim];
     for (Int_t i_nMCpart = 0; i_nMCpart < n_MC_part; i_nMCpart++)
-    {
+    {   
         LabelOld1[i_nMCpart] = 999;
         LabelOld2[i_nMCpart] = 999;
         GoodMuon[i_nMCpart] = kFALSE;
@@ -731,6 +759,9 @@ void AliAnalysisTaskDimuon_HighMass::UserExec(Option_t *)
 
         if (Muon)
         {
+            if (fSaving_opt.Contains("skimmed_fwd"))
+                if (MC_part0->Eta() < -4.2 || MC_part0->Eta() > -2.3)
+                    continue;
 
             // if (Mum_MC_part0->GetLabel() > Pythia_particles)
             //     continue;
@@ -813,7 +844,6 @@ void AliAnalysisTaskDimuon_HighMass::UserExec(Option_t *)
             fRadius_gen[nmu_gen] = (MC_part0->Xv() * MC_part0->Xv() + MC_part0->Yv() * MC_part0->Yv());
             fVz_gen[nmu_gen] = MC_part0->Zv();
 
-            
             if (Mum_MC_part0->GetLabel() > Pythia_particles)
                 fFrom_Geant_gen[nmu_gen] = -1;
             else
@@ -830,7 +860,6 @@ void AliAnalysisTaskDimuon_HighMass::UserExec(Option_t *)
             //     // printf("i_nMCpart %d) PDG: %d | MCParticle Pt %0.1f | Px %0.1f | Py %0.1f | Pz %0.1f | Y %0.1f || Mother %d , PDG Mother %d \n", i_nMCpart, PDG_MC_part0, MC_part0->Pt(), MC_part0->Px(), MC_part0->Py(), MC_part0->Pz(), MC_part0->Y(), index_Mum_MC_part0, PDG_Mum_MC_part0);
 
             //     AliAODMCParticle *LF_part = (AliAODMCParticle *)mcarray->At(index_Mum_MC_part0);
-
             //     // printf("LF mum index %d) PDG: %d | MCParticle Pt %0.1f | Px %0.1f | Py %0.1f | Pz %0.1f | Y %0.1f || Mother %d , PDG Mother %d \n", index_Mum_MC_part0, LF_part->GetPdgCode(), LF_part->Pt(), LF_part->Px(), LF_part->Py(), LF_part->Pz(), LF_part->Y(), LF_part->GetMother(), LF_part_mum->GetPdgCode());
 
             // }
@@ -854,7 +883,7 @@ void AliAnalysisTaskDimuon_HighMass::UserExec(Option_t *)
             }
             n_gamma++;
         }
-        else if (HF_quark)
+        else if (HF_quark && fSaving_opt.Contains("withHF_Q"))
         {
             if (kFALSE)
             {
@@ -870,11 +899,26 @@ void AliAnalysisTaskDimuon_HighMass::UserExec(Option_t *)
                 // printf("Daughter1 HF %d || Daughter2 HF %d\n", MC_part0->GetDaughterFirst(), MC_part0->GetDaughterLast());
                 // if (MC_part0->GetDaughterFirst() < 0 || MC_part0->GetDaughterLast() < 0)
                 //     continue;
-                // AliAODMCParticle *dauther1 = (AliAODMCParticle *)mcarray->At(MC_part0->GetDaughterFirst());
-                // AliAODMCParticle *dauther2 = (AliAODMCParticle *)mcarray->At(MC_part0->GetDaughterLast());
-
-                // printf("Daughter1 HF %d || Daughter2 HF %d\n", dauther1->GetPdgCode(), dauther2->GetPdgCode());
             }
+            // AliAODMCParticle *dauther1;
+            // Int_t PDG_daugther1 = 999;
+            // if (MC_part0->GetDaughterFirst() > -1)
+            // {
+            //     dauther1 = (AliAODMCParticle *)mcarray->At(MC_part0->GetDaughterFirst());
+            //     PDG_daugther1 = dauther1->GetPdgCode();
+            // }
+            // AliAODMCParticle *dauther2;
+            // Int_t PDG_daugther2 = 999;
+            // if (MC_part0->GetDaughterLast() > -1)
+            // {
+            //     dauther2 = (AliAODMCParticle *)mcarray->At(MC_part0->GetDaughterLast());
+            //     PDG_daugther2 = dauther2->GetPdgCode();
+            // }
+            // printf("FIND HF QUARK\n");
+            // printf("i_nMCpart %d) PDG: %d | MCParticle Pt %0.1f | Px %0.1f | Py %0.1f | Pz %0.1f | Y %0.1f || Mother %d , PDG Mother %d \n", i_nMCpart, PDG_MC_part0, MC_part0->Pt(), MC_part0->Px(), MC_part0->Py(), MC_part0->Pz(), MC_part0->Y(), index_Mum_MC_part0, PDG_Mum_MC_part0);
+            // printf("Daughter1 HF %d || Daughter2 HF %d\n", PDG_daugther1, PDG_daugther2);
+            // if (!(TMath::Abs(PDG_daugther1) > 100 && TMath::Abs(PDG_daugther2) > 100))
+            //     continue;
 
             fPDG_HFquark_gen[nHFquark_gen] = PDG_MC_part0;
             fPx_HFquark_gen[nHFquark_gen] = MC_part0->Px();
@@ -895,7 +939,7 @@ void AliAnalysisTaskDimuon_HighMass::UserExec(Option_t *)
             nHFquark_gen++;
         }
 
-        else if (Charm_Hadron || Beauty_Hadron)
+        else if ((Charm_Hadron || Beauty_Hadron) && fSaving_opt.Contains("withHF_hadr"))
         {
             // MC_part0->Print();
             // printf("i_nMCpart %d) PDG: %d | MCParticle Pt %0.1f | Px %0.1f | Py %0.1f | Pz %0.1f | Y %0.1f || Mother %d , PDG Mother %d \n", i_nMCpart, PDG_MC_part0, MC_part0->Pt(), MC_part0->Px(), MC_part0->Py(), MC_part0->Pz(), MC_part0->Y(), index_Mum_MC_part0, PDG_Mum_MC_part0);
@@ -933,6 +977,7 @@ void AliAnalysisTaskDimuon_HighMass::UserExec(Option_t *)
 
         if (TMath::Abs(PDG_MC_part0) != 13)
             continue;
+
         for (Int_t j_nMCpart1 = i_nMCpart + 1; j_nMCpart1 < n_MC_part; j_nMCpart1++)
         {
             AliAODMCParticle *MC_part1 = (AliAODMCParticle *)mcarray->At(j_nMCpart1);
@@ -941,6 +986,10 @@ void AliAnalysisTaskDimuon_HighMass::UserExec(Option_t *)
                 continue;
             if (MC_part1->Y() < -15.0 || MC_part1->Y() > 15.0)
                 continue;
+
+            if (fSaving_opt.Contains("skimmed_fwd"))
+                if (MC_part1->Eta() < -4.2 || MC_part1->Eta() > -2.3)
+                    continue;
             Int_t index_Mum_MC_part1 = MC_part1->GetMother();
             AliAODMCParticle *Mum_MC_part1 = (AliAODMCParticle *)mcarray->At(index_Mum_MC_part1);
             Int_t PDG_Mum_MC_part1 = Mum_MC_part1->GetPdgCode();
@@ -979,7 +1028,7 @@ void AliAnalysisTaskDimuon_HighMass::UserExec(Option_t *)
     fNMuons_gen = nmu_gen;
     fNHadrons_gen = nHadron_gen;
     fNDimu_gen = ndimu_gen;
-
+    printf("End gen muons part \n");
     // if (nHFquark_gen % 2 != 0)
     // {
     //     /* code */
@@ -1005,7 +1054,7 @@ void AliAnalysisTaskDimuon_HighMass::UserExec(Option_t *)
         fDimuMu_gen[i_nDimu_Gen][0] = LabelNew1;
         fDimuMu_gen[i_nDimu_Gen][1] = LabelNew2;
     }
-    printf("Labels organization \n");
+    // printf("Labels organization \n");
     Int_t numtracks = fAODEvent->GetNumberOfTracks();
     // printf("Number of tracks per event %i\n", numtracks);
     Int_t nHFquark_rec = 0;
@@ -1013,9 +1062,9 @@ void AliAnalysisTaskDimuon_HighMass::UserExec(Option_t *)
     Int_t nmu_rec = 0;
     Int_t ndimu_rec = 0;
 
-    Int_t *LabelOld1_rec = new Int_t[numtracks];
-    Int_t *LabelOld2_rec = new Int_t[numtracks];
-    Bool_t *GoodMuon_rec = new Bool_t[numtracks];
+    Int_t *LabelOld1_rec = new Int_t[fDimu_dim];
+    Int_t *LabelOld2_rec = new Int_t[fDimu_dim];
+    Bool_t *GoodMuon_rec = new Bool_t[fDimu_dim];
 
     for (Int_t i_Track0 = 0; i_Track0 < numtracks; i_Track0++)
     {
@@ -1113,7 +1162,7 @@ void AliAnalysisTaskDimuon_HighMass::UserExec(Option_t *)
         // }
         // else
         //     fPDGmum_rec[nmu_rec] = PDG_Mum_MCpart_Track0;
-        Int_t *muon_properties = Muon_ancestor_features(Mum_MCpart_Track0, mcarray, fAOD_origin, kTRUE, kFALSE);
+        Int_t *muon_properties = Muon_ancestor_features(Mum_MCpart_Track0, mcarray, fAOD_origin, kFALSE, kFALSE);
         if (fVerbose)
             printf("Rec Muon properties: PDG mum %d , is from powheg? %d\n", muon_properties[0], muon_properties[1]);
         fPDGmum_rec[nmu_rec] = muon_properties[0];
@@ -1198,6 +1247,7 @@ void AliAnalysisTaskDimuon_HighMass::UserExec(Option_t *)
             ndimu_rec++;
         }
     }
+    printf("End rec muons part \n");
     fN_HFquarks_rec = nHFquark_rec;
     fNMuons_rec = nmu_rec;
     fNDimu_rec = ndimu_rec;
@@ -1219,7 +1269,6 @@ void AliAnalysisTaskDimuon_HighMass::UserExec(Option_t *)
         fDimuMu_rec[i][0] = LabelNew1;
         fDimuMu_rec[i][1] = LabelNew2;
     }
-    printf("Stop Rec particles analysis\n");
     fOutputTree->Fill();
     PostData(1, fOutputTree);
 }
