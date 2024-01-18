@@ -1,26 +1,52 @@
 #include "/home/michele_pennisi/cernbox/common_include.h"
 
+TString Generator = "Powheg+PYTHIA6";
+Bool_t With_DY = kFALSE;
+Double_t Low_Mass = 4, High_Mass = 30;
+
 void cs_POWHEG()
 {
     const Int_t n_DiMuSelection = 2;
     gROOT->ProcessLineSync(".x /home/michele_pennisi/high_mass_dimuons/fit_library/PtMassExpPdf.cxx+");
     gROOT->ProcessLineSync(".x /home/michele_pennisi/high_mass_dimuons/fit_library/PtMassPol1ExpPdf.cxx+");
     TString mass_range;
-    mass_range.Form("_LowMass_LowPt");
+    if (Low_Mass == 4 && High_Mass == 9)
+        mass_range.Form("_LowMass_LowPt_PowhegOnly");
+    else
+        mass_range.Form("_PowhegOnly_");
     // TFile *fIn = new TFile(Form("/home/michele_pennisi/cernbox/HF_dimuons/fit_data/results/Powheg_pdfMC_unbinned%s.root", mass_range.Data()), "READ");
-    TFile *fIn = new TFile("rf607_fitresult.root", "READ");
+    TString fOut;
+    if (With_DY)
+        fOut = Form("Fitresult_%s_M_%0.0f_%0.0f_withDY.root", Generator.Data(), Low_Mass, High_Mass);
+    else
+        fOut = Form("Fitresult_%s_M_%0.0f_%0.0f_noDY.root", Generator.Data(), Low_Mass, High_Mass);
+
+    TFile *fIn = new TFile(fOut.Data(), "READ");
 
     RooFitResult *r = (RooFitResult *)fIn->Get("rf607");
     const RooArgList &fitParams = r->floatParsFinal();
-    Double_t fit_result[n_DiMuSelection];
+    Double_t fit_result[n_DiMuSelection + 1];
     for (int i = 0; i < fitParams.getSize(); ++i)
     {
-        auto &fitPar = (RooRealVar &)fitParams[i];
-        std::cout << fitPar.GetName() << " " << fitPar.getVal() << std::endl;
-        fit_result[i] = (Double_t)fitPar.getVal();
+        if (With_DY)
+        {
+            if (i > 0)
+            {
+                auto &fitPar = (RooRealVar &)fitParams[i];
+                std::cout << fitPar.GetName() << " " << fitPar.getVal() << std::endl;
+                fit_result[i - 1] = (Double_t)fitPar.getVal();
+            }
+        }
+        else
+        {
+            auto &fitPar = (RooRealVar &)fitParams[i];
+            std::cout << fitPar.GetName() << " " << fitPar.getVal() << std::endl;
+            fit_result[i] = (Double_t)fitPar.getVal();
+        }
     }
     TFile *fIn_MC[2];
     fIn_MC[0] = new TFile("/home/michele_pennisi/cernbox/output_HF_dimuons/mc_analysis_output/LHC23i2/Version3_AliAOD/save_output/LHC23i2_MC_output_Tree_merged.root", "READ");
+    fIn_MC[0]->ls();
     fIn_MC[1] = new TFile("/home/michele_pennisi/cernbox/output_HF_dimuons/mc_analysis_output/LHC23i1/Version3_AliAOD/save_output/LHC23i1_MC_output_Tree_merged.root", "READ");
 
     TString name_2DiMuSelection[n_DiMuSelection];
@@ -87,11 +113,12 @@ void cs_POWHEG()
         NEv_MC[i] = (TH1F *)fIn_MC[i]->Get("h_Nevents");
         n_ev_MC[i] = feq_MC[i] * NEv_MC[i]->GetBinContent(2);
         printf("MC: Nev %0.3e || f norm powheg %0.3e || Nev MB %0.3e\n", NEv_MC[i]->GetBinContent(2), feq_MC[i], n_ev_MC[i]);
-        m_tree_MC[i] = (TTree *)fIn_MC[i]->Get(Form("DiMuon_Rec%s_PowhegOnly%s", mass_range.Data(), name_2DiMuSelection[i].Data()));
+        printf("DiMuon_Rec%s_PowhegOnly%s\n", mass_range.Data(), name_2DiMuSelection[i].Data());
+        m_tree_MC[i] = (TTree *)fIn_MC[i]->Get(Form("DiMuon_Rec%s%s", mass_range.Data(), name_2DiMuSelection[i].Data()));
         printf("Data: Nev = %0.3e || Nev MB (2384.73 * fhNEv->GetBinContent(3)) %0.3e\n", fhNEv->GetBinContent(3), 2384.73 * fhNEv->GetBinContent(3));
         c_frac_fit_MB[i] = (Double_t)fit_result[i] / (2384.73 * fhNEv->GetBinContent(3));
         c_frac_MC_MB[i] = (Double_t)m_tree_MC[i]->GetEntries() / n_ev_MC[i];
-        printf("Result\n From fit %0.5f\n norm MB event %0.5e\n",   fit_result[i], c_frac_fit_MB[i]);
+        printf("Result\n From fit %0.5f\n norm MB event %0.5e\n", fit_result[i], c_frac_fit_MB[i]);
         printf("from MC %0.0lld\n norm MB event %0.5e\n", m_tree_MC[i]->GetEntries(), c_frac_MC_MB[i]);
         Double_t Ratio = c_frac_fit_MB[i] / c_frac_MC_MB[i];
         printf("Ratio %0.3e\n", Ratio);
