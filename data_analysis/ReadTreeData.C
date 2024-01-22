@@ -7,42 +7,48 @@ void ReadTreeData(TString Run_Period = "LHC18p")
     TFile *fIn = new TFile(Form("/home/michele_pennisi/Remote_FarmData/Run2_Data/%s/Tree_MassCut4_%s.root", Run_Period.Data(), Run_Period.Data()), "READ");
     TIter next(fIn->GetListOfKeys());
     TKey *key = new TKey();
-    TObject *iobj = nullptr;
+    TObject *Obj_Tree = nullptr;
+    TObject *Obj_Hist = nullptr;
     while ((key = (TKey *)next()))
     {
 
         if (TString::Format("%s", key->GetClassName()).Contains("TTree"))
         {
-            iobj = (TObject *)key->ReadObj();
-            iobj->InheritsFrom(TString::Format("TTree::Class()"));
-            ((TTree *)iobj)->SetDirectory(gROOT);
+            Obj_Tree = (TObject *)key->ReadObj();
+            Obj_Tree->InheritsFrom(TString::Format("TTree::Class()"));
+            ((TTree *)Obj_Tree)->SetDirectory(gROOT);
+        }
+        if (TString::Format("%s", key->GetClassName()).Contains("TH1"))
+        {
+            Obj_Hist = (TObject *)key->ReadObj();
+            Obj_Hist->InheritsFrom(TString::Format("TH1::Class()"));
+            ((TH1 *)Obj_Hist)->SetDirectory(gROOT);
         }
     }
-
     bool IsPhysSelected;
     char Trigger[500];
     Int_t NDimu, NMuons;
     Int_t pDCA[20], DimuCharge[20], DimuMatch[20];
     Double_t DimuPt[20], DimuMass[20], DimuY[20], RAtAbsEnd[20], Eta[20];
     Int_t DimuMu[20][2];
-    ((TTree *)iobj)->SetBranchAddress("FiredTriggerClasses", Trigger);
-    ((TTree *)iobj)->SetBranchAddress("NDimu", &NDimu);
-    ((TTree *)iobj)->SetBranchAddress("Eta", Eta);
-    ((TTree *)iobj)->SetBranchAddress("RAtAbsEnd", RAtAbsEnd);
-    ((TTree *)iobj)->SetBranchAddress("pDCA", pDCA);
-    ((TTree *)iobj)->SetBranchAddress("DimuY", DimuY);
-    ((TTree *)iobj)->SetBranchAddress("DimuMass", DimuMass);
-    ((TTree *)iobj)->SetBranchAddress("DimuPt", DimuPt);
-    ((TTree *)iobj)->SetBranchAddress("DimuCharge", DimuCharge);
-    ((TTree *)iobj)->SetBranchAddress("DimuMatch", DimuMatch);
-    ((TTree *)iobj)->SetBranchAddress("DimuMu", DimuMu);
-    ((TTree *)iobj)->SetBranchAddress("IsPhysSelected", &IsPhysSelected);
+    ((TTree *)Obj_Tree)->SetBranchAddress("FiredTriggerClasses", Trigger);
+    ((TTree *)Obj_Tree)->SetBranchAddress("NDimu", &NDimu);
+    ((TTree *)Obj_Tree)->SetBranchAddress("Eta", Eta);
+    ((TTree *)Obj_Tree)->SetBranchAddress("RAtAbsEnd", RAtAbsEnd);
+    ((TTree *)Obj_Tree)->SetBranchAddress("pDCA", pDCA);
+    ((TTree *)Obj_Tree)->SetBranchAddress("DimuY", DimuY);
+    ((TTree *)Obj_Tree)->SetBranchAddress("DimuMass", DimuMass);
+    ((TTree *)Obj_Tree)->SetBranchAddress("DimuPt", DimuPt);
+    ((TTree *)Obj_Tree)->SetBranchAddress("DimuCharge", DimuCharge);
+    ((TTree *)Obj_Tree)->SetBranchAddress("DimuMatch", DimuMatch);
+    ((TTree *)Obj_Tree)->SetBranchAddress("DimuMu", DimuMu);
+    ((TTree *)Obj_Tree)->SetBranchAddress("IsPhysSelected", &IsPhysSelected);
 
-    Int_t Nentries = ((TTree *)iobj)->GetEntries();
+    Int_t Nentries = ((TTree *)Obj_Tree)->GetEntries();
     Int_t DimuGood = 0;
     Double_t *Pt_Dimu_Rec = new Double_t;
     Double_t *M_Dimu_Rec = new Double_t;
-    TFile *fout = new TFile(Form("/home/michele_pennisi/Remote_FarmData/Run2_Data/%s/Tree_MassPtCut4_%s.root", Run_Period.Data(), Run_Period.Data()), "RECREATE");
+    TFile *fout = new TFile(Form("/home/michele_pennisi/Remote_FarmData/Run2_Data/%s/Tree_MassPt_MassCut4_%s.root", Run_Period.Data(), Run_Period.Data()), "RECREATE");
 
     TH1D *h_Nev = new TH1D("h_Nev", ";ev", 1, 0, 1);
     h_Nev->SetBinContent(1, Nentries);
@@ -54,7 +60,7 @@ void ReadTreeData(TString Run_Period = "LHC18p")
         if (entry % (Int_t)(Nentries * 0.1) == 0)
             progress_status(entry, Nentries);
 
-        ((TTree *)iobj)->GetEntry(entry);
+        ((TTree *)Obj_Tree)->GetEntry(entry);
         TString Ev_Trigger = Trigger;
         if (!(Ev_Trigger.Contains("CMUL7-B-NOPF-MUFAST") && IsPhysSelected))
             continue;
@@ -96,9 +102,11 @@ void ReadTreeData(TString Run_Period = "LHC18p")
     }
 
     h_Nev->Write();
+    Obj_Hist->Write();
     Tree_DiMuon_Rec->Write();
 
-    delete iobj;
+    delete Obj_Tree;
+    delete Obj_Hist;
     delete Tree_DiMuon_Rec;
     delete h_Nev;
 }
