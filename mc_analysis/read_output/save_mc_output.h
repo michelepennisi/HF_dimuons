@@ -936,25 +936,3 @@ TChain *Importing_Tree(TString dir_filename, TString filename, TString Generator
 
     return tree;
 }
-
-void progress_status(Int_t i_Event, Int_t total_entries)
-{
-    Double_t progress = (Double_t)i_Event / total_entries;
-    int barWidth = 70;
-
-    std::cout << "[";
-    int pos = barWidth * progress;
-    for (int i = 0; i < barWidth; ++i)
-    {
-        if (i < pos)
-            std::cout << "=";
-        else if (i == pos)
-            std::cout << ">";
-        else
-            std::cout << " ";
-    }
-    std::cout << "] " << int(progress * 100.0) << " % (" << i_Event << "/ " << total_entries << ")\r" << std::scientific;
-    std::cout.flush();
-
-    std::cout << std::endl;
-}
