@@ -10,7 +10,7 @@ AliAnalysisGrid *CreateAlienHandler_HighMass(const char *runMode, TString Versio
   // Set the run mode (can be "full", "test", "offline", "submit" or "terminate")
   plugin->SetRunMode(runMode);
 
-  plugin->SetNtestFiles(5); // num of test files in "test" mode
+  plugin->SetNtestFiles(2); // num of test files in "test" mode
 
   // Set versions of used packages
   plugin->SetAliPhysicsVersion(AliPhysicsVersion.Data());
@@ -54,7 +54,7 @@ AliAnalysisGrid *CreateAlienHandler_HighMass(const char *runMode, TString Versio
   // Optionally set maximum number of input files/subjob (default 100, put 0 to ignore)
   Int_t nNoOfInputFiles = 30; // default is usually 0
   if (MC_type.Contains("LHC23i1") || MC_type.Contains("LHC23i2"))
-    nNoOfInputFiles = 1; // default is usually 0
+    nNoOfInputFiles = 5; // default is usually 0
 
   if (nNoOfInputFiles != 0)
     plugin->SetSplitMaxInputFileNumber(nNoOfInputFiles);

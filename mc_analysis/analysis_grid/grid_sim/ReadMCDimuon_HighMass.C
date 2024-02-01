@@ -14,9 +14,10 @@
 /// alice/sim/2022/LHC22b3/294925/AOD/
 /// alice/cern.ch/user/m/mpennisi/powheg_jdl_sub_test/LHC18p
 void ReadMCDimuon_HighMass(
-    const char *RunMode = "terminate",
-    Int_t RunNumber = 294154,
-    TString Version = "Version_5_AliAOD_skimmed_fwd",
+    const char *RunMode = "full",
+    Int_t RunNumber = 294925,
+    TString Version = "Version_5_AliAOD_skimmed_fwd_fullstat",
+    // TString Version = "Version_5_AliAOD_withDY",
     TString MC_type = "LHC23i1",
     // TString MC_type = "powheg_beauty_nocut_test",
     TString GridDir = "/alice/sim/2023",
