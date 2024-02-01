@@ -62,6 +62,7 @@ ClassImp(AliAnalysisTaskDimuon_HighMass)
 {
     /// Default ctor.
     printf("fMuons_dim %d\n", fMuons_dim);
+
     for (Int_t i = 0; i < fMuons_dim; i++)
     {
 
@@ -345,7 +346,7 @@ void AliAnalysisTaskDimuon_HighMass::UserCreateOutputObjects()
         fOutputTree->Branch("Pz_HFquark_gen", fPz_HFquark_gen, "Pz_HFquark_gen[N_HFquarks_gen]/D");
         fOutputTree->Branch("Pt_HFquark_gen", fPt_HFquark_gen, "Pt_HFquark_gen[N_HFquarks_gen]/D");
         fOutputTree->Branch("Y_HFquark_gen", fY_HFquark_gen, "Y_HFquark_gen[N_HFquarks_gen]/D");
-        fOutputTree->Branch("Mother_index", fMother_index, "Mother_index[N_HFquarks_gen]/I");
+        fOutputTree->Branch("Mother_index", fMother_index, "    [N_HFquarks_gen]/I");
     }
     if (fSaving_opt.Contains("withHF_hadr"))
     {
@@ -654,21 +655,18 @@ void AliAnalysisTaskDimuon_HighMass::UserExec(Option_t *)
     Int_t n_gamma = 0;
 
     Int_t n_MC_part = mcarray->GetEntries();
-    // printf("n_MC_part total %d\n", n_MC_part);
+    printf("n_MC_part total %d\n", n_MC_part);
     // printf("Pythia_particles %d\n", Pythia_particles);
     // return;
-    Int_t *LabelOld1 = new Int_t[fDimu_dim];
-    Int_t *LabelOld2 = new Int_t[fDimu_dim];
-    Bool_t *GoodMuon = new Bool_t[fDimu_dim];
-    for (Int_t i_nMCpart = 0; i_nMCpart < n_MC_part; i_nMCpart++)
-    {   
-        LabelOld1[i_nMCpart] = 999;
-        LabelOld2[i_nMCpart] = 999;
-        GoodMuon[i_nMCpart] = kFALSE;
-    }
+    Int_t LabelOld1[fDimu_dim] = {999};
+    Int_t LabelOld2[fDimu_dim] = {999};
+    Bool_t GoodMuon[20000] = {kFALSE};
+
     Int_t total_LF = 0;
     Int_t LF_from_charm_dir = 0;
     Int_t LF_not_from_powheg = 0;
+    Int_t HF_from_powheg_event = 0;
+
     for (Int_t i_nMCpart = 0; i_nMCpart < n_MC_part; i_nMCpart++)
     {
 
@@ -885,21 +883,43 @@ void AliAnalysisTaskDimuon_HighMass::UserExec(Option_t *)
         }
         else if (HF_quark && fSaving_opt.Contains("withHF_Q"))
         {
-            if (kFALSE)
+            // if (kFALSE)
+            // {
+            //     if (index_Mum_MC_part0 > 0)
+            //     {
+            //         quark_ancestor = Muon_ancestor_features(Mum_MC_part0, mcarray, fAOD_origin, kFALSE, kTRUE);
+            //         if (quark_ancestor[1] == -1)
+            //             printf("Gen Quark properties: PDG mum %d , is from powheg? %d, initial quark %d\n", quark_ancestor[0], quark_ancestor[1], quark_ancestor[2]);
+            //     }
+            //     else if (quark_ancestor[1] == -1)
+            //         printf("i_nMCpart %d) PDG: %d | MCParticle Pt %0.1f | Px %0.1f | Py %0.1f | Pz %0.1f | Y %0.1f || Mother %d , PDG Mother %d \n", i_nMCpart, PDG_MC_part0, MC_part0->Pt(), MC_part0->Px(), MC_part0->Py(), MC_part0->Pz(), MC_part0->Y(), index_Mum_MC_part0, PDG_Mum_MC_part0);
+            //     // printf("Daughter1 HF %d || Daughter2 HF %d\n", MC_part0->GetDaughterFirst(), MC_part0->GetDaughterLast());
+            //     // if (MC_part0->GetDaughterFirst() < 0 || MC_part0->GetDaughterLast() < 0)
+            //     //     continue;
+            // }
+            Int_t *quark_ancestor;
+            if (index_Mum_MC_part0 == -1)
+                printf("i_nMCpart %d) PDG: %d | MCParticle Pt %0.1f | Px %0.1f | Py %0.1f | Pz %0.1f | Y %0.1f || Mother %d , PDG Mother %d \n", i_nMCpart, PDG_MC_part0, MC_part0->Pt(), MC_part0->Px(), MC_part0->Py(), MC_part0->Pz(), MC_part0->Y(), index_Mum_MC_part0, PDG_Mum_MC_part0);
+            if (index_Mum_MC_part0 == -1)
             {
-                Int_t *quark_ancestor;
-                if (index_Mum_MC_part0 > 0)
-                {
-                    quark_ancestor = Muon_ancestor_features(Mum_MC_part0, mcarray, fAOD_origin, kTRUE, kTRUE);
-                    if (kTRUE)
-                        printf("Gen Quark properties: PDG mum %d , is from powheg? %d, initial quark %d\n", quark_ancestor[0], quark_ancestor[1], quark_ancestor[2]);
-                }
-                else
-                    printf("i_nMCpart %d) PDG: %d | MCParticle Pt %0.1f | Px %0.1f | Py %0.1f | Pz %0.1f | Y %0.1f || Mother %d , PDG Mother %d \n", i_nMCpart, PDG_MC_part0, MC_part0->Pt(), MC_part0->Px(), MC_part0->Py(), MC_part0->Pz(), MC_part0->Y(), index_Mum_MC_part0, PDG_Mum_MC_part0);
-                // printf("Daughter1 HF %d || Daughter2 HF %d\n", MC_part0->GetDaughterFirst(), MC_part0->GetDaughterLast());
-                // if (MC_part0->GetDaughterFirst() < 0 || MC_part0->GetDaughterLast() < 0)
-                //     continue;
+                HF_from_powheg_event++;
             }
+
+            // if (index_Mum_MC_part0 > 0)
+            // {
+            //     if (TMath::Abs(PDG_MC_part0) == 4)
+            //         printf("Found C quark\n");
+            //     else if (TMath::Abs(PDG_MC_part0) == 5)
+            //         printf("Found B quark\n");
+            //     quark_ancestor = Muon_ancestor_features(Mum_MC_part0, mcarray, fAOD_origin, kFALSE, kTRUE);
+            //     printf("Gen Quark properties: PDG mum %d , is from powheg? %d, initial quark %d\n", quark_ancestor[0], quark_ancestor[1], quark_ancestor[2]);
+            //     fMother_index[nHFquark_gen] = quark_ancestor[1];
+            // }
+            // else
+            // {
+
+            // }
+
             // AliAODMCParticle *dauther1;
             // Int_t PDG_daugther1 = 999;
             // if (MC_part0->GetDaughterFirst() > -1)
@@ -1022,20 +1042,24 @@ void AliAnalysisTaskDimuon_HighMass::UserExec(Option_t *)
             GoodMuon[j_nMCpart1] = kTRUE;
             ndimu_gen++;
         }
+        printf("Gen mu x event %d\n", nmu_gen);
+        printf("Gen dimu x event %d\n", ndimu_gen);
     }
+
     fN_gamma = n_gamma;
     fN_HFquarks_gen = nHFquark_gen;
     fNMuons_gen = nmu_gen;
     fNHadrons_gen = nHadron_gen;
     fNDimu_gen = ndimu_gen;
-    printf("End gen muons part \n");
+
+    // cout<<"HF quark with mother index x event "<<HF_from_powheg_event<<endl;
+    // printf("End gen muons part \n");
     // if (nHFquark_gen % 2 != 0)
     // {
     //     /* code */
     // }
 
     // printf("total_LF %d || LF_from_charm_dir %d ||LF_not_from_powheg %d\n", total_LF, LF_from_charm_dir, LF_not_from_powheg);
-    // printf("Stop MC particles analysis\n");
 
     for (Int_t i_nDimu_Gen = 0; i_nDimu_Gen < ndimu_gen; i_nDimu_Gen++)
     {
@@ -1054,7 +1078,7 @@ void AliAnalysisTaskDimuon_HighMass::UserExec(Option_t *)
         fDimuMu_gen[i_nDimu_Gen][0] = LabelNew1;
         fDimuMu_gen[i_nDimu_Gen][1] = LabelNew2;
     }
-    // printf("Labels organization \n");
+
     Int_t numtracks = fAODEvent->GetNumberOfTracks();
     // printf("Number of tracks per event %i\n", numtracks);
     Int_t nHFquark_rec = 0;
@@ -1062,16 +1086,9 @@ void AliAnalysisTaskDimuon_HighMass::UserExec(Option_t *)
     Int_t nmu_rec = 0;
     Int_t ndimu_rec = 0;
 
-    Int_t *LabelOld1_rec = new Int_t[fDimu_dim];
-    Int_t *LabelOld2_rec = new Int_t[fDimu_dim];
-    Bool_t *GoodMuon_rec = new Bool_t[fDimu_dim];
-
-    for (Int_t i_Track0 = 0; i_Track0 < numtracks; i_Track0++)
-    {
-        LabelOld1_rec[i_Track0] = 999;
-        LabelOld2_rec[i_Track0] = 999;
-        GoodMuon_rec[i_Track0] = kFALSE;
-    }
+    Int_t LabelOld1_rec[fDimu_dim] = {999};
+    Int_t LabelOld2_rec[fDimu_dim] = {999};
+    Bool_t GoodMuon_rec[20000] = {kFALSE};
 
     for (Int_t i_Track0 = 0; i_Track0 < numtracks; i_Track0++)
     {
@@ -1093,8 +1110,6 @@ void AliAnalysisTaskDimuon_HighMass::UserExec(Option_t *)
         Int_t index_Mum_MCpart_Track0 = MCpart_Track0->GetMother();
         AliAODMCParticle *Mum_MCpart_Track0 = (AliAODMCParticle *)mcarray->At(index_Mum_MCpart_Track0);
         Int_t PDG_Mum_MCpart_Track0 = Mum_MCpart_Track0->GetPdgCode();
-
-        // MCpart_Track0->Print();
 
         Int_t round = 0;
         TString str = Form("pos %d) PDG particle rec %d [Pt %0.03f,Y %0.03f]==>> (round %d)PDG MUM particle rec %d [pos %d, Pt %0.3f, Y %0.03f]", i_Track0, PDG_MCpart_Track0, MCpart_Track0->Pt(), MCpart_Track0->Y(), round, PDG_Mum_MCpart_Track0, index_Mum_MCpart_Track0, Mum_MCpart_Track0->Pt(), Mum_MCpart_Track0->Y());
@@ -1173,6 +1188,7 @@ void AliAnalysisTaskDimuon_HighMass::UserExec(Option_t *)
             fpDCA_rec[nmu_rec] = 1;
 
         nmu_rec++;
+
         for (Int_t j_Track1 = i_Track0 + 1; j_Track1 < numtracks; j_Track1++)
         {
             AliAODTrack *Track1 = (AliAODTrack *)fAODEvent->GetTrack(j_Track1);
@@ -1243,11 +1259,12 @@ void AliAnalysisTaskDimuon_HighMass::UserExec(Option_t *)
 
             LabelOld1_rec[ndimu_rec] = i_Track0;
             LabelOld2_rec[ndimu_rec] = j_Track1;
+
             delete dimu;
             ndimu_rec++;
         }
     }
-    printf("End rec muons part \n");
+    // printf("End rec muons part \n");
     fN_HFquarks_rec = nHFquark_rec;
     fNMuons_rec = nmu_rec;
     fNDimu_rec = ndimu_rec;
@@ -1269,6 +1286,7 @@ void AliAnalysisTaskDimuon_HighMass::UserExec(Option_t *)
         fDimuMu_rec[i][0] = LabelNew1;
         fDimuMu_rec[i][1] = LabelNew2;
     }
+
     fOutputTree->Fill();
     PostData(1, fOutputTree);
 }
@@ -1385,7 +1403,7 @@ Int_t *Muon_ancestor_features(AliAODMCParticle *mcp_mumum, TClonesArray *mcarray
     if (AOD_origin != "Powheg")
         return Muon_properties;
 
-    if (Muon_Verbosity)
+    if (Hadron_Verbosity)
         printf("Looking for powheg HF quark\n");
 
     if (Muon_Verbosity)
@@ -1393,6 +1411,7 @@ Int_t *Muon_ancestor_features(AliAODMCParticle *mcp_mumum, TClonesArray *mcarray
 
     if (Hadron_Verbosity)
         printf("Starting: Index Hadron Ancestor %d | PDG Hadron Ancestor %d | \n", index_ancestor_mum, PDG_muon_mum);
+
     Bool_t testing = kTRUE;
     Int_t round = 0;
 
