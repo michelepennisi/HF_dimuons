@@ -8,9 +8,13 @@ void save_mc_output(
     // TString RunMode = "pythia8_purifykineoff_test",
     // TString RunMode = "SoftQCD_inel_LFoff_Def",
     // TString RunMode = "Merged_LHC22c1",
+    // TString RunMode = "powheg_beauty_nocut_test",
     TString RunMode = "LHC23i1",
     // TString RunMode = "SoftQCD_inel_Def",
-    TString dir_fileIn = "/home/michele_pennisi/cernbox/HF_dimuons/mc_analysis/analysis_grid/grid_sim/LHC23i1_Version_5_AliAOD",
+    // TString dir_fileIn = "/home/michele_pennisi/cernbox/HF_dimuons/mc_analysis/analysis_grid/grid_sim/powheg_beauty_nocut_Version_5_AliAOD_withHF_Q",
+    TString dir_fileIn = "/home/michele_pennisi/cernbox/HF_dimuons/mc_analysis/analysis_grid/grid_sim/LHC23i1_Version_5_AliAOD_skimmed_fwd_fullstat",
+    // TString dir_fileIn = "/home/michele_pennisi/cernbox/HF_dimuons/mc_analysis/analysis_grid/grid_sim/LHC18p_DY_Version_5",
+    // TString dir_fileIn = "/home/michele_pennisi/cernbox/HF_dimuons/mc_analysis/analysis_grid/grid_sim/powheg_beauty_nocut_Version_5_AliAOD",
     // TString dir_fileIn = "/home/michele_pennisi/cernbox/HF_dimuons/mc_analysis/analysis_grid/grid_sim/LHC22c1/294009/output",
     // TString dir_fileIn = "/home/michele_pennisi/cernbox/HF_dimuons/mc_analysis/analysis_grid/grid_sim/pythia8_purifykineoff_test",
     // TString dir_fileIn = "/home/michele_pennisi/cernbox/HF_dimuons/pythia_stand/new_pythia_sim",
@@ -18,14 +22,18 @@ void save_mc_output(
     // TString dir_fileIn = "/home/michele_pennisi/cernbox/HF_dimuons/mc_analysis/analysis_grid/grid_sim/test_beauty_sim_2",
     // TString dir_fileIn = "/home/michele_pennisi/cernbox/HF_dimuons/mc_analysis/analysis_grid/grid_sim/test_charm_sim",
     // TString dir_fileIn = "/home/michele_pennisi/cernbox/HF_dimuons/mc_analysis/analysis_grid/grid_sim/LHC18p_DY_100k_Version2_AOD",
-    TString dir_fileOut = "/home/michele_pennisi/cernbox/HF_dimuons/mc_analysis/analysis_grid/grid_sim/LHC23i1_Version_5_AliAOD",
+    // TString dir_fileOut = "/home/michele_pennisi/cernbox/HF_dimuons/mc_analysis/analysis_grid/grid_sim/LHC18p_DY_Version_5",
+    // TString dir_fileOut = "/home/michele_pennisi/cernbox/HF_dimuons/mc_analysis/analysis_grid/grid_sim/powheg_beauty_nocut_Version_5_AliAOD_withHF_Q",
+    TString dir_fileOut = "/home/michele_pennisi/cernbox/HF_dimuons/mc_analysis/analysis_grid/grid_sim/LHC23i1_Version_5_AliAOD_skimmed_fwd_fullstat",
     // TString dir_fileOut = "/home/michele_pennisi/cernbox/HF_dimuons/mc_analysis/analysis_grid/grid_sim/LHC22c1/294009/output",
+    // TString dir_fileOut = "/home/michele_pennisi/cernbox/HF_dimuons/mc_analysis/analysis_grid/grid_sim/powheg_beauty_nocut_Version_5_AliAOD",
     // TString dir_fileOut = "/home/michele_pennisi/cernbox/HF_dimuons/mc_analysis/analysis_grid/grid_sim/pythia8_purifykineoff_test",
     // TString dir_fileOut = "/home/michele_pennisi/cernbox/HF_dimuons/pythia_stand/new_pythia_sim",
     // TString dir_fileOut = "/home/michele_pennisi/cernbox/HF_dimuons/pythia_stand/sim",
     // Int_t RunNumber = 100000,
     Int_t RunNumber = 294009,
     TString Generator = "Powheg_Geant",
+    // TString Generator = "Powheg",
     TString prefix_filename = "MCDimuHFTree"
     // TString prefix_filename = "pythia_sim_74_DefaultBR"
 )
@@ -49,87 +57,33 @@ void save_mc_output(
     printf("%s/%s\n", dir_fileOut.Data(), file_out_tree.Data());
 
     Double_t *Pt_Dimu_Rec = new Double_t;
-    Double_t *Pt_Dimu_Rec_FullMass = new Double_t;
-    Double_t *Pt_Dimu_Rec_LowMass = new Double_t;
-    Double_t *Pt_Dimu_Rec_LowMass_LowPt = new Double_t;
-    Double_t *Pt_Dimu_Rec_HighMass = new Double_t;
-
     Double_t *M_Dimu_Rec = new Double_t;
-    Double_t *M_Dimu_Rec_FullMass = new Double_t;
-    Double_t *M_Dimu_Rec_LowMass = new Double_t;
-    Double_t *M_Dimu_Rec_LowMass_LowPt = new Double_t;
-    Double_t *M_Dimu_Rec_HighMass = new Double_t;
 
     Double_t *Pt_Dimu_Rec_PowhegOnly = new Double_t;
-    Double_t *Pt_Dimu_Rec_FullMass_PowhegOnly = new Double_t;
-    Double_t *Pt_Dimu_Rec_LowMass_PowhegOnly = new Double_t;
-    Double_t *Pt_Dimu_Rec_LowMass_LowPt_PowhegOnly = new Double_t;
-    Double_t *Pt_Dimu_Rec_HighMass_PowhegOnly = new Double_t;
-
     Double_t *M_Dimu_Rec_PowhegOnly = new Double_t;
-    Double_t *M_Dimu_Rec_FullMass_PowhegOnly = new Double_t;
-    Double_t *M_Dimu_Rec_LowMass_PowhegOnly = new Double_t;
-    Double_t *M_Dimu_Rec_LowMass_LowPt_PowhegOnly = new Double_t;
-    Double_t *M_Dimu_Rec_HighMass_PowhegOnly = new Double_t;
+
+    Double_t *Pt_Dimu_Rec_PythiaOnly = new Double_t;
+    Double_t *M_Dimu_Rec_PythiaOnly = new Double_t;
 
     TTree *Tree_DiMuon_Rec[n_DiMuon_origin];
     TTree *Tree_DiMuon_Rec_PowhegOnly[n_DiMuon_origin];
-
-    TTree *Tree_DiMuon_Rec_FullMass[n_DiMuon_origin];
-    TTree *Tree_DiMuon_Rec_FullMass_PowhegOnly[n_DiMuon_origin];
-
-    TTree *Tree_DiMuon_Rec_LowMass[n_DiMuon_origin];
-    TTree *Tree_DiMuon_Rec_LowMass_PowhegOnly[n_DiMuon_origin];
-
-    TTree *Tree_DiMuon_Rec_LowMass_LowPt[n_DiMuon_origin];
-    TTree *Tree_DiMuon_Rec_LowMass_LowPt_PowhegOnly[n_DiMuon_origin];
-
-    TTree *Tree_DiMuon_Rec_HighMass[n_DiMuon_origin];
-    TTree *Tree_DiMuon_Rec_HighMass_PowhegOnly[n_DiMuon_origin];
+    TTree *Tree_DiMuon_Rec_PythiaOnly[n_DiMuon_origin];
 
     for (Int_t i_DiMuon_origin = 0; i_DiMuon_origin < n_DiMuon_origin; i_DiMuon_origin++)
     {
-        Tree_DiMuon_Rec[i_DiMuon_origin] = new TTree(Form("DiMuon_Rec_%s", DiMuon_origin[i_DiMuon_origin].Data()), "Dimuons with 4 < m <30 Gev");
+        Tree_DiMuon_Rec[i_DiMuon_origin] = new TTree(Form("DiMuon_Rec_%s", DiMuon_origin[i_DiMuon_origin].Data()), Form("Reconstructed Dimuons from %s", DiMuon_origin[i_DiMuon_origin].Data()));
         Tree_DiMuon_Rec[i_DiMuon_origin]->Branch("m", M_Dimu_Rec, "m/D");
         Tree_DiMuon_Rec[i_DiMuon_origin]->Branch("pt", Pt_Dimu_Rec, "pt/D");
 
-        Tree_DiMuon_Rec_FullMass[i_DiMuon_origin] = new TTree(Form("DiMuon_Rec_FullMass_%s", DiMuon_origin[i_DiMuon_origin].Data()), "Dimuons with mass > 4 Gev");
-        Tree_DiMuon_Rec_FullMass[i_DiMuon_origin]->Branch("m", M_Dimu_Rec_FullMass, "m/D");
-        Tree_DiMuon_Rec_FullMass[i_DiMuon_origin]->Branch("pt", Pt_Dimu_Rec_FullMass, "pt/D");
-
-        Tree_DiMuon_Rec_LowMass[i_DiMuon_origin] = new TTree(Form("DiMuon_Rec_LowMass_%s", DiMuon_origin[i_DiMuon_origin].Data()), "Dimuons with mass > 4 Gev");
-        Tree_DiMuon_Rec_LowMass[i_DiMuon_origin]->Branch("m", M_Dimu_Rec_LowMass, "m/D");
-        Tree_DiMuon_Rec_LowMass[i_DiMuon_origin]->Branch("pt", Pt_Dimu_Rec_LowMass, "pt/D");
-
-        Tree_DiMuon_Rec_LowMass_LowPt[i_DiMuon_origin] = new TTree(Form("DiMuon_Rec_LowMass_LowPt_%s", DiMuon_origin[i_DiMuon_origin].Data()), "Dimuons with mass > 4 Gev");
-        Tree_DiMuon_Rec_LowMass_LowPt[i_DiMuon_origin]->Branch("m", M_Dimu_Rec_LowMass_LowPt, "m/D");
-        Tree_DiMuon_Rec_LowMass_LowPt[i_DiMuon_origin]->Branch("pt", Pt_Dimu_Rec_LowMass_LowPt, "pt/D");
-
-        Tree_DiMuon_Rec_HighMass[i_DiMuon_origin] = new TTree(Form("DiMuon_Rec_HighMass_%s", DiMuon_origin[i_DiMuon_origin].Data()), "Dimuons with mass > 4 Gev");
-        Tree_DiMuon_Rec_HighMass[i_DiMuon_origin]->Branch("m", M_Dimu_Rec_HighMass, "m/D");
-        Tree_DiMuon_Rec_HighMass[i_DiMuon_origin]->Branch("pt", Pt_Dimu_Rec_HighMass, "pt/D");
-
         if (Generator.Contains("Powheg"))
         {
-            Tree_DiMuon_Rec_PowhegOnly[i_DiMuon_origin] = new TTree(Form("DiMuon_Rec_PowhegOnly_%s", DiMuon_origin[i_DiMuon_origin].Data()), "Dimuons with mass > 4 Gev Powheg Onlys");
+            Tree_DiMuon_Rec_PowhegOnly[i_DiMuon_origin] = new TTree(Form("DiMuon_Rec_PowhegOnly_%s", DiMuon_origin[i_DiMuon_origin].Data()), Form("Reconstructed Dimuons from %s Powheg Only", DiMuon_origin[i_DiMuon_origin].Data()));
             Tree_DiMuon_Rec_PowhegOnly[i_DiMuon_origin]->Branch("m", M_Dimu_Rec_PowhegOnly, "m/D");
             Tree_DiMuon_Rec_PowhegOnly[i_DiMuon_origin]->Branch("pt", Pt_Dimu_Rec_PowhegOnly, "pt/D");
 
-            Tree_DiMuon_Rec_FullMass_PowhegOnly[i_DiMuon_origin] = new TTree(Form("DiMuon_Rec_FullMass_PowhegOnly%s", DiMuon_origin[i_DiMuon_origin].Data()), "Dimuons with mass > 4 Gev");
-            Tree_DiMuon_Rec_FullMass_PowhegOnly[i_DiMuon_origin]->Branch("m", M_Dimu_Rec_FullMass_PowhegOnly, "m/D");
-            Tree_DiMuon_Rec_FullMass_PowhegOnly[i_DiMuon_origin]->Branch("pt", Pt_Dimu_Rec_FullMass_PowhegOnly, "pt/D");
-
-            Tree_DiMuon_Rec_LowMass_PowhegOnly[i_DiMuon_origin] = new TTree(Form("DiMuon_Rec_LowMass_PowhegOnly%s", DiMuon_origin[i_DiMuon_origin].Data()), "Dimuons with mass > 4 Gev");
-            Tree_DiMuon_Rec_LowMass_PowhegOnly[i_DiMuon_origin]->Branch("m", M_Dimu_Rec_LowMass_PowhegOnly, "m/D");
-            Tree_DiMuon_Rec_LowMass_PowhegOnly[i_DiMuon_origin]->Branch("pt", Pt_Dimu_Rec_LowMass_PowhegOnly, "pt/D");
-
-            Tree_DiMuon_Rec_LowMass_LowPt_PowhegOnly[i_DiMuon_origin] = new TTree(Form("DiMuon_Rec_LowMass_LowPt_PowhegOnly%s", DiMuon_origin[i_DiMuon_origin].Data()), "Dimuons with mass > 4 Gev");
-            Tree_DiMuon_Rec_LowMass_LowPt_PowhegOnly[i_DiMuon_origin]->Branch("m", M_Dimu_Rec_LowMass_LowPt_PowhegOnly, "m/D");
-            Tree_DiMuon_Rec_LowMass_LowPt_PowhegOnly[i_DiMuon_origin]->Branch("pt", Pt_Dimu_Rec_LowMass_LowPt_PowhegOnly, "pt/D");
-
-            Tree_DiMuon_Rec_HighMass_PowhegOnly[i_DiMuon_origin] = new TTree(Form("DiMuon_Rec_HighMass_PowhegOnly%s", DiMuon_origin[i_DiMuon_origin].Data()), "Dimuons with mass > 4 Gev");
-            Tree_DiMuon_Rec_HighMass_PowhegOnly[i_DiMuon_origin]->Branch("m", M_Dimu_Rec_HighMass_PowhegOnly, "m/D");
-            Tree_DiMuon_Rec_HighMass_PowhegOnly[i_DiMuon_origin]->Branch("pt", Pt_Dimu_Rec_HighMass_PowhegOnly, "pt/D");
+            Tree_DiMuon_Rec_PythiaOnly[i_DiMuon_origin] = new TTree(Form("DiMuon_Rec_PythiaOnly_%s", DiMuon_origin[i_DiMuon_origin].Data()), Form("Reconstructed Dimuons from %s Pythia Only", DiMuon_origin[i_DiMuon_origin].Data()));
+            Tree_DiMuon_Rec_PythiaOnly[i_DiMuon_origin]->Branch("m", M_Dimu_Rec_PythiaOnly, "m/D");
+            Tree_DiMuon_Rec_PythiaOnly[i_DiMuon_origin]->Branch("pt", Pt_Dimu_Rec_PythiaOnly, "pt/D");
         }
     }
 
@@ -159,7 +113,7 @@ void save_mc_output(
     for (Int_t i_Event = 0; i_Event < total_entries; i_Event++)
     {
         h_Nevents->Fill(1);
-        if (i_Event % (Int_t)(total_entries * 0.125) == 0)
+        if (i_Event % (Int_t)(total_entries * 0.0625) == 0)
         {
             progress_status(i_Event, total_entries);
         }
@@ -1243,70 +1197,23 @@ void save_mc_output(
                         h_PtY_DiMuon_Rec_PowhegOnly[i_DiMuon_origin]->Fill(Pt_DiMu, Y_DiMu);
                         n_DiMuon_Rec_PowhegOnly[i_DiMuon_origin]++;
                     }
-                    if (M_DiMu > 4 && M_DiMu < 30)
-                    {
-                        *Pt_Dimu_Rec = Pt_DiMu;
-                        *M_Dimu_Rec = M_DiMu;
-                        Tree_DiMuon_Rec[i_DiMuon_origin]->Fill();
+                    *Pt_Dimu_Rec = Pt_DiMu;
+                    *M_Dimu_Rec = M_DiMu;
+                    Tree_DiMuon_Rec[i_DiMuon_origin]->Fill();
 
-                        if (Generator.Contains("Powheg") && IsFromPowheg_Mu0 == -1 && IsFromPowheg_Mu1 == -1)
+                    if (Generator.Contains("Powheg"))
+                    {
+                        if (IsFromPowheg_Mu0 == -1 && IsFromPowheg_Mu1 == -1)
                         {
                             *Pt_Dimu_Rec_PowhegOnly = Pt_DiMu;
                             *M_Dimu_Rec_PowhegOnly = M_DiMu;
                             Tree_DiMuon_Rec_PowhegOnly[i_DiMuon_origin]->Fill();
                         }
-                    }
-                    if (M_DiMu > 4)
-                    {
-                        *Pt_Dimu_Rec_FullMass = Pt_DiMu;
-                        *M_Dimu_Rec_FullMass = M_DiMu;
-                        Tree_DiMuon_Rec_FullMass[i_DiMuon_origin]->Fill();
-
-                        if (Generator.Contains("Powheg") && IsFromPowheg_Mu0 == -1 && IsFromPowheg_Mu1 == -1)
+                        else
                         {
-                            *Pt_Dimu_Rec_FullMass_PowhegOnly = Pt_DiMu;
-                            *M_Dimu_Rec_FullMass_PowhegOnly = M_DiMu;
-                            Tree_DiMuon_Rec_FullMass_PowhegOnly[i_DiMuon_origin]->Fill();
-                        }
-                    }
-                    if (M_DiMu > 4 && M_DiMu < 9)
-                    {
-                        *Pt_Dimu_Rec_LowMass = Pt_DiMu;
-                        *M_Dimu_Rec_LowMass = M_DiMu;
-                        Tree_DiMuon_Rec_LowMass[i_DiMuon_origin]->Fill();
-
-                        if (Generator.Contains("Powheg") && IsFromPowheg_Mu0 == -1 && IsFromPowheg_Mu1 == -1)
-                        {
-                            *Pt_Dimu_Rec_LowMass_PowhegOnly = Pt_DiMu;
-                            *M_Dimu_Rec_LowMass_PowhegOnly = M_DiMu;
-                            Tree_DiMuon_Rec_LowMass_PowhegOnly[i_DiMuon_origin]->Fill();
-                        }
-
-                        if (Pt_DiMu < 10)
-                        {
-                            *Pt_Dimu_Rec_LowMass_LowPt = Pt_DiMu;
-                            *M_Dimu_Rec_LowMass_LowPt = M_DiMu;
-                            Tree_DiMuon_Rec_LowMass_LowPt[i_DiMuon_origin]->Fill();
-
-                            if (Generator.Contains("Powheg") && IsFromPowheg_Mu0 == -1 && IsFromPowheg_Mu1 == -1)
-                            {
-                                *Pt_Dimu_Rec_LowMass_LowPt_PowhegOnly = Pt_DiMu;
-                                *M_Dimu_Rec_LowMass_LowPt_PowhegOnly = M_DiMu;
-                                Tree_DiMuon_Rec_LowMass_LowPt_PowhegOnly[i_DiMuon_origin]->Fill();
-                            }
-                        }
-                    }
-                    if (M_DiMu > 11 && M_DiMu < 30)
-                    {
-                        *Pt_Dimu_Rec_HighMass = Pt_DiMu;
-                        *M_Dimu_Rec_HighMass = M_DiMu;
-                        Tree_DiMuon_Rec_HighMass[i_DiMuon_origin]->Fill();
-
-                        if (Generator.Contains("Powheg") && IsFromPowheg_Mu0 == -1 && IsFromPowheg_Mu1 == -1)
-                        {
-                            *Pt_Dimu_Rec_HighMass_PowhegOnly = Pt_DiMu;
-                            *M_Dimu_Rec_HighMass_PowhegOnly = M_DiMu;
-                            Tree_DiMuon_Rec_HighMass_PowhegOnly[i_DiMuon_origin]->Fill();
+                            *Pt_Dimu_Rec_PythiaOnly = Pt_DiMu;
+                            *M_Dimu_Rec_PythiaOnly = M_DiMu;
+                            Tree_DiMuon_Rec_PythiaOnly[i_DiMuon_origin]->Fill();
                         }
                     }
                 }
@@ -1330,33 +1237,13 @@ void save_mc_output(
         if (Tree_DiMuon_Rec[i_Dimuon_origin]->GetEntries() > 0)
             Tree_DiMuon_Rec[i_Dimuon_origin]->Write(0, 2, 0);
 
-        if (Tree_DiMuon_Rec_FullMass[i_Dimuon_origin]->GetEntries() > 0)
-            Tree_DiMuon_Rec_FullMass[i_Dimuon_origin]->Write(0, 2, 0);
-
-        if (Tree_DiMuon_Rec_LowMass[i_Dimuon_origin]->GetEntries() > 0)
-            Tree_DiMuon_Rec_LowMass[i_Dimuon_origin]->Write(0, 2, 0);
-
-        if (Tree_DiMuon_Rec_LowMass_LowPt[i_Dimuon_origin]->GetEntries() > 0)
-            Tree_DiMuon_Rec_LowMass_LowPt[i_Dimuon_origin]->Write(0, 2, 0);
-
-        if (Tree_DiMuon_Rec_HighMass[i_Dimuon_origin]->GetEntries() > 0)
-            Tree_DiMuon_Rec_HighMass[i_Dimuon_origin]->Write(0, 2, 0);
         if (Generator.Contains("Powheg"))
         {
             if (Tree_DiMuon_Rec_PowhegOnly[i_Dimuon_origin]->GetEntries() > 0)
                 Tree_DiMuon_Rec_PowhegOnly[i_Dimuon_origin]->Write(0, 2, 0);
-
-            if (Tree_DiMuon_Rec_FullMass_PowhegOnly[i_Dimuon_origin]->GetEntries() > 0)
-                Tree_DiMuon_Rec_FullMass_PowhegOnly[i_Dimuon_origin]->Write(0, 2, 0);
-
-            if (Tree_DiMuon_Rec_LowMass_PowhegOnly[i_Dimuon_origin]->GetEntries() > 0)
-                Tree_DiMuon_Rec_LowMass_PowhegOnly[i_Dimuon_origin]->Write(0, 2, 0);
-
-            if (Tree_DiMuon_Rec_LowMass_LowPt_PowhegOnly[i_Dimuon_origin]->GetEntries() > 0)
-                Tree_DiMuon_Rec_LowMass_LowPt_PowhegOnly[i_Dimuon_origin]->Write(0, 2, 0);
-
-            if (Tree_DiMuon_Rec_HighMass_PowhegOnly[i_Dimuon_origin]->GetEntries() > 0)
-                Tree_DiMuon_Rec_HighMass_PowhegOnly[i_Dimuon_origin]->Write(0, 2, 0);
+            
+            if (Tree_DiMuon_Rec_PythiaOnly[i_Dimuon_origin]->GetEntries() > 0)
+                Tree_DiMuon_Rec_PythiaOnly[i_Dimuon_origin]->Write(0, 2, 0);
         }
     }
     // Tree_DiMuon_Rec->Write(0, 2, 0);
@@ -1679,7 +1566,7 @@ void save_mc_output(
     for (Int_t i_DiMuon_origin = 0; i_DiMuon_origin < n_DiMuon_origin; i_DiMuon_origin++)
     {
         fOut.cd("DiMuon_Gen");
-        if (h_Nperevent_DiMuon_Gen[i_DiMuon_origin]->GetEntries() > 0.0)
+        if (h_PtM_DiMuon_Gen[i_DiMuon_origin]->GetEntries() > 0.0)
         {
             h_Nperevent_DiMuon_Gen[i_DiMuon_origin]->Write(0, 2, 0);
             h_PtM_DiMuon_Gen[i_DiMuon_origin]->Write(0, 2, 0);
@@ -1696,13 +1583,13 @@ void save_mc_output(
         if (Generator.Contains("Powheg"))
         {
             fOut.cd("DiMuon_Gen/Powheg");
-            if (h_Nperevent_DiMuon_Gen_PowhegOnly[i_DiMuon_origin]->GetEntries() > 0.0)
+            if (h_PtM_DiMuon_Gen_PowhegOnly[i_DiMuon_origin]->GetEntries() > 0.0)
             {
                 h_Nperevent_DiMuon_Gen_PowhegOnly[i_DiMuon_origin]->Write(0, 2, 0);
                 h_PtM_DiMuon_Gen_PowhegOnly[i_DiMuon_origin]->Write(0, 2, 0);
                 h_PtY_DiMuon_Gen_PowhegOnly[i_DiMuon_origin]->Write(0, 2, 0);
             }
-            if (h_Nperevent_DiMuon_Gen_DQcut_PowhegOnly[i_DiMuon_origin]->GetEntries() > 0.0)
+            if (h_PtM_DiMuon_Gen_DQcut_PowhegOnly[i_DiMuon_origin]->GetEntries() > 0.0)
             {
                 h_Nperevent_DiMuon_Gen_DQcut_PowhegOnly[i_DiMuon_origin]->Write(0, 2, 0);
                 h_PtM_DiMuon_Gen_DQcut_PowhegOnly[i_DiMuon_origin]->Write(0, 2, 0);
@@ -1722,7 +1609,7 @@ void save_mc_output(
         if (Generator.Contains("Powheg"))
         {
             fOut.cd("DiMuon_Rec/Powheg");
-            if (h_Nperevent_DiMuon_Rec_PowhegOnly[i_DiMuon_origin]->GetEntries() > 0.0)
+            if (h_PtM_DiMuon_Rec_PowhegOnly[i_DiMuon_origin]->GetEntries() > 0.0)
             {
                 h_Nperevent_DiMuon_Rec_PowhegOnly[i_DiMuon_origin]->Write(0, 2, 0);
                 h_PtM_DiMuon_Rec_PowhegOnly[i_DiMuon_origin]->Write(0, 2, 0);
