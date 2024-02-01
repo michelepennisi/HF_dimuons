@@ -13,8 +13,8 @@
 #endif
 void ReadMCDimuon_HighMass_Local(const char *RunMode = "terminate",
                                  Int_t RunNumber = 294154,
-                                 TString Version = "Version_5_AliAOD_less_skimmed_fwd",
-                                 TString MC_type = "LHC23i1_Version_5_AliAOD_less_skimmed_fwd",
+                                 TString Version = "Version_5_AliAOD_skimmed_fwd",
+                                 TString MC_type = "powheg_beauty_nocut_Version_5_AliAOD_withHF_Q",
                                  TString AOD_origin = "Powheg")
 {
     // header location
@@ -39,7 +39,11 @@ void ReadMCDimuon_HighMass_Local(const char *RunMode = "terminate",
     MCTask->SetAOD_origin(AOD_origin);
     // if you want to run locally, we need to define some input
     TChain *chain = new TChain("aodTree");
-    chain->Add("/home/michele_pennisi/cernbox/HF_dimuons/mc_analysis/analysis_grid/grid_sim/LHC23i1_data/AliAOD.root");
+    // chain->Add("/home/michele_pennisi/cernbox/HF_dimuons/mc_analysis/analysis_grid/grid_sim/LHC23i1_data/AliAOD.root");
+    for (Int_t i = 0; i < 100; i++)
+    {
+        chain->Add(Form("/home/michele_pennisi/cernbox/HF_dimuons/mc_analysis/analysis_grid/grid_sim/%s/AOD/%d/AliAOD.root", MC_type.Data(), i));
+    }
 
     // start the analysis locally
     mgr->InitAnalysis();
