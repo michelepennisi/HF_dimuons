@@ -59,11 +59,20 @@ void save_mc_output(
     Double_t *Pt_Dimu_Rec = new Double_t;
     Double_t *M_Dimu_Rec = new Double_t;
 
+    Int_t *HF_PDG = new Int_t;
+    Int_t *LF_PDG = new Int_t;
+
     Double_t *Pt_Dimu_Rec_PowhegOnly = new Double_t;
     Double_t *M_Dimu_Rec_PowhegOnly = new Double_t;
 
+    Int_t *HF_PDG_PowhegOnly = new Int_t;
+    Int_t *LF_PDG_PowhegOnly = new Int_t;
+
     Double_t *Pt_Dimu_Rec_PythiaOnly = new Double_t;
     Double_t *M_Dimu_Rec_PythiaOnly = new Double_t;
+
+    Int_t *HF_PDG_PythiaOnly = new Int_t;
+    Int_t *LF_PDG_PythiaOnly = new Int_t;
 
     TTree *Tree_DiMuon_Rec[n_DiMuon_origin];
     TTree *Tree_DiMuon_Rec_PowhegOnly[n_DiMuon_origin];
@@ -74,6 +83,11 @@ void save_mc_output(
         Tree_DiMuon_Rec[i_DiMuon_origin] = new TTree(Form("DiMuon_Rec_%s", DiMuon_origin[i_DiMuon_origin].Data()), Form("Reconstructed Dimuons from %s", DiMuon_origin[i_DiMuon_origin].Data()));
         Tree_DiMuon_Rec[i_DiMuon_origin]->Branch("m", M_Dimu_Rec, "m/D");
         Tree_DiMuon_Rec[i_DiMuon_origin]->Branch("pt", Pt_Dimu_Rec, "pt/D");
+        if (DiMuon_origin[i_DiMuon_origin].Contains("HF_Mixed"))
+        {
+            Tree_DiMuon_Rec[i_DiMuon_origin]->Branch("HF_PDG", HF_PDG, "HF_PDG/I");
+            Tree_DiMuon_Rec[i_DiMuon_origin]->Branch("LF_PDG", LF_PDG, "LF_PDG/I");
+        }
 
         if (Generator.Contains("Powheg"))
         {
@@ -84,6 +98,15 @@ void save_mc_output(
             Tree_DiMuon_Rec_PythiaOnly[i_DiMuon_origin] = new TTree(Form("DiMuon_Rec_PythiaOnly_%s", DiMuon_origin[i_DiMuon_origin].Data()), Form("Reconstructed Dimuons from %s Pythia Only", DiMuon_origin[i_DiMuon_origin].Data()));
             Tree_DiMuon_Rec_PythiaOnly[i_DiMuon_origin]->Branch("m", M_Dimu_Rec_PythiaOnly, "m/D");
             Tree_DiMuon_Rec_PythiaOnly[i_DiMuon_origin]->Branch("pt", Pt_Dimu_Rec_PythiaOnly, "pt/D");
+
+            if (DiMuon_origin[i_DiMuon_origin].Contains("HF_Mixed"))
+            {
+                Tree_DiMuon_Rec_PowhegOnly[i_DiMuon_origin]->Branch("HF_PDG", HF_PDG_PowhegOnly, "HF_PDG/I");
+                Tree_DiMuon_Rec_PowhegOnly[i_DiMuon_origin]->Branch("LF_PDG", LF_PDG_PowhegOnly, "LF_PDG/I");
+
+                Tree_DiMuon_Rec_PythiaOnly[i_DiMuon_origin]->Branch("HF_PDG", HF_PDG_PythiaOnly, "HF_PDG/I");
+                Tree_DiMuon_Rec_PythiaOnly[i_DiMuon_origin]->Branch("LF_PDG", LF_PDG_PythiaOnly, "LF_PDG/I");
+            }
         }
     }
 
@@ -93,7 +116,7 @@ void save_mc_output(
     TChain *input_tree = Importing_Tree(dir_fileIn, filename, Generator);
     input_tree->ls();
 
-    Int_t total_entries = input_tree->GetEntries();
+    Int_t total_entries = 0.1 * input_tree->GetEntries();
 
     if (total_entries == 0)
         return;
@@ -1199,6 +1222,27 @@ void save_mc_output(
                     }
                     *Pt_Dimu_Rec = Pt_DiMu;
                     *M_Dimu_Rec = M_DiMu;
+                    if (DiMuon_origin[i_DiMuon_origin].EqualTo("HF_Mixed"))
+                    {
+                        cout << DiMuon_origin[i_DiMuon_origin].Data() << endl;
+                        printf("PDG_Mu0 %d || PDG_Mu1 %d\n", PDG_Mu0, PDG_Mu1);
+                        *HF_PDG = PDG_Mu0;
+                        *HF_PDG = PDG_Mu1;
+                        *LF_PDG = 999;
+                    }
+                    else if (DiMuon_origin[i_DiMuon_origin].EqualTo("LF_HF_Mixed"))
+                    {
+                        if (TMath::Abs(PDG_Mu0) > 400)
+                            *HF_PDG = PDG_Mu0;
+                        else
+                            *LF_PDG = PDG_Mu0;
+
+                        if (TMath::Abs(PDG_Mu1) > 400)
+                            *HF_PDG = PDG_Mu1;
+                        else
+                            *LF_PDG = PDG_Mu1;
+                    }
+
                     Tree_DiMuon_Rec[i_DiMuon_origin]->Fill();
 
                     if (Generator.Contains("Powheg"))
@@ -1207,12 +1251,52 @@ void save_mc_output(
                         {
                             *Pt_Dimu_Rec_PowhegOnly = Pt_DiMu;
                             *M_Dimu_Rec_PowhegOnly = M_DiMu;
+                            if (DiMuon_origin[i_DiMuon_origin].EqualTo("HF_Mixed"))
+                            {
+                                cout << DiMuon_origin[i_DiMuon_origin].Data() << endl;
+                                printf("PDG_Mu0 %d || PDG_Mu1 %d\n", PDG_Mu0, PDG_Mu1);
+                                *HF_PDG_PowhegOnly = PDG_Mu0;
+                                *HF_PDG_PowhegOnly = PDG_Mu1;
+                                *LF_PDG_PowhegOnly = 999;
+                            }
+                            else if (DiMuon_origin[i_DiMuon_origin].EqualTo("LF_HF_Mixed"))
+                            {
+                                if (TMath::Abs(PDG_Mu0) > 400)
+                                    *HF_PDG_PowhegOnly = PDG_Mu0;
+                                else
+                                    *LF_PDG_PowhegOnly = PDG_Mu0;
+
+                                if (TMath::Abs(PDG_Mu1) > 400)
+                                    *HF_PDG_PowhegOnly = PDG_Mu1;
+                                else
+                                    *LF_PDG_PowhegOnly = PDG_Mu1;
+                            }
                             Tree_DiMuon_Rec_PowhegOnly[i_DiMuon_origin]->Fill();
                         }
                         else
                         {
                             *Pt_Dimu_Rec_PythiaOnly = Pt_DiMu;
                             *M_Dimu_Rec_PythiaOnly = M_DiMu;
+                            if (DiMuon_origin[i_DiMuon_origin].EqualTo("HF_Mixed"))
+                            {
+                                cout << DiMuon_origin[i_DiMuon_origin].Data() << endl;
+                                printf("PDG_Mu0 %d || PDG_Mu1 %d\n", PDG_Mu0, PDG_Mu1);
+                                *HF_PDG_PythiaOnly = PDG_Mu0;
+                                *HF_PDG_PythiaOnly = PDG_Mu1;
+                                *LF_PDG_PythiaOnly = 999;
+                            }
+                            else if (DiMuon_origin[i_DiMuon_origin].EqualTo("LF_HF_Mixed"))
+                            {
+                                if (TMath::Abs(PDG_Mu0) > 400)
+                                    *HF_PDG_PythiaOnly = PDG_Mu0;
+                                else
+                                    *LF_PDG_PythiaOnly = PDG_Mu0;
+
+                                if (TMath::Abs(PDG_Mu1) > 400)
+                                    *HF_PDG_PythiaOnly = PDG_Mu1;
+                                else
+                                    *LF_PDG_PythiaOnly = PDG_Mu1;
+                            }
                             Tree_DiMuon_Rec_PythiaOnly[i_DiMuon_origin]->Fill();
                         }
                     }
@@ -1241,7 +1325,7 @@ void save_mc_output(
         {
             if (Tree_DiMuon_Rec_PowhegOnly[i_Dimuon_origin]->GetEntries() > 0)
                 Tree_DiMuon_Rec_PowhegOnly[i_Dimuon_origin]->Write(0, 2, 0);
-            
+
             if (Tree_DiMuon_Rec_PythiaOnly[i_Dimuon_origin]->GetEntries() > 0)
                 Tree_DiMuon_Rec_PythiaOnly[i_Dimuon_origin]->Write(0, 2, 0);
         }
