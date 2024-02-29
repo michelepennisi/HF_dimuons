@@ -9,10 +9,10 @@ void save_mc_output(
     // TString RunMode = "SoftQCD_inel_LFoff_Def",
     // TString RunMode = "Merged_LHC22c1",
     // TString RunMode = "powheg_beauty_nocut_test",
-    TString RunMode = "LHC23i1",
+    TString RunMode = "LHC23i2",
     // TString RunMode = "SoftQCD_inel_Def",
     // TString dir_fileIn = "/home/michele_pennisi/cernbox/HF_dimuons/mc_analysis/analysis_grid/grid_sim/powheg_beauty_nocut_Version_5_AliAOD_withHF_Q",
-    TString dir_fileIn = "/home/michele_pennisi/cernbox/HF_dimuons/mc_analysis/analysis_grid/grid_sim/LHC23i1_Version_5_AliAOD_skimmed_fwd_fullstat",
+    TString dir_fileIn = "/home/michele_pennisi/cernbox/HF_dimuons/mc_analysis/analysis_grid/grid_sim/LHC23i2_Version_5_AliAOD_skimmed_fwd_fullstat",
     // TString dir_fileIn = "/home/michele_pennisi/cernbox/HF_dimuons/mc_analysis/analysis_grid/grid_sim/LHC18p_DY_Version_5",
     // TString dir_fileIn = "/home/michele_pennisi/cernbox/HF_dimuons/mc_analysis/analysis_grid/grid_sim/powheg_beauty_nocut_Version_5_AliAOD",
     // TString dir_fileIn = "/home/michele_pennisi/cernbox/HF_dimuons/mc_analysis/analysis_grid/grid_sim/LHC22c1/294009/output",
@@ -24,7 +24,7 @@ void save_mc_output(
     // TString dir_fileIn = "/home/michele_pennisi/cernbox/HF_dimuons/mc_analysis/analysis_grid/grid_sim/LHC18p_DY_100k_Version2_AOD",
     // TString dir_fileOut = "/home/michele_pennisi/cernbox/HF_dimuons/mc_analysis/analysis_grid/grid_sim/LHC18p_DY_Version_5",
     // TString dir_fileOut = "/home/michele_pennisi/cernbox/HF_dimuons/mc_analysis/analysis_grid/grid_sim/powheg_beauty_nocut_Version_5_AliAOD_withHF_Q",
-    TString dir_fileOut = "/home/michele_pennisi/cernbox/HF_dimuons/mc_analysis/analysis_grid/grid_sim/LHC23i1_Version_5_AliAOD_skimmed_fwd_fullstat",
+    TString dir_fileOut = "/home/michele_pennisi/cernbox/HF_dimuons/mc_analysis/analysis_grid/grid_sim/LHC23i2_Version_5_AliAOD_skimmed_fwd_fullstat",
     // TString dir_fileOut = "/home/michele_pennisi/cernbox/HF_dimuons/mc_analysis/analysis_grid/grid_sim/LHC22c1/294009/output",
     // TString dir_fileOut = "/home/michele_pennisi/cernbox/HF_dimuons/mc_analysis/analysis_grid/grid_sim/powheg_beauty_nocut_Version_5_AliAOD",
     // TString dir_fileOut = "/home/michele_pennisi/cernbox/HF_dimuons/mc_analysis/analysis_grid/grid_sim/pythia8_purifykineoff_test",
@@ -1273,7 +1273,7 @@ void save_mc_output(
                             }
                             Tree_DiMuon_Rec_PowhegOnly[i_DiMuon_origin]->Fill();
                         }
-                        else
+                        else if (IsFromPowheg_Mu0 > -1 && IsFromPowheg_Mu1 > -1)
                         {
                             *Pt_Dimu_Rec_PythiaOnly = Pt_DiMu;
                             *M_Dimu_Rec_PythiaOnly = M_DiMu;
