@@ -1,192 +1,358 @@
-#include "/home/michele_pennisi/cernbox/common_include.h"
+#include "/home/michele_pennisi/cernbox/HF_dimuons/common_include.h"
 #include <vector>
-TCanvas *printMC_ratio(TString name, RooPlot *frame, TH1 *data, TF1 *pdf, Color_t color, Int_t minx = 0, Int_t max_x = 30);
-TCanvas *printRooPlot_ratio(RooPlot *frame, Bool_t norm, RooFitResult *r, Int_t choice, TString roohist_name, TF1 *pdf, TH1 *data, Double_t minx, Double_t max_x);
+#include "RooChi2Var.h"
+#include "RooStats/ModelConfig.h"
+#include "RooStats/ProfileLikelihoodCalculator.h"
+#include "RooStats/LikelihoodIntervalPlot.h"
+using namespace RooStats;
+TCanvas *printMC_ratio(TString name, TString Title, RooPlot *frame, RooArgSet *param, TH1 *data, TF1 *pdf, Color_t color, Int_t minx = 0, Int_t max_x = 30);
+TCanvas *printRooPlot_ratio(RooPlot *frame, Bool_t norm, RooFitResult *r, Int_t choice, TString roohist_name, TF1 *pdf, TH1 *data, Double_t minx, Double_t max_x, Double_t N_HFMixed, Double_t N_LF_HFMixed);
 Double_t Lowy = 0.0025;
 
-void unbinned_fit_data_sample_singleregion(Int_t Low_Mass = 4, Int_t High_Mass = 9, Int_t Low_Pt = 0, Int_t High_Pt = 10, Bool_t withDY = kTRUE);
+void unbinned_fit_data_sample_singleregion();
+void shape_comparison();
+
 void fit_data()
 {
-    unbinned_fit_data_sample_singleregion(4, 30, 0, 30);
+    // unbinned_fit_data_sample_singleregion(4, 30, 0, 30);
+    shape_comparison();
 }
-void cross_section(Int_t Low_Mass = 11, Int_t High_Mass = 30, Int_t Low_Pt = 0, Int_t High_Pt = 30, Bool_t withDY = kTRUE)
+
+void shape_comparison()
 {
-    gROOT->ProcessLineSync(".x /home/michele_pennisi/high_mass_dimuons/fit_library/PtMassExpPdf.cxx+");
-    gROOT->ProcessLineSync(".x /home/michele_pennisi/high_mass_dimuons/fit_library/PtMassPol1ExpPdf.cxx+");
+    gStyle->SetOptStat(0);
+    gStyle->SetOptTitle(0);
+    const Int_t n_DiMuSelection = 4;
 
-    TString Generator = "Powheg+PYTHIA6";
-    TFile *fIn = TFile::Open("/home/michele_pennisi/cernbox/HF_dimuons/fit_data/results/Powheg_pdfMC_unbinnedprova.root", "READ");
-
-    RooFitResult *r;
-
-    if (withDY)
-        r = (RooFitResult *)fIn->Get((Form("fit_result_M_%d_%d_Pt_%d_%d_withDY", Low_Mass, High_Mass, Low_Pt, High_Pt)));
-    else
-        r = (RooFitResult *)fIn->Get((Form("fit_result_M_%d_%d_Pt_%d_%d_noDY", Low_Mass, High_Mass, Low_Pt, High_Pt)));
-
-    const RooArgList &fitParams = r->floatParsFinal();
-    int n_DiMuSelection = fitParams.getSize();
-
-    std::vector<Double_t> fit_result;
-    TString *MC_file = new TString;
-    TFile *fIn_MC[n_DiMuSelection];
-    MC_file[0] = TString("/home/michele_pennisi/cernbox/output_HF_dimuons/mc_analysis_output/LHC23i1/Version3_AliAOD/save_output/LHC23i1_MC_output_Tree_merged.root");
-    MC_file[1] = TString("/home/michele_pennisi/cernbox/output_HF_dimuons/mc_analysis_output/LHC23i2/Version3_AliAOD/save_output/LHC23i2_MC_output_Tree_merged.root");
-    MC_file[2] = TString("/home/michele_pennisi/cernbox/output_HF_dimuons/mc_analysis_output/Powheg_Sim/powheg_DY_mass_3_35/Version1/Analysis_MCsim/powheg_DY_mass_3_35_Analysis_MCsim_Tree_merged.root");
-
-    for (Int_t i = 0; i < fitParams.getSize(); i++)
-    {
-        fIn_MC[i] = new TFile(MC_file[i].Data(), "READ");
-        auto &fitPar = (RooRealVar &)fitParams[fitParams.getSize() - i - 1];
-        fit_result.push_back(fitPar.getVal());
-        std::cout << fitPar.GetName() << " " << fit_result[i] << std::endl;
-    }
-
-    TString *name_DiMu_Sel = new TString;
+    TString name_DiMu_Sel[n_DiMuSelection];
     name_DiMu_Sel[0] = TString("Charm");
     name_DiMu_Sel[1] = TString("Beauty");
-    name_DiMu_Sel[2] = TString("DY");
+    name_DiMu_Sel[2] = TString("HF_Mixed");
+    name_DiMu_Sel[3] = TString("DY");
 
-    TTree **m_tree_MC = new TTree *;
-    TTree **m_tree_MC_cutted = new TTree *;
-    std::vector<Double_t> MC_dimu;
-    std::vector<Double_t> n_ev_MC;
-    TH1F **NEv_MC = new TH1F *;
-    std::vector<Double_t> feq_MC;
-    feq_MC.push_back(30.5 * (56.42 / 5.0));
-    feq_MC.push_back(15.0 * (56.42 / 0.5));
-    feq_MC.push_back(1. * (56.42 / 4.6e-05));
+    TFile *fIn_MC[n_DiMuSelection];
+    TString MC_file[n_DiMuSelection];
+    TTree *m_tree_MC[n_DiMuSelection];
+    TH1F *m_shape_4_30[n_DiMuSelection];
+    TH1F *pt_shape_4_30[n_DiMuSelection];
 
-    TFile *fIn_data = new TFile("~/dimuon_HF_pp/data/LHC18p/Hist_AOD/3_11_2022/HistResults_merged.root", "READ");
-    TH1D *fhNEv = (TH1D *)fIn_data->Get("fhNEv");
+    TH1F *m_shape_11_30[n_DiMuSelection];
+    TH1F *pt_shape_11_30[n_DiMuSelection];
 
-    std::vector<Double_t> c_frac_fit_MB;
-    std::vector<Double_t> c_frac_MC_MB;
-    TFile **fIn_Powheg = new TFile *;
-    fIn_Powheg[0] = new TFile("/home/michele_pennisi/cernbox/HF_dimuons/mc_analysis/analysis_grid/grid_sim/powheg_charm_nocut_Version_5_AliAOD_withHF_Q/powheg_charm_nocut_Version_5_AliAOD_withHF_Q_MC_output_Hist_294154.root", "READ");
-    fIn_Powheg[1] = new TFile("/home/michele_pennisi/cernbox/HF_dimuons/mc_analysis/analysis_grid/grid_sim/powheg_beauty_nocut_Version_5_AliAOD_withHF_Q/powheg_beauty_nocut_Version_5_AliAOD_withHF_Q_MC_output_Hist_294154.root", "READ");
-    fIn_Powheg[2] = new TFile("~/cernbox/HF_dimuons/fit_data/ingredient_cs_powheg/DY_cs.root", "READ");
+    MC_file[0] = TString("/home/michele_pennisi/cernbox/output_HF_dimuons/mc_analysis_output/LHC23i1/Version3_AliAOD/save_output/LHC23i1_MC_output_Tree_merged.root");
+    MC_file[1] = TString("/home/michele_pennisi/cernbox/output_HF_dimuons/mc_analysis_output/LHC23i2/Version3_AliAOD/save_output/LHC23i2_MC_output_Tree_merged.root");
+    MC_file[2] = TString("/home/michele_pennisi/cernbox/output_HF_dimuons/mc_analysis_output/LHC23i2/Version3_AliAOD/save_output/LHC23i2_MC_output_Tree_merged.root");
+    MC_file[3] = TString("/home/michele_pennisi/cernbox/output_HF_dimuons/mc_analysis_output/Powheg_Sim/powheg_DY_mass_3_35/Version1/Analysis_MCsim/powheg_DY_mass_3_35_Analysis_MCsim_Tree_merged.root");
 
-    TH1F **h_NHF_event_PowhegOnly = new TH1F *;
-    TH1F **h_NHF_event_PowhegOnly_fwd = new TH1F *;
-    h_NHF_event_PowhegOnly[0] = (TH1F *)fIn_Powheg[0]->Get("HF_quarks/Powheg/h_NCharm_event_PowhegOnly");
-    h_NHF_event_PowhegOnly_fwd[0] = (TH1F *)fIn_Powheg[0]->Get("HF_quarks/Powheg/h_NCharm_event_fwd_PowhegOnly");
+    Color_t color[n_DiMuSelection] = {kMagenta + 2, kSpring - 6, kAzure + 9, kOrange + 7};
 
-    h_NHF_event_PowhegOnly[1] = (TH1F *)fIn_Powheg[1]->Get("HF_quarks/Powheg/h_NBeauty_event_PowhegOnly");
-    h_NHF_event_PowhegOnly_fwd[1] = (TH1F *)fIn_Powheg[1]->Get("HF_quarks/Powheg/h_NBeauty_event_fwd_PowhegOnly");
-
-    h_NHF_event_PowhegOnly[2] = (TH1F *)fIn_Powheg[2]->Get("h_NDY_event");
-    h_NHF_event_PowhegOnly_fwd[2] = (TH1F *)fIn_Powheg[2]->Get("h_NDY_event_fwd");
-    std::vector<Double_t> Powheg_CS;
-    Powheg_CS.push_back(5.0);
-    Powheg_CS.push_back(0.50);
-    Powheg_CS.push_back(4.6e-05);
-    std::vector<Double_t> N_Pair;
-    std::vector<Double_t> N_Pair_fwd;
-    std::vector<Double_t> CS;
-    std::vector<Double_t> MPI_corr;
-    TFile *fIn_Pythia = new TFile("/home/michele_pennisi/cernbox/HF_dimuons/pythia_stand/new_pythia_sim/SoftQCD_inel_LFoff_Def_pythia_sim_2411_DefaultBR_output_Hist_100000.root", "READ");
-
-    TH1F **h_NHF_event_Pythia = new TH1F *;
-    h_NHF_event_Pythia[0] = (TH1F *)fIn_Pythia->Get("HF_quarks/h_NCharm_event");
-    h_NHF_event_Pythia[1] = (TH1F *)fIn_Pythia->Get("HF_quarks/h_NBeauty_event");
-
-    std::vector<Double_t> n_HF_single_pair_PYTHIA;
-    n_HF_single_pair_PYTHIA.push_back(h_NHF_event_Pythia[0]->GetBinContent(3));
-    n_HF_single_pair_PYTHIA.push_back(h_NHF_event_Pythia[1]->GetBinContent(3));
-
-    std::vector<Double_t> n_HF_total_PYTHIA;
-    N_Pair.push_back(0.);
-    N_Pair_fwd.push_back(0.);
-    n_HF_total_PYTHIA.push_back(0.);
-
-    for (Int_t i = 0; i < n_DiMuSelection; i++)
+    for (Int_t i_DiMuSel = 0; i_DiMuSel < n_DiMuSelection; i_DiMuSel++)
     {
+        fIn_MC[i_DiMuSel] = new TFile(MC_file[i_DiMuSel].Data(), "READ");
+        if (i_DiMuSel < n_DiMuSelection - 1)
+            m_tree_MC[i_DiMuSel] = (TTree *)fIn_MC[i_DiMuSel]->Get(Form("DiMuon_Rec_PowhegOnly_%s", name_DiMu_Sel[i_DiMuSel].Data()));
+        else
+            m_tree_MC[i_DiMuSel] = (TTree *)fIn_MC[i_DiMuSel]->Get("rec_tree_muDY");
 
-        cout << N_Pair[i] << endl;
-        cout << "Result for " << name_DiMu_Sel[i].Data() << endl;
+        m_shape_4_30[i_DiMuSel] = new TH1F(Form("m_shape_4_30_%s", name_DiMu_Sel[i_DiMuSel].Data()), Form("#mu#mu from %s", name_DiMu_Sel[i_DiMuSel].Data()), 26, 4, 30);
+        m_shape_11_30[i_DiMuSel] = new TH1F(Form("m_shape_11_30_%s", name_DiMu_Sel[i_DiMuSel].Data()), Form("#mu#mu from %s", name_DiMu_Sel[i_DiMuSel].Data()), 10, 11, 30);
 
-        NEv_MC[i] = (TH1F *)fIn_MC[i]->Get("h_Nevents");
-        printf("ARRIVO\n");
-        for (Int_t i_bin = 1; i_bin < h_NHF_event_PowhegOnly[i]->GetNbinsX(); i_bin++)
+        pt_shape_4_30[i_DiMuSel] = new TH1F(Form("pt_shape_4_30_%s", name_DiMu_Sel[i_DiMuSel].Data()), Form("#mu#mu from %s", name_DiMu_Sel[i_DiMuSel].Data()), 30, 0, 30);
+        pt_shape_11_30[i_DiMuSel] = new TH1F(Form("pt_shape_11_30_%s", name_DiMu_Sel[i_DiMuSel].Data()), Form("#mu#mu from %s", name_DiMu_Sel[i_DiMuSel].Data()), 15, 0, 30);
+
+        m_tree_MC[i_DiMuSel]->Draw(TString::Format("m>>%s", m_shape_4_30[i_DiMuSel]->GetName()), "(m > 4 && m< 30) && (pt > 0 && pt< 30)", "goff");
+        m_shape_4_30[i_DiMuSel]->Scale(1. / (m_shape_4_30[i_DiMuSel]->GetEntries()));
+        m_shape_4_30[i_DiMuSel]->SetMarkerStyle(20);
+        m_shape_4_30[i_DiMuSel]->SetMarkerColor(color[i_DiMuSel]);
+        m_shape_4_30[i_DiMuSel]->SetLineColor(color[i_DiMuSel]);
+        m_shape_4_30[i_DiMuSel]->SetLineWidth(2);
+
+        m_tree_MC[i_DiMuSel]->Draw(TString::Format("m>>%s", m_shape_11_30[i_DiMuSel]->GetName()), "(m > 11 && m< 30) && (pt > 0 && pt< 30)", "goff");
+        m_shape_11_30[i_DiMuSel]->Scale(1. / (m_shape_11_30[i_DiMuSel]->GetEntries()));
+        m_shape_11_30[i_DiMuSel]->SetMarkerStyle(20);
+        m_shape_11_30[i_DiMuSel]->SetMarkerColor(color[i_DiMuSel]);
+        m_shape_11_30[i_DiMuSel]->SetLineColor(color[i_DiMuSel]);
+        m_shape_11_30[i_DiMuSel]->SetLineWidth(2);
+
+        m_tree_MC[i_DiMuSel]->Draw(TString::Format("pt>>%s", pt_shape_4_30[i_DiMuSel]->GetName()), "(m > 4 && m< 30) && (pt > 0 && pt< 30)", "goff");
+        pt_shape_4_30[i_DiMuSel]->Scale(1. / (pt_shape_4_30[i_DiMuSel]->GetEntries()));
+        pt_shape_4_30[i_DiMuSel]->SetMarkerStyle(20);
+        pt_shape_4_30[i_DiMuSel]->SetMarkerColor(color[i_DiMuSel]);
+        pt_shape_4_30[i_DiMuSel]->SetLineColor(color[i_DiMuSel]);
+        pt_shape_4_30[i_DiMuSel]->SetLineWidth(2);
+
+        m_tree_MC[i_DiMuSel]->Draw(TString::Format("pt>>%s", pt_shape_11_30[i_DiMuSel]->GetName()), "(m > 11 && m< 30) && (pt > 0 && pt< 30)", "goff");
+        pt_shape_11_30[i_DiMuSel]->Scale(1. / (pt_shape_11_30[i_DiMuSel]->GetEntries()));
+        pt_shape_11_30[i_DiMuSel]->SetMarkerStyle(20);
+        pt_shape_11_30[i_DiMuSel]->SetMarkerColor(color[i_DiMuSel]);
+        pt_shape_11_30[i_DiMuSel]->SetLineColor(color[i_DiMuSel]);
+        pt_shape_11_30[i_DiMuSel]->SetLineWidth(2);
+    }
+
+    TH1F *m_shape_4_30_sum = (TH1F *)m_shape_4_30[0]->Clone("m_shape_4_30_sum");
+    m_shape_4_30_sum->Add(m_shape_4_30[1]);
+    m_shape_4_30_sum->Add(m_shape_4_30[2]);
+
+    TH1F *m_shape_4_30_DY_HF_ratio = (TH1F *)m_shape_4_30[3]->Clone("m_shape_4_30_DY_HF_ratio");
+    m_shape_4_30_DY_HF_ratio->GetXaxis()->SetTitle("#it{m}_{#mu#mu} (GeV/#it{c}^{2})");
+    m_shape_4_30_DY_HF_ratio->GetYaxis()->SetTitle("DY over HF sum");
+    m_shape_4_30_DY_HF_ratio->GetYaxis()->CenterTitle();
+    m_shape_4_30_DY_HF_ratio->GetYaxis()->SetTitleSize(m_shape_4_30_DY_HF_ratio->GetXaxis()->GetTitleSize());
+    m_shape_4_30_DY_HF_ratio->Divide(m_shape_4_30_sum);
+
+    TH1F *m_shape_11_30_sum = (TH1F *)m_shape_11_30[0]->Clone("m_shape_11_30_sum");
+    m_shape_11_30_sum->Add(m_shape_11_30[1]);
+    m_shape_11_30_sum->Add(m_shape_11_30[2]);
+
+    TH1F *m_shape_11_30_DY_HF_ratio = (TH1F *)m_shape_11_30[3]->Clone("m_shape_11_30_DY_HF_ratio");
+    m_shape_11_30_DY_HF_ratio->GetXaxis()->SetTitle("#it{m}_{#mu#mu} (GeV/#it{c}^{2})");
+    m_shape_11_30_DY_HF_ratio->GetYaxis()->SetTitle("DY over HF sum");
+    m_shape_11_30_DY_HF_ratio->GetYaxis()->CenterTitle();
+    m_shape_11_30_DY_HF_ratio->GetYaxis()->SetTitleSize(m_shape_11_30_DY_HF_ratio->GetXaxis()->GetTitleSize());
+    m_shape_11_30_DY_HF_ratio->Divide(m_shape_11_30_sum);
+
+    TH1F *pt_shape_4_30_sum = (TH1F *)pt_shape_4_30[0]->Clone("pt_shape_4_30_sum");
+    pt_shape_4_30_sum->Add(pt_shape_4_30[1]);
+    pt_shape_4_30_sum->Add(pt_shape_4_30[2]);
+
+    TH1F *pt_shape_4_30_DY_HF_ratio = (TH1F *)pt_shape_4_30[3]->Clone("pt_shape_4_30_DY_HF_ratio");
+    pt_shape_4_30_DY_HF_ratio->GetXaxis()->SetTitle("#it{p}_{T, #mu} (GeV/#it{c})");
+    pt_shape_4_30_DY_HF_ratio->GetYaxis()->SetTitle("DY over HF sum");
+    pt_shape_4_30_DY_HF_ratio->GetYaxis()->CenterTitle();
+    pt_shape_4_30_DY_HF_ratio->GetYaxis()->SetTitleSize(pt_shape_4_30_DY_HF_ratio->GetXaxis()->GetTitleSize());
+    pt_shape_4_30_DY_HF_ratio->Divide(pt_shape_4_30_sum);
+
+    TH1F *pt_shape_11_30_sum = (TH1F *)pt_shape_11_30[0]->Clone("pt_shape_11_30_sum");
+    pt_shape_11_30_sum->Add(pt_shape_11_30[1]);
+    pt_shape_11_30_sum->Add(pt_shape_11_30[2]);
+
+    TH1F *pt_shape_11_30_DY_HF_ratio = (TH1F *)pt_shape_11_30[3]->Clone("pt_shape_11_30_DY_HF_ratio");
+    pt_shape_11_30_DY_HF_ratio->GetXaxis()->SetTitle("#it{p}_{T, #mu} (GeV/#it{c})");
+    pt_shape_11_30_DY_HF_ratio->GetYaxis()->SetTitle("DY over HF sum");
+    pt_shape_11_30_DY_HF_ratio->GetYaxis()->CenterTitle();
+    pt_shape_11_30_DY_HF_ratio->GetYaxis()->SetTitleSize(pt_shape_11_30_DY_HF_ratio->GetXaxis()->GetTitleSize());
+    pt_shape_11_30_DY_HF_ratio->Divide(pt_shape_11_30_sum);
+
+    TCanvas *canvas_m_shape_4_30 = three_histo_one_ratio(m_shape_4_30[0], m_shape_4_30[1], m_shape_4_30[3], m_shape_4_30_DY_HF_ratio, "canvas_m_shape_4_30", "#it{p}_{T, #mu} < 30 GeV/#it{c}", kTRUE, kTRUE);
+    TPad *prov = (TPad *)canvas_m_shape_4_30->GetListOfPrimitives()->FindObject("pad1");
+    TLegend *leg = (TLegend *)prov->FindObject("Legend");
+    prov->cd();
+    m_shape_4_30[2]->Draw("PESAME");
+    leg->AddEntry(m_shape_4_30[2]);
+    leg->SetY1(0.125);
+    leg->SetY2(0.375);
+    prov->Update();
+    canvas_m_shape_4_30->SaveAs(Form("images/%s.png", canvas_m_shape_4_30->GetName()));
+
+    TCanvas *canvas_pt_shape_4_30 = three_histo_one_ratio(pt_shape_4_30[0], pt_shape_4_30[1], pt_shape_4_30[3], pt_shape_4_30_DY_HF_ratio, "canvas_pt_shape_4_30", "4 < #it{m}_{#mu#mu} < 30 GeV/#it{c}^{2}", kTRUE, kTRUE);
+
+    prov = (TPad *)canvas_pt_shape_4_30->GetListOfPrimitives()->FindObject("pad1");
+    leg = (TLegend *)prov->FindObject("Legend");
+    prov->cd();
+    pt_shape_4_30[2]->Draw("PESAME");
+    leg->AddEntry(m_shape_4_30[2]);
+    leg->SetY1(0.125);
+    leg->SetY2(0.375);
+    canvas_pt_shape_4_30->SaveAs(Form("images/%s.png", canvas_pt_shape_4_30->GetName()));
+    prov->Update();
+
+    TCanvas *canvas_m_shape_11_30 = three_histo_one_ratio(m_shape_11_30[0], m_shape_11_30[1], m_shape_11_30[3], m_shape_11_30_DY_HF_ratio, "canvas_m_shape_11_30", "#it{p}_{T, #mu} < 30 GeV/#it{c}", kTRUE, kTRUE);
+    prov = (TPad *)canvas_m_shape_11_30->GetListOfPrimitives()->FindObject("pad1");
+    leg = (TLegend *)prov->FindObject("Legend");
+    prov->cd();
+    m_shape_11_30[2]->Draw("PESAME");
+    leg->AddEntry(m_shape_4_30[2]);
+    leg->SetY1(0.125);
+    leg->SetY2(0.375);
+    prov->Update();
+    canvas_m_shape_11_30->SaveAs(Form("images/%s.png", canvas_m_shape_11_30->GetName()));
+
+    TCanvas *canvas_pt_shape_11_30 = three_histo_one_ratio(pt_shape_11_30[0], pt_shape_11_30[1], pt_shape_11_30[3], pt_shape_11_30_DY_HF_ratio, "canvas_pt_shape_11_30", "11 < #it{m}_{#mu#mu} < 30 GeV/#it{c}^{2}", kTRUE, kTRUE);
+    prov = (TPad *)canvas_pt_shape_11_30->GetListOfPrimitives()->FindObject("pad1");
+    leg = (TLegend *)prov->FindObject("Legend");
+    prov->cd();
+    pt_shape_11_30[2]->Draw("PESAME");
+    leg->AddEntry(m_shape_4_30[2]);
+    leg->SetY1(0.125);
+    leg->SetY2(0.375);
+    prov->Update();
+    canvas_pt_shape_11_30->SaveAs(Form("images/%s.png", canvas_pt_shape_11_30->GetName()));
+}
+struct opt
+{
+    Int_t Mass_Binning = 52;
+    Int_t Low_Mass = 4;
+    Int_t High_Mass = 30;
+    Double_t LowM_cut = 8.;
+    Double_t HighM_cut = 11.;
+    Int_t Pt_Binning = 75;
+    Int_t Low_Pt = 0;
+    Int_t High_Pt = 30;
+
+    TString stat_MC = "full_stat";
+    TString stat_Data = "LHC18p";
+    TString DY = "withDY";
+    TString LF_HF = "withLF_HF";
+    Bool_t Plot_Likehood = kFALSE;
+};
+
+void cross_section()
+{
+    opt info;
+    TFile *fIn_data;
+    if (info.stat_Data.Contains("Run2"))
+        fIn_data = new TFile("/home/michele_pennisi/cernbox/HF_dimuons/data_analysis/Tree_MassPt_MassCut4_Run2.root", "READ");
+    else
+        fIn_data = new TFile("~/dimuon_HF_pp/data/LHC18p/Hist_AOD/3_11_2022/HistResults_merged.root", "READ");
+
+    TH1D *fhNEv = (TH1D *)fIn_data->Get("fhNEv");
+    fhNEv->SetDirectory(0);
+    fIn_data->Close();
+    Double_t NEv_MB_Data = (2384.73 * fhNEv->GetBinContent(3));
+
+    TString Generator = "Powheg+PYTHIA6";
+    TFile *fIn = new TFile(Form("/home/michele_pennisi/cernbox/HF_dimuons/fit_data/results/Result_PowhegFit_Data_%s_MC_%s.root", info.stat_Data.Data(), info.stat_MC.Data()), "READ");
+    fIn->ls();
+
+    TH1D *r = (TH1D *)fIn->Get(Form("fit_result_M_%d_%d_Pt_%d_%d_%s_%s", info.Low_Mass, info.High_Mass, info.Low_Pt, info.High_Pt, info.DY.Data(), info.LF_HF.Data()));
+    r->SetDirectory(0);
+    fIn->Close();
+    const Int_t n_obs = 3;
+    TString NameMC_file[3] = {"/home/michele_pennisi/cernbox/output_HF_dimuons/mc_analysis_output/LHC23i1/Version3_AliAOD/save_output/LHC23i1_MC_output_Tree_merged.root",
+                              "/home/michele_pennisi/cernbox/output_HF_dimuons/mc_analysis_output/LHC23i2/Version3_AliAOD/save_output/LHC23i2_MC_output_Tree_merged.root",
+                              "/home/michele_pennisi/cernbox/output_HF_dimuons/mc_analysis_output/Powheg_Sim/powheg_DY_mass_3_35/Version1/Analysis_MCsim/powheg_DY_mass_3_35_Analysis_MCsim_Tree_merged.root"};
+
+    TString NameDiMu_Sel[n_obs] = {"Charm", "Beauty", "DY"};
+
+    TString NameMC_file_x_CS_calc[3] = {"/home/michele_pennisi/cernbox/HF_dimuons/mc_analysis/analysis_grid/grid_sim/powheg_charm_nocut_Version_5_AliAOD_withHF_Q/powheg_charm_nocut_Version_5_AliAOD_withHF_Q_MC_output_Hist_294154.root", "/home/michele_pennisi/cernbox/HF_dimuons/mc_analysis/analysis_grid/grid_sim/powheg_beauty_nocut_Version_5_AliAOD_withHF_Q/powheg_beauty_nocut_Version_5_AliAOD_withHF_Q_MC_output_Hist_294154.root", "~/cernbox/HF_dimuons/fit_data/ingredient_cs_powheg/DY_cs.root"};
+    TString NameMC_Hist_x_CS_calc[3] = {"HF_quarks/Powheg/h_NCharm_event_PowhegOnly", "HF_quarks/Powheg/h_NBeauty_event_PowhegOnly", "h_NDY_event"};
+    TString NameMC_Hist_x_CS_calc_fwd[3] = {"HF_quarks/Powheg/h_NCharm_event_fwd_PowhegOnly", "HF_quarks/Powheg/h_NBeauty_event_fwd_PowhegOnly", "h_NDY_event_fwd"};
+
+    Double_t fNorm_MC[n_obs] = {30.5 * (56.42 / 5.0), 15.0 * (56.42 / 0.5), 1. * (56.42 / 4.6e-05)};
+
+    Double_t Powheg_CS[n_obs];
+    Powheg_CS[0] = (5.0);
+    Powheg_CS[1] = (0.50);
+    Powheg_CS[2] = (4.6e-05);
+
+    for (Int_t i = 0; i < n_obs; i++)
+    {
+        cout << "Result for " << NameDiMu_Sel[i].Data() << endl;
+        cout << "===== MonteCarlo =====" << endl;
+        TFile *fIn_MC = new TFile(NameMC_file[i], "READ");
+        gROOT->cd();
+        TTree *m_tree;
+        if (i < 2)
+            m_tree = ((TTree *)fIn_MC->Get(Form("DiMuon_Rec_PowhegOnly_%s", NameDiMu_Sel[i].Data())));
+        else
+            m_tree = ((TTree *)fIn_MC->Get("rec_tree_muDY"));
+
+        TTree *m_tree_MC_cutted;
+        if (info.Low_Mass == 4 && info.High_Mass == 30)
+            m_tree_MC_cutted = (TTree *)m_tree->CopyTree(Form("((m>%d && m<9.0) ||(m>11.0 && m<%d)) && pt<%d", info.Low_Mass, info.High_Mass, info.High_Pt)); // Number of rec dimuons in the MC
+        else
+            m_tree_MC_cutted = (TTree *)m_tree->CopyTree(Form("(m>%d && m<%d) && (pt > %d && pt <%d)", info.Low_Mass, info.High_Mass, info.Low_Pt, info.High_Pt)); // Number of rec dimuons in the MC
+        // m_tree_MC_cutted->SetName(Form("Tree_%s_M_%d_%d_Pt_%d_%d", NameDiMu_Sel[i].Data(), info.Low_Mass, info.High_Mass, info.Low_Pt, info.High_Pt));
+
+        TH1F *NEv_hist;
+        Double_t NEv_MB_MC = 0;
+        if (i < 2)
         {
-            N_Pair[i] = (N_Pair[i] + (0.5) * h_NHF_event_PowhegOnly[i]->GetBinContent(i_bin) * (i_bin - 1));
-            // printf("Bin %d || Content %0.0f\n", i_bin, h_NHF_event_PowhegOnly[i]->GetBinContent(i_bin));
-            N_Pair_fwd[i] = (N_Pair_fwd[i] + (0.5) * h_NHF_event_PowhegOnly_fwd[i]->GetBinContent(i_bin) * (i_bin - 1));
-            if (i < n_DiMuSelection - 1)
-                n_HF_total_PYTHIA[i] = (n_HF_total_PYTHIA[i] + (0.5) * h_NHF_event_Pythia[i]->GetBinContent(i_bin) * (i_bin - 1));
-            else
-                n_HF_total_PYTHIA[i] = 0;
-        }
 
-        fIn_MC[i]->cd();
-
-        if (i < n_DiMuSelection - 1)
-        {
-            n_ev_MC.push_back(feq_MC[i] * NEv_MC[i]->GetBinContent(2));
-            m_tree_MC[i] = (TTree *)fIn_MC[i]->Get(Form("DiMuon_Rec_PowhegOnly_%s", name_DiMu_Sel[i].Data()));
-            printf("MC: Nev %0.3e || f norm powheg %0.3e || Nev MB %0.3e\n", NEv_MC[i]->GetBinContent(2), feq_MC[i], n_ev_MC[i]);
-            CS.push_back((Powheg_CS[i] * N_Pair_fwd[i] / N_Pair[i]) / (2 * 1.5));
+            NEv_hist = (TH1F *)(fIn_MC)->Get("h_Nevents");
+            NEv_MB_MC = fNorm_MC[i] * NEv_hist->GetBinContent(2); // Number of MB event in the MC
         }
         else
+            NEv_MB_MC = fNorm_MC[i] * 637848;
+
+        cout << "N events MB: " << NEv_MB_MC << endl;
+        fIn_MC->Close();
+        Double_t NDimu_MC_MB = (m_tree_MC_cutted->GetEntries() / NEv_MB_MC); // Number of rec Dimuons x event in MC
+        cout << "N Dimu rec: " << m_tree_MC_cutted->GetEntries() << endl;
+        cout << "N Dimu rec x event: " << NDimu_MC_MB << endl;
+
+        cout << "===== Data =====" << endl;
+
+        Double_t fit_result = (r->GetBinContent(i + 1));
+        Double_t NDimu_MC_Data = (fit_result / NEv_MB_Data);
+        cout << "N events MB: " << NEv_MB_Data << endl;
+        cout << "N Dimu from fit: " << fit_result << endl;
+        cout << "N Dimu from fit x event: " << NDimu_MC_Data << endl;
+
+        cout << "===== Cross section calculation =====" << endl;
+
+        TFile *fIn_MC_x_CS = new TFile(NameMC_file_x_CS_calc[i], "READ");
+        Double_t N_Pair = 0;
+        Double_t N_Pair_fwd = 0;
+        for (Int_t i_bin = 0; i_bin < ((TH1D *)fIn_MC_x_CS->Get(NameMC_Hist_x_CS_calc[i]))->GetNbinsX(); i_bin++)
         {
-
-            m_tree_MC[i] = (TTree *)fIn_MC[i]->Get("rec_tree_muDY");
-            n_ev_MC.push_back(feq_MC[i] * 637848.);
-            printf("MC: Nev %0.3e || f norm powheg %0.3e || Nev MB %0.3e\n", 637848., feq_MC[i], n_ev_MC[i]);
-            CS.push_back((Powheg_CS[i] * N_Pair_fwd[i] / N_Pair[i]) / (1.5));
+            N_Pair = (N_Pair + (0.5) * ((TH1D *)fIn_MC_x_CS->Get(NameMC_Hist_x_CS_calc[i]))->GetBinContent(i_bin) * (i_bin - 1));
+            // printf("Bin %d || Content %0.0f\n", i_bin, h_NHF_event_PowhegOnly[i]->GetBinContent(i_bin));
+            N_Pair_fwd = (N_Pair_fwd + (0.5) * ((TH1D *)fIn_MC_x_CS->Get(NameMC_Hist_x_CS_calc_fwd[i]))->GetBinContent(i_bin) * (i_bin - 1));
+            // if (h_NHF_event_Pythia[i] == nullptr)
+            //     continue;
         }
-        gROOT->cd();
-        printf("Fwd fraction %0.3e || (N_Pair_fwd %f  N_Pair_total %f )", N_Pair_fwd[i] / N_Pair[i], N_Pair_fwd[i], N_Pair[i]);
-        printf("CS from MC %0.3e\n", CS[i]);
-
-        m_tree_MC_cutted[i] = (TTree *)m_tree_MC[i]->CopyTree(Form("(m>%d && m<%d) && (pt > %d && pt <%d)", Low_Mass, High_Mass, Low_Pt, High_Pt));
-        m_tree_MC_cutted[i]->SetName(Form("Tree_%s_M_%d_%d_Pt_%d_%d", name_DiMu_Sel[i].Data(), Low_Mass, High_Mass, Low_Pt, High_Pt));
-
-        printf("Data: Nev = %0.3e || Nev MB (2384.73 * fhNEv->GetBinContent(3)) %0.3e\n", fhNEv->GetBinContent(3), 2384.73 * fhNEv->GetBinContent(3));
-        c_frac_fit_MB.push_back(fit_result[i] / (2384.73 * fhNEv->GetBinContent(3)));
-        c_frac_MC_MB.push_back(m_tree_MC_cutted[i]->GetEntries() / n_ev_MC[i]);
-        printf("Result\n From fit %0.5f\n norm MB event %0.5e\n", fit_result[i], c_frac_fit_MB[i]);
-        printf("from MC %0.0lld\n norm MB event %0.5e\n", m_tree_MC_cutted[i]->GetEntries(), c_frac_MC_MB[i]);
-        Double_t Ratio = c_frac_fit_MB[i] / c_frac_MC_MB[i];
+        fIn_MC_x_CS->Close();
+        Double_t CS = ((Powheg_CS[i] * N_Pair_fwd / N_Pair) / (2 * 1.5));
+        Double_t Ratio = NDimu_MC_Data / NDimu_MC_MB;
         printf("Ratio %0.3e\n", Ratio);
+        printf("Powheg CS %0.3e\n", CS);
+        printf("Measured Powheg CS %0.3e\n", (Ratio * CS));
 
-        printf("Measured CS %0.3e\n", (Ratio * CS[i]));
-        printf("MPI correction with PYTHIA %0.3f\n", n_HF_total_PYTHIA[i] / n_HF_single_pair_PYTHIA[i]);
-        printf("Measured CS corrected for MPI %0.3e\n", (Ratio * CS[i] * n_HF_total_PYTHIA[i] / n_HF_single_pair_PYTHIA[i]));
+        if (i < 2)
+        {
+            cout << "===== MPI corr =====" << endl;
+            TFile *fIn_Pythia = new TFile("/home/michele_pennisi/cernbox/HF_dimuons/pythia_stand/new_pythia_sim/SoftQCD_inel_LFoff_Def_pythia_sim_2411_DefaultBR_output_Hist_100000.root", "READ");
+            Double_t n_HF_total_PYTHIA = 0.0;
+            for (Int_t i_bin = 1; i_bin <= ((TH1F *)fIn_Pythia->Get(Form("HF_quarks/h_N%s_event", NameDiMu_Sel[i].Data())))->GetNbinsX(); i_bin++)
+            {
+                n_HF_total_PYTHIA = (n_HF_total_PYTHIA + (0.5) * ((TH1F *)fIn_Pythia->Get(Form("HF_quarks/h_N%s_event", NameDiMu_Sel[i].Data())))->GetBinContent(i_bin) * (i_bin - 1));
+            }
+
+            Double_t n_HF_single_pair_PYTHIA = ((TH1F *)fIn_Pythia->Get(Form("HF_quarks/h_N%s_event", NameDiMu_Sel[i].Data())))->GetBinContent(3);
+            printf("MPI correction with PYTHIA %0.3f\n", n_HF_total_PYTHIA / n_HF_single_pair_PYTHIA);
+            printf("Measured CS corrected for MPI %0.3e\n", (Ratio * CS * n_HF_total_PYTHIA / n_HF_single_pair_PYTHIA));
+        }
         cout << "=================================================" << endl;
     }
 }
 
-void unbinned_fit_data_sample_singleregion(Int_t Low_Mass = 4, Int_t High_Mass = 9, Int_t Low_Pt = 0, Int_t High_Pt = 10, Bool_t withDY = kTRUE)
+void unbinned_fit_data_sample_singleregion()
 {
 
+    opt info;
     gROOT->ProcessLineSync(".x /home/michele_pennisi/high_mass_dimuons/fit_library/PtMassExpPdf.cxx+");
     gROOT->ProcessLineSync(".x /home/michele_pennisi/high_mass_dimuons/fit_library/PtMassPol1ExpPdf.cxx+");
 
-    Int_t Mass_Binning = (High_Mass - Low_Mass) / 0.5;
-    Int_t Pt_Binning = (High_Pt - Low_Pt) / 0.5;
-    const Int_t n_DiMuSelection = 4;
-    TString Name_DimuSel[n_DiMuSelection] = {"Charm", "Beauty", "HF_Mixed", "DY"};
-    Color_t color[n_DiMuSelection] = {kMagenta + 2, kSpring - 6, kAzure + 9, kOrange + 7};
-    TFile *fIn = new TFile("/home/michele_pennisi/cernbox/HF_dimuons/fit_data/results/Powheg_pdfMC_unbinnedprova.root", "READ");
+    const Int_t n_DiMuSelection = 6;
+    TString Name_DimuSel[n_DiMuSelection] = {"Charm", "Beauty", "HF_Mixed", "DY", "LF_HF_Mixed", "LF"};
+    Color_t color[n_DiMuSelection] = {kMagenta + 2, kSpring - 6, kAzure + 9, kOrange + 7, kRed - 2, kAlpine};
+    TFile *fIn = new TFile(Form("/home/michele_pennisi/cernbox/HF_dimuons/fit_data/results/LF_HF_mixed_removing_Y_POWHEG_PDF_%s.root", info.stat_MC.Data()), "READ");
 
-    RooWorkspace *w = (RooWorkspace *)fIn->Get(Form("w_M_%d_%d_Pt_%d_%d", Low_Mass, High_Mass, Low_Pt, High_Pt));
+    RooWorkspace *w = (RooWorkspace *)fIn->Get(Form("w_M_%d_%d_Pt_%d_%d", info.Low_Mass, info.High_Mass, info.Low_Pt, info.High_Pt));
     w->Print("s");
-    fIn->Close();
 
     // RooRealVar *m = new RooRealVar("m", "#it{m}_{#mu^{#plus}#mu^{#minus}} (GeV/#it{c}^{2})", Low_Mass, High_Mass);
     // RooRealVar *pt = new RooRealVar("pt", "#it{p}_{T} (GeV/#it{c})", Low_Pt, High_Pt);
 
     RooRealVar *m = w->var("m");
     RooRealVar *pt = w->var("pt");
-    m->setBins(Mass_Binning);
-    pt->setBins(Pt_Binning);
+    w->var("m")->setRange("low", 4, 8);
+    w->var("m")->setRange("high", 11, 30);
+
+    w->var("pt")->setRange("low", 0, 10);
+    w->var("pt")->setRange("high", 10, 30);
+    m->setBins(info.Mass_Binning);
+    pt->setBins(info.Pt_Binning);
 
     RooCategory sample("sample", "sample");
     sample.defineType("mass");
     sample.defineType("transversemomentum");
-    TFile *fIn_data = new TFile("~/dimuon_HF_pp/data/LHC18p/Hist_AOD/3_11_2022/TreeResults_merged.root", "READ");
+    TFile *fIn_data;
+    if (info.stat_Data.Contains("Run2"))
+        fIn_data = new TFile("/home/michele_pennisi/cernbox/HF_dimuons/data_analysis/Tree_MassPt_MassCut4_Run2.root", "READ");
+    else
+        fIn_data = new TFile("~/dimuon_HF_pp/data/LHC18p/Hist_AOD/3_11_2022/TreeResults_merged.root", "READ");
     fIn_data->ls();
 
     // Taking data saved in tree
@@ -195,14 +361,16 @@ void unbinned_fit_data_sample_singleregion(Int_t Low_Mass = 4, Int_t High_Mass =
     gROOT->cd();
 
     TTree *tree_data_cutted;
-    if (Low_Mass == 4 && High_Mass == 30)
-        // tree_data_cutted = (TTree *)tree_data->CopyTree(Form("((m>%d && m<9) || (m>11 && m<%d)) && (pt > %d && pt <%d)", Low_Mass, High_Mass, Low_Pt, High_Pt));
-        tree_data_cutted = (TTree *)fIn_data->Get("rec_data_tree_withcut");
+    if (info.Low_Mass == 4 && info.High_Mass == 30)
+        tree_data_cutted = (TTree *)tree_data->CopyTree(Form("((m>%d && m<%0.1f) ||(m>%0.1f && m<%d)) && pt<%d", info.Low_Mass, info.LowM_cut, info.HighM_cut, info.High_Mass, info.High_Pt));
     else
-        tree_data_cutted = (TTree *)tree_data->CopyTree(Form("(m>%d && m<%d) && (pt > %d && pt <%d)", Low_Mass, High_Mass, Low_Pt, High_Pt));
+        tree_data_cutted = (TTree *)tree_data->CopyTree(Form("(m>%d && m<%d) && (pt <%d)", info.Low_Mass, info.High_Mass, info.High_Pt));
+
+    // tree_data_cutted->Draw("m");
+    // return;
     tree_data_cutted->SetName("tree_data_cutted");
-    RooDataSet *unbinned_M_Dimu_data = new RooDataSet("M_Dimu_data", "M_Dimu_data", RooArgSet(*m), Import(*tree_data_cutted), Cut("m<9 || (m>11 && m<30)"));
-    RooDataSet *unbinned_Pt_Dimu_data = new RooDataSet("Pt_Dimu_data", "Pt_Dimu_data", RooArgSet(*pt), Import(*tree_data_cutted));
+    RooDataSet *unbinned_M_Dimu_data = new RooDataSet("M_Dimu_data", "M_Dimu_data", RooArgSet(*m), Import(*tree_data_cutted), Cut(Form("m<%0.1f || (m>%0.1f && m<30)", info.LowM_cut, info.HighM_cut)));
+    RooDataSet *unbinned_Pt_Dimu_data = new RooDataSet("Pt_Dimu_data", "Pt_Dimu_data", RooArgSet(*pt), Import(*tree_data_cutted), Cut("pt<30"));
     RooDataSet *unbinned_combData_set = new RooDataSet("combData", "combined data", RooArgSet(*m, *pt), Index(sample), Import("mass", *unbinned_M_Dimu_data), Import("transversemomentum", *unbinned_Pt_Dimu_data));
 
     RooRealVar *B_DimuMass[n_DiMuSelection];
@@ -233,20 +401,30 @@ void unbinned_fit_data_sample_singleregion(Int_t Low_Mass = 4, Int_t High_Mass =
         pdfDimuPt[i_DiMu_Sel] = w->pdf(Form("pdfDimuPtFrom%s", Name_DimuSel[i_DiMu_Sel].Data()));
     }
 
-    RooRealVar *normForC = new RooRealVar("n_charm_output", "number dimuon from c", 28440, 0, 200000);
-    RooRealVar *normForB = new RooRealVar("n_beauty_output", "number dimuon from b", 48000, 0, 200000);
-    RooRealVar *normForDY = new RooRealVar("n_DY_output", "number dimuon from DY", 48000, 0, 200000);
-    RooRealVar *normForMixed = new RooRealVar("n_mixed_output", "number dimuon from b,c", (3.6 / 100) * tree_data_cutted->GetEntries());
+    RooRealVar *normForC = new RooRealVar("n_charm_output", "number dimuon from c", 980000, 0, 2000000);
+    RooRealVar *normForB = new RooRealVar("n_beauty_output", "number dimuon from b", 380000, 0, 2000000);
+    RooRealVar *normForDY = new RooRealVar("n_DY_output", "number dimuon from DY", 380000, 0, 2000000);
+    // RooRealVar *normForLF_HF_Mixed = new RooRealVar("n_LF_HF_mixed_output", "number dimuon from LF-HF mixed", 380000, 0, 2000000);
+    RooRealVar *normForLF_HF_Mixed = new RooRealVar("n_LF_HF_mixed_output", "number dimuon from LF-HF mixed", (14.9 / 100) * tree_data_cutted->GetEntries());
+    normForLF_HF_Mixed->setConstant(kTRUE);
+    RooRealVar *normForMixed = new RooRealVar("n_mixed_output", "number dimuon from b,c", (2.8 / 100) * tree_data_cutted->GetEntries());
     normForMixed->setConstant(kTRUE);
+    RooRealVar *normForLF = new RooRealVar("n_LF_output", "number dimuon from b,c", (0.0 / 100) * tree_data_cutted->GetEntries());
+    normForLF->setConstant(kTRUE);
 
     RooAddPdf *m_model;
     RooAddPdf *pt_model;
-    if (withDY)
+    if (info.DY.Contains("withDY") && info.LF_HF.Contains("noLF_HF"))
     {
-        m_model = new RooAddPdf("m_model", "n_charm_output*dimuMassFromC + n_beauty_output*dimuMassFromB + n_mixed_output*dimuMassFromMixed", RooArgList(*pdfDimuMass[0], *pdfDimuMass[1], *pdfDimuMass[2], *pdfDimuMass[3]), RooArgList(*normForC, *normForB, *normForMixed, *normForDY));
-        pt_model = new RooAddPdf("pt_model", "n_charm_output*dimuPtFromC + n_beauty_output*dimuPtFromB + n_mixed_output*dimuPtFromMixed", RooArgList(*pdfDimuPt[0], *pdfDimuPt[1], *pdfDimuPt[2], *pdfDimuPt[3]), RooArgList(*normForC, *normForB, *normForMixed, *normForDY));
+        m_model = new RooAddPdf("m_model", "n_charm_output*dimuMassFromC + n_beauty_output*dimuMassFromB + n_mixed_output*dimuMassFromMixed + n_DY_output*dimuMassFromDY", RooArgList(*pdfDimuMass[0], *pdfDimuMass[1], *pdfDimuMass[2], *pdfDimuMass[3]), RooArgList(*normForC, *normForB, *normForMixed, *normForDY));
+        pt_model = new RooAddPdf("pt_model", "n_charm_output*dimuPtFromC + n_beauty_output*dimuPtFromB + n_mixed_output*dimuPtFromMixed + n_DY_output*dimuPtFromDY", RooArgList(*pdfDimuPt[0], *pdfDimuPt[1], *pdfDimuPt[2], *pdfDimuPt[3]), RooArgList(*normForC, *normForB, *normForMixed, *normForDY));
     }
-    else
+    else if (info.DY.Contains("withDY") && info.LF_HF.Contains("withLF_HF"))
+    {
+        m_model = new RooAddPdf("m_model", "n_charm_output*dimuMassFromC + n_beauty_output*dimuMassFromB + n_mixed_output*dimuMassFromMixed + n_DY_output*dimuMassFromDY + n_LF_HF_mixed_output*dimuMassFromDY", RooArgList(*pdfDimuMass[0], *pdfDimuMass[1], *pdfDimuMass[2], *pdfDimuMass[3], *pdfDimuMass[4], *pdfDimuMass[5]), RooArgList(*normForC, *normForB, *normForMixed, *normForDY, *normForLF_HF_Mixed, *normForLF));
+        pt_model = new RooAddPdf("pt_model", "n_charm_output*dimuPtFromC + n_beauty_output*dimuPtFromB + n_mixed_output*dimuPtFromMixed + n_DY_output*dimuPtFromDY + n_LF_HF_mixed_output*dimuPtFromDY", RooArgList(*pdfDimuPt[0], *pdfDimuPt[1], *pdfDimuPt[2], *pdfDimuPt[3], *pdfDimuPt[4], *pdfDimuPt[5]), RooArgList(*normForC, *normForB, *normForMixed, *normForDY, *normForLF_HF_Mixed, *normForLF));
+    }
+    else if (info.DY.Contains("noDY"))
     {
         m_model = new RooAddPdf("m_model", "n_charm_output*dimuMassFromC + n_beauty_output*dimuMassFromB + n_mixed_output*dimuMassFromMixed", RooArgList(*pdfDimuMass[0], *pdfDimuMass[1], *pdfDimuMass[2]), RooArgList(*normForC, *normForB, *normForMixed));
         pt_model = new RooAddPdf("pt_model", "n_charm_output*dimuPtFromC + n_beauty_output*dimuPtFromB + n_mixed_output*dimuPtFromMixed", RooArgList(*pdfDimuPt[0], *pdfDimuPt[1], *pdfDimuPt[2]), RooArgList(*normForC, *normForB, *normForMixed));
@@ -257,26 +435,36 @@ void unbinned_fit_data_sample_singleregion(Int_t Low_Mass = 4, Int_t High_Mass =
     simPdf.addPdf(*pt_model, "transversemomentum");
     simPdf.Print("t");
     RooFitResult *r;
-    if (Low_Mass == 4 && High_Mass == 30)
+    if (info.Low_Mass == 4 && info.High_Mass == 30)
     {
-        m->setRange("pluto", 4, 9);
-        pt->setRange("pluto", 20, 30);
-        m->setRange("pippo", 11, 30);
-        pt->setRange("pippo", 0, 20);
-        r = simPdf.fitTo(*unbinned_combData_set, Range("pluto,pippo"), SumCoefRange("pluto,pippo"), SplitRange(false), Save(), SumW2Error(true));
+        // m->setRange("pluto", 4, info.LowM_cut);
+        // pt->setRange("pluto", 20, 30);
+        // m->setRange("pippo", info.HighM_cut, 30);
+        // pt->setRange("pippo", 0, 20);
+        r = simPdf.fitTo(*unbinned_combData_set, Range("low,high"), SumCoefRange("low,high"), SplitRange(false), Save(), SumW2Error(true));
+        // r = pt_model->fitTo(*unbinned_Pt_Dimu_data, Range("low,high"), SumCoefRange("low,high"), SplitRange(false), Save(), SumW2Error(true));
     }
     else
         r = simPdf.fitTo(*unbinned_combData_set, Minimizer("Minuit2"), Save(), SumW2Error(true));
-    fIn = new TFile("/home/michele_pennisi/cernbox/HF_dimuons/fit_data/results/Powheg_pdfMC_unbinnedprova.root", "UPDATE");
-    if (withDY)
-    {
-        r->Write(Form("fit_result_M_%d_%d_Pt_%d_%d_withDY", Low_Mass, High_Mass, Low_Pt, High_Pt));
-    }
-    else
-    {
-        r->Write(Form("fit_result_M_%d_%d_Pt_%d_%d_noDY", Low_Mass, High_Mass, Low_Pt, High_Pt));
-    }
 
+    fIn = new TFile(Form("/home/michele_pennisi/cernbox/HF_dimuons/fit_data/results/Result_PowhegFit_Data_%s_MC_%s.root", info.stat_Data.Data(), info.stat_MC.Data()), "UPDATE");
+    fIn->cd();
+    // r->Write(Form("fit_result_M_%d_%d_Pt_%d_%d_%s_%s", info.Low_Mass, info.High_Mass, info.Low_Pt, info.High_Pt, info.DY.Data(), info.LF_HF.Data()));
+    TH1D *Fit_Result = new TH1D(Form("fit_result_M_%d_%d_Pt_%d_%d_%s_%s", info.Low_Mass, info.High_Mass, info.Low_Pt, info.High_Pt, info.DY.Data(), info.LF_HF.Data()), "; coeff x Pt fit", n_DiMuSelection, 0, n_DiMuSelection);
+    Fit_Result->SetBinContent(1, normForC->getVal());
+    Fit_Result->SetBinContent(2, normForB->getVal());
+    Fit_Result->SetBinContent(3, normForDY->getVal());
+    Fit_Result->SetBinContent(4, normForMixed->getVal());
+    Fit_Result->SetBinContent(5, normForLF_HF_Mixed->getVal());
+    Fit_Result->SetBinContent(6, normForLF->getVal());
+
+    Fit_Result->SetBinError(1, normForC->getError());
+    Fit_Result->SetBinError(2, normForB->getError());
+    Fit_Result->SetBinError(3, normForDY->getError());
+    Fit_Result->SetBinError(4, TMath::Sqrt(normForMixed->getVal()));
+    Fit_Result->SetBinError(5, TMath::Sqrt(normForLF_HF_Mixed->getVal()));
+    Fit_Result->SetBinError(6, TMath::Sqrt(normForLF->getVal()));
+    Fit_Result->Write(0, 2, 0);
     fIn->Close();
 
     RooPlot *m_frame = m->frame(Title("m_frame"));
@@ -291,10 +479,10 @@ void unbinned_fit_data_sample_singleregion(Int_t Low_Mass = 4, Int_t High_Mass =
 
     unbinned_combData_set->plotOn(m_frame, Name("combDatamass"), Cut("sample==sample::mass"), DrawOption("PEZ"));
     unbinned_combData_set->plotOn(pt_frame, Name("combDatapt"), Cut("sample==sample::transversemomentum"), DrawOption("PEZ"));
-    if (Low_Mass == 4 && High_Mass == 30)
+    if (info.Low_Mass == 4 && info.High_Mass == 30)
     {
-        simPdf.plotOn(m_frame, Name("pdfmass"), Slice(sample, "mass"), ProjWData(sample, *unbinned_combData_set), Range("pluto,pippo"), NormRange("pluto,pippo"), LineStyle(kSolid), LineColor(kRed));
-        simPdf.plotOn(pt_frame, Name("pdfpt"), Slice(sample, "transversemomentum"), ProjWData(sample, *unbinned_combData_set), Range("pluto,pippo"), NormRange("pluto,pippo"), LineStyle(kSolid), LineColor(kRed));
+        simPdf.plotOn(m_frame, Name("pdfmass"), Slice(sample, "mass"), ProjWData(sample, *unbinned_combData_set), Range("low,high"), NormRange("low,high"), LineStyle(kSolid), LineColor(kRed));
+        simPdf.plotOn(pt_frame, Name("pdfpt"), Slice(sample, "transversemomentum"), ProjWData(sample, *unbinned_combData_set), Range("low,high"), NormRange("low,high"), LineStyle(kSolid), LineColor(kRed));
     }
     else
     {
@@ -303,12 +491,12 @@ void unbinned_fit_data_sample_singleregion(Int_t Low_Mass = 4, Int_t High_Mass =
     }
 
     r->floatParsFinal().Print("s");
-    for (Int_t i_DiMu_Sel = 0; i_DiMu_Sel < n_DiMuSelection; i_DiMu_Sel++)
+    for (Int_t i_DiMu_Sel = 0; i_DiMu_Sel < n_DiMuSelection-1; i_DiMu_Sel++)
     {
-        if (Low_Mass == 4 && High_Mass == 30)
+        if (info.Low_Mass == 4 && info.High_Mass == 30)
         {
-            simPdf.plotOn(m_frame, Name(Form("pdfmass%s", Name_DimuSel[i_DiMu_Sel].Data())), Slice(sample, "mass"), Components(pdfDimuMass[i_DiMu_Sel]->GetName()), ProjWData(sample, *unbinned_combData_set), Range("pluto,pippo"), NormRange("pluto,pippo"), LineStyle(kDashed), LineColor(color[i_DiMu_Sel]), LineWidth(5));
-            simPdf.plotOn(pt_frame, Name(Form("pdfpt%s", Name_DimuSel[i_DiMu_Sel].Data())), Slice(sample, "transversemomentum"), Components(pdfDimuPt[i_DiMu_Sel]->GetName()), ProjWData(sample, *unbinned_combData_set), Range("pluto,pippo"), NormRange("pluto,pippo"), LineStyle(kDashed), LineColor(color[i_DiMu_Sel]), LineWidth(5));
+            simPdf.plotOn(m_frame, Name(Form("pdfmass%s", Name_DimuSel[i_DiMu_Sel].Data())), Slice(sample, "mass"), Components(pdfDimuMass[i_DiMu_Sel]->GetName()), ProjWData(sample, *unbinned_combData_set), Range("low,high"), NormRange("low,high"), LineStyle(kDashed), LineColor(color[i_DiMu_Sel]), LineWidth(5));
+            simPdf.plotOn(pt_frame, Name(Form("pdfpt%s", Name_DimuSel[i_DiMu_Sel].Data())), Slice(sample, "transversemomentum"), Components(pdfDimuPt[i_DiMu_Sel]->GetName()), ProjWData(sample, *unbinned_combData_set), Range("low,high"), NormRange("low,high"), LineStyle(kDashed), LineColor(color[i_DiMu_Sel]), LineWidth(5));
         }
         else
         {
@@ -316,6 +504,8 @@ void unbinned_fit_data_sample_singleregion(Int_t Low_Mass = 4, Int_t High_Mass =
             simPdf.plotOn(pt_frame, Name(Form("pdfpt%s", Name_DimuSel[i_DiMu_Sel].Data())), Slice(sample, "transversemomentum"), Components(pdfDimuPt[i_DiMu_Sel]->GetName()), ProjWData(sample, *unbinned_combData_set), LineStyle(kDashed), LineColor(color[i_DiMu_Sel]), LineWidth(5));
         }
     }
+
+    w->import(simPdf);
     // Save the roodataset as histogram and RooSimultaneous as TF1
 
     RooArgSet *m_modelcopyOfEverything = static_cast<RooArgSet *>(RooArgSet(*m_model).snapshot(true)); // True means copy the PDF and everything it depends on
@@ -323,7 +513,7 @@ void unbinned_fit_data_sample_singleregion(Int_t Low_Mass = 4, Int_t High_Mass =
     RooArgSet *m_modelobs = m_modelcopiedPdf.getObservables(*unbinned_combData_set);
     RooArgSet *m_modelPars = m_modelcopiedPdf.getParameters(*m_modelobs);
     TF1 *m_modelFunc = m_modelcopiedPdf.asTF(*m_modelobs, *m_modelPars, *m);
-    TH1 *hDimuM_data = unbinned_M_Dimu_data->createHistogram("h_mdata", *m, Binning(Mass_Binning, Low_Mass, High_Mass));
+    TH1 *hDimuM_data = unbinned_M_Dimu_data->createHistogram("h_mdata", *m, Binning(info.Mass_Binning, info.Low_Mass, info.High_Mass));
     hDimuM_data->GetXaxis()->SetTitle("#it{m}_{#mu#mu} (GeV/#it{c}^{2})");
     hDimuM_data->GetYaxis()->SetTitle("d#it{N}/#it{m}_{#mu#mu} (GeV/#it{c}^{2})^{-1}");
 
@@ -332,45 +522,177 @@ void unbinned_fit_data_sample_singleregion(Int_t Low_Mass = 4, Int_t High_Mass =
     RooArgSet *pt_modelobs = pt_modelcopiedPdf.getObservables(*unbinned_combData_set);
     RooArgSet *pt_modelPars = pt_modelcopiedPdf.getParameters(*pt_modelobs);
     TF1 *pt_modelFunc = pt_modelcopiedPdf.asTF(*pt_modelobs, *pt_modelPars, *pt);
-    TH1 *hDimuPt_data = unbinned_Pt_Dimu_data->createHistogram("h_ptdata", *pt, Binning(Pt_Binning, 0, High_Pt));
+    TH1 *hDimuPt_data = unbinned_Pt_Dimu_data->createHistogram("h_ptdata", *pt, Binning(info.Pt_Binning, info.Low_Pt, info.High_Pt));
     hDimuPt_data->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
     hDimuPt_data->GetYaxis()->SetTitle("d#it{N}/#it{p}_{T} (GeV/#it{c})^{-1}");
 
     m_frame->SetMaximum(1.2e+6);
     m_frame->SetMinimum(1.2e-2);
-    TCanvas *M_Canvas = printRooPlot_ratio(m_frame, kFALSE, r, 0, "pdfmass", m_modelFunc, hDimuM_data, Low_Mass, High_Mass);
-
-    if (withDY)
-        M_Canvas->SetName(Form("Mcomp_fit_M_%d_%d_Pt_%d_%d_withDY", Low_Mass, High_Mass, Low_Pt, High_Pt));
-    else
-        M_Canvas->SetName(Form("Mcomp_fit_M_%d_%d_Pt_%d_%d_noDY", Low_Mass, High_Mass, Low_Pt, High_Pt));
+    // TCanvas *M_Canvas = printRooPlot_ratio(m_frame, kFALSE, r, 0, "pdfmass", m_modelFunc, hDimuM_data, info.Low_Mass, info.High_Mass, normForMixed->getVal(), normForLF_HF_Mixed->getVal());
+    TCanvas *M_Canvas = printMC_ratio(Form("Mcomp_fit_M_%d_%d_Pt_%d_%d_%s", info.Low_Mass, info.High_Mass, info.Low_Pt, info.High_Pt, info.DY.Data()), "Title", m_frame, nullptr, hDimuM_data, m_modelFunc, kBlack, info.Low_Mass, info.High_Mass);
+    M_Canvas->SetName(Form("Mcomp_fit_M_%d_%d_Pt_%d_%d_%s", info.Low_Mass, info.High_Mass, info.Low_Pt, info.High_Pt, info.DY.Data()));
 
     pt_frame->SetMaximum(1.2e+6);
     pt_frame->SetMinimum(1.2e-2);
-    TCanvas *Pt_Canvas = printRooPlot_ratio(pt_frame, kFALSE, r, 0, "pdfpt", pt_modelFunc, hDimuPt_data, Low_Pt, High_Pt);
-    if (withDY)
-        Pt_Canvas->SetName(Form("Ptcomp_fit_M_%d_%d_Pt_%d_%d_withDY", Low_Mass, High_Mass, Low_Pt, High_Pt));
-    else
-        Pt_Canvas->SetName(Form("Ptcomp_fit_M_%d_%d_Pt_%d_%d_noDY", Low_Mass, High_Mass, Low_Pt, High_Pt));
+    TCanvas *Pt_Canvas = printRooPlot_ratio(pt_frame, kFALSE, r, 0, "pdfpt", pt_modelFunc, hDimuPt_data, info.Low_Pt, info.High_Pt, normForMixed->getVal(), normForLF_HF_Mixed->getVal());
+    Pt_Canvas->SetName(Form("Ptcomp_fit_M_%d_%d_Pt_%d_%d_%s", info.Low_Mass, info.High_Mass, info.Low_Pt, info.High_Pt, info.DY.Data()));
+
+    M_Canvas->SaveAs(Form("prov_im/%s.png", M_Canvas->GetName()));
+    Pt_Canvas->SaveAs(Form("prov_im/%s.png", Pt_Canvas->GetName()));
+    r->Print("s");
+    if (info.Plot_Likehood)
+    {
+        RooPlot *m_frame_chisquare[4];
+        Int_t m_binnings[4] = {104, 52, 26, 13};
+        Double_t chi2[4];
+        TCanvas *c = new TCanvas("c", "c", 1200, 1200);
+        c->Divide(2, 2);
+        for (Int_t i_chi2 = 0; i_chi2 < 4; i_chi2++)
+        {
+            m_frame_chisquare[i_chi2] = m->frame(Title(TString::Format("m_frame_chisquare_%d", i_chi2)), Binning(m_binnings[i_chi2]));
+            unbinned_combData_set->plotOn(m_frame_chisquare[i_chi2], Name(TString::Format("combDatamass_%d", i_chi2)), Cut("sample==sample::mass"), DrawOption("PEZ"));
+            simPdf.plotOn(m_frame_chisquare[i_chi2], Name(TString::Format("pdfmass_%d", i_chi2)), Slice(sample, "mass"), ProjWData(sample, *unbinned_combData_set), Range("low,high"), NormRange("low,high"), LineStyle(kSolid), LineColor(kRed));
+            chi2[i_chi2] = m_frame_chisquare[i_chi2]->chiSquare(TString::Format("pdfmass_%d", i_chi2), TString::Format("combDatamass_%d", i_chi2), 3);
+
+            cout << "chi2: " << chi2[i_chi2] << endl;
+            c->cd(i_chi2 + 1);
+            m_frame_chisquare[i_chi2]->Draw();
+        }
+        TCanvas *LL = new TCanvas("LL", "LL", 1200, 1200);
+        LL->Divide(2, 2);
+        // ModelConfig model;
+        // model.SetWorkspace(*w);
+        // model.SetPdf("simPdf");
+        // ProfileLikelihoodCalculator pl(*unbinned_combData_set, model);
+        // pl.SetConfidenceLevel(0.95); // 95% interval
+        // LikelihoodInterval *interval = pl.GetInterval();
+
+        // // print out the interval on the first Parameter of Interest
+        // // RooRealVar *firstPOI = (RooRealVar *)model.GetParametersOfInterest()->first();
+        // cout << "\n>>>> RESULT : " << 0.95 * 100 << "% interval on " << normForC->GetName() << " is : ["
+        //      << interval->LowerLimit(*normForC) << ", " << interval->UpperLimit(*normForC) << "]\n " << endl;
+
+        // // make a plot
+
+        // cout << "making a plot of the profile likelihood function ....(if it is taking a lot of time use less points or the "
+        //         "TF1 drawing option)\n";
+        // LikelihoodIntervalPlot plot(interval);
+        // plot.SetNPoints(10); // do not use too many points, it could become very slow for some models
+
+        // plot.SetRange(0, 80000);
+        // TString opt = TString("tf1");
+        // LL->cd(1);
+        // plot.Draw(opt); // use option TF1 if too slow (plot.Draw("tf1")
+        RooAbsReal *nll_charm = simPdf.createNLL(*unbinned_combData_set, NumCPU(6));
+        // Minimize likelihood w.r.t all parameters before making plots
+        RooMinimizer(*nll_charm).lastMinuitFit();
+        // Plot likelihood scan frac
+        // RooWorkspace *w_Nll = new RooWorkspace("w_Nll", "workspace");
+        // w_Nll->import(*nll) ;
+        //
+        //
+        // w_Nll->writeToFile(Form("/home/michele_pennisi/cernbox/output_HF_dimuons/fit_data_output/root_files/likehood_%s.root", mass_range_data.Data()));
+
+        RooPlot *frame_charm = normForC->frame(Bins(1000), Range(55000, 65000), Title(TString::Format("%d < m_{#mu#mu} < %d GeV/#it{c}^{2} && #it{p}_{T} < %d GeV/#it{c}", info.Low_Mass, info.High_Mass, info.High_Pt)));
+        nll_charm->plotOn(frame_charm, Name("nll_charm"), ShiftToZero(), LineStyle(kDashed), LineColor(kMagenta + 2), LineWidth(5));
+        cout << "nll_charm->getVal()" << nll_charm->getVal() << endl;
+        // nll_charm->paramOn(*frame_charm);
+        // std::unique_ptr<RooAbsReal> pll_charm{nll_charm->createProfile(*normForC)};
+        // pll_charm->plotOn(frame_charm, Name("pll_charm"), ShiftToZero(), LineStyle(kSolid), LineColor(kMagenta + 2), LineWidth(5));
+        frame_charm->GetXaxis()->SetTitle("N_{#mu^{#plus}#mu^{#minus}} from fit");
+        frame_charm->GetXaxis()->SetTitleOffset(1.5);
+        frame_charm->GetYaxis()->SetTitleOffset(1.8);
+        // frame_charm->GetYaxis()->SetTitle("Likehood");
+        frame_charm->SetMaximum(52500);
+        frame_charm->SetMinimum(10e-7);
+        LL->cd(1);
+        frame_charm->Draw();
+
+        // RooPlot *frame_beauty = normForB->frame(Bins(800), Range(1, 80000), Title(TString::Format("%d < m_{#mu#mu} < %d GeV/#it{c}^{2} && #it{p}_{T} < %d GeV/#it{c}", Low_Mass, High_Mass, High_Pt)));
+        // RooAbsReal *nll_beauty = simPdf.createNLL(*unbinned_combData_set, NumCPU(4), Name("nll_beauty"));
+        // // Minimize likelihood w.r.t all parameters before making plots
+        // RooMinimizer(*nll_beauty).lastMinuitFit();
+        // nll_beauty->plotOn(frame_beauty, Name("nll_beauty"), ShiftToZero(), LineStyle(kDashed), LineColor(kGreen + 2), LineWidth(5));
+        // std::unique_ptr<RooAbsReal> pll_beauty{nll_beauty->createProfile(*normForB)};
+        // pll_beauty->plotOn(frame_beauty, Name("pll_beauty"), ShiftToZero(), LineStyle(kSolid), LineColor(kGreen + 2), LineWidth(5));
+        // LL->cd(2);
+        // frame_beauty->Draw();
+
+        if (info.DY.Contains("withDY"))
+        {
+            RooAbsReal *nll_DY = simPdf.createNLL(*unbinned_combData_set, NumCPU(4), Name("nll_DY"));
+            // Minimize likelihood w.r.t all parameters before making plots
+            RooMinimizer(*nll_DY).lastMinuitFit();
+            RooPlot *frame_DY = normForDY->frame(Bins(800), Range(1, 80000), Title(TString::Format("%d < m_{#mu#mu} < %d GeV/#it{c}^{2} && #it{p}_{T} < %d GeV/#it{c}", info.Low_Mass, info.High_Mass, info.High_Pt)));
+            nll_DY->plotOn(frame_DY, Name("nll_DY"), ShiftToZero(), LineStyle(kDashed), LineColor(kBlack), LineWidth(5));
+            LL->cd(4);
+            frame_DY->Draw();
+        }
+
+        TLegend *legend = new TLegend(0.475, 0.575, 0.75, 0.795);
+        // legend->SetNColumns(2);
+        // legend->AddEntry((TObject*)0, "", "");
+        legend->SetFillStyle(0);
+        legend->SetLineColor(kWhite);
+        legend->SetBorderSize(0);
+        legend->SetTextSize(0.0425);
+        // legend->SetHeader("Data");
+        legend->SetTextAlign(12);
+        legend->AddEntry("nll_charm", "Likelihood #it{N}_{#mu^{#plus}#mu^{#minus} #leftarrow c}", "L");
+        // legend->AddEntry("nll_beauty", "Likelihood #it{N}_{#mu^{#plus}#mu^{#minus} #leftarrow b}", "L");
+        if (info.DY.Contains("withDY"))
+            legend->AddEntry("nll_beauty", "Likelihood #it{N}_{#mu^{#plus}#mu^{#minus} #leftarrow DY}", "L");
+        LL->cd(3);
+        legend->Draw();
+        // if (With_DY)
+        // {
+
+        //     canvas->SaveAs(Form("images/LLcanvas%s_withDY.pdf", mass_range_data.Data()));
+        //     canvas->SaveAs(Form("images/LLcanvas%s_withDY.png", mass_range_data.Data()));
+        // }
+        // else
+        // {
+        //     canvas->SaveAs(Form("images/LLcanvas%s_noDY.pdf", mass_range_data.Data()));
+        //     canvas->SaveAs(Form("images/LLcanvas%s_noDY.png", mass_range_data.Data()));
+        // }
+
+        // gStyle->SetOptStat(0);
+        // gStyle->SetPalette(1);
+    }
 }
 
-void pdf_extraction(Int_t Mass_Binning = 19, Int_t Low_Mass = 11, Int_t High_Mass = 30, Int_t Pt_Binning = 15, Int_t Low_Pt = 0, Int_t High_Pt = 30)
+void pdf_extraction()
 {
+    opt info;
     gROOT->ProcessLineSync(".x /home/michele_pennisi/dimuon_HF_pp/fit_data/fit_library/PtMassExpPdf.cxx+");
     gROOT->ProcessLineSync(".x /home/michele_pennisi/dimuon_HF_pp/fit_data/fit_library/PtMassPol1ExpPdf.cxx+");
 
-    const Int_t n_DiMuSelection = 4;
-    TString Name_DimuSel[n_DiMuSelection] = {"Charm", "Beauty", "HF_Mixed", "DY"};
+    const Int_t n_DiMuSelection = 7;
+    TString Name_DimuSel[n_DiMuSelection] = {"Charm", "Beauty", "HF_Mixed", "DY", "LF_HF_Mixed", "LF", "Data"};
+    TString Dir_name = "/home/michele_pennisi/cernbox/output_HF_dimuons/mc_analysis_output";
+    TString Version_ALIAOD;
+    TString Tree_name;
+    if (info.stat_MC.Contains("small_stat"))
+    {
+        Version_ALIAOD = "Version3_AliAOD/save_output";
+        Tree_name = "DiMuon_Rec_FullMass_PowhegOnly";
+    }
+    else if (info.stat_MC.Contains("full_stat"))
+    {
+        Version_ALIAOD = "Version_5_AliAOD_skimmed_fwd_fullstat";
+        Tree_name = "DiMuon_Rec_PowhegOnly_";
+    }
+    cout << Version_ALIAOD.Data() << endl;
 
-    TFile *fIn[n_DiMuSelection] = {new TFile("/home/michele_pennisi/cernbox/output_HF_dimuons/mc_analysis_output/LHC23i1/Version3_AliAOD/save_output/LHC23i1_MC_output_Tree_merged.root"), new TFile("/home/michele_pennisi/cernbox/output_HF_dimuons/mc_analysis_output/LHC23i2/Version3_AliAOD/save_output/LHC23i2_MC_output_Tree_merged.root"), new TFile("/home/michele_pennisi/cernbox/output_HF_dimuons/mc_analysis_output/LHC23i2/Version3_AliAOD/save_output/LHC23i2_MC_output_Tree_merged.root"), new TFile("/home/michele_pennisi/cernbox/output_HF_dimuons/mc_analysis_output/Powheg_Sim/powheg_DY_mass_3_35/Version1/Analysis_MCsim/powheg_DY_mass_3_35_Analysis_MCsim_Tree_merged.root")};
-
-    TTree *fTree[n_DiMuSelection] = {(TTree *)fIn[0]->Get("DiMuon_Rec_FullMass_PowhegOnlyCharm"), (TTree *)fIn[1]->Get("DiMuon_Rec_FullMass_PowhegOnlyBeauty"), (TTree *)fIn[2]->Get("DiMuon_Rec_FullMass_PowhegOnlyHF_Mixed"), (TTree *)fIn[3]->Get("rec_tree_muDY")};
-
+    TFile *fIn[n_DiMuSelection] = {new TFile(Form("%s/LHC23i1/%s/LHC23i1_MC_output_Tree_merged.root", Dir_name.Data(), Version_ALIAOD.Data())), new TFile(Form("%s/LHC23i2/%s/LHC23i2_MC_output_Tree_merged.root", Dir_name.Data(), Version_ALIAOD.Data())), new TFile(Form("%s/LHC23i2/%s/LHC23i2_MC_output_Tree_merged.root", Dir_name.Data(), Version_ALIAOD.Data())), new TFile(Form("%s/LHC18p_DY/Version_2_AliAOD/LHC18p_DY_MC_output_Tree_merged.root", Dir_name.Data())), new TFile(Form("%s/LHC23i1/%s/LHC23i1_MC_output_Tree_merged.root", Dir_name.Data(), Version_ALIAOD.Data())), new TFile(Form("%s/LHC23i2/%s/LHC23i2_MC_output_Tree_merged.root", Dir_name.Data(), Version_ALIAOD.Data())), new TFile("/home/michele_pennisi/cernbox/HF_dimuons/data_analysis/Tree_MassPt_MassCut4_Run2.root", "READ")};
+    fIn[0]->ls();
+    TTree *fTree[n_DiMuSelection] = {(TTree *)fIn[0]->Get(Form("%sCharm", Tree_name.Data())), (TTree *)fIn[1]->Get(Form("%sBeauty", Tree_name.Data())), (TTree *)fIn[2]->Get("DiMuon_Rec_PythiaOnly_LF_HF_Mixed"), (TTree *)fIn[3]->Get("DiMuon_Rec_DY"), (TTree *)fIn[4]->Get("DiMuon_Rec_PythiaOnly_LF_HF_Mixed"), (TTree *)fIn[5]->Get("DiMuon_Rec_PythiaOnly_LF"), (TTree *)fIn[6]->Get("rec_data_tree")};
     gROOT->cd();
 
-    TTree *fTree_cut[n_DiMuSelection];
-    TFile *fOut = new TFile("/home/michele_pennisi/cernbox/HF_dimuons/fit_data/results/Powheg_pdfMC_unbinnedprova.root", "UPDATE");
-
+    TTree *fTree_x_pt[n_DiMuSelection];
+    TTree *fTree_x_m[n_DiMuSelection];
+    TFile *fOut = new TFile(Form("/home/michele_pennisi/cernbox/HF_dimuons/fit_data/results/LF_HF_mixed_removing_Y_POWHEG_PDF_%s.root", info.stat_MC.Data()), "UPDATE");
+    // TFile *fOut = new TFile(Form("/home/michele_pennisi/cernbox/HF_dimuons/fit_data/results/POWHEG_PDF_%s.root", info.stat_MC.Data()), "UPDATE");
     RooDataSet *M_Dimu[n_DiMuSelection];
     RooDataSet *Pt_Dimu[n_DiMuSelection];
 
@@ -390,25 +712,38 @@ void pdf_extraction(Int_t Mass_Binning = 19, Int_t Low_Mass = 11, Int_t High_Mas
     TH1D *Param_Pt_unbinned[n_DiMuSelection];
     TH1D *Param_M_unbinned[n_DiMuSelection];
 
-    RooRealVar *m = new RooRealVar("m", "#it{m}_{#mu^{#plus}#mu^{#minus}} (GeV/#it{c}^{2})", Low_Mass, High_Mass);
-    RooRealVar *pt = new RooRealVar("pt", "#it{p}_{T} (GeV/#it{c})", Low_Pt, High_Pt);
+    // RooRealVar *m = new RooRealVar("m", "#it{m}_{#mu^{#plus}#mu^{#minus}} (GeV/#it{c}^{2})", info.Low_Mass, info.High_Mass);
+    // RooRealVar *pt = new RooRealVar("pt", "#it{p}_{T} (GeV/#it{c})", info.Low_Pt, info.High_Pt);
 
-    Color_t color[n_DiMuSelection] = {kMagenta + 2, kSpring - 6, kAzure + 9, kOrange + 7};
-    Color_t fillcolor[n_DiMuSelection] = {kMagenta - 10, kGreen - 10, kCyan - 10, kOrange + 7};
+    Color_t color[n_DiMuSelection] = {kMagenta + 2, kSpring - 6, kAzure + 9, kOrange + 7, kBlue, kRed, kBlack};
+    Color_t fillcolor[n_DiMuSelection] = {kMagenta + 2, kSpring - 6, kAzure + 9, kOrange + 7, kBlue, kRed, kBlack};
 
-    RooWorkspace *w = new RooWorkspace(Form("w_M_%d_%d_Pt_%d_%d", Low_Mass, High_Mass, Low_Pt, High_Pt), "workspace");
+    RooWorkspace *w = new RooWorkspace(Form("w_M_%d_%d_Pt_%d_%d", info.Low_Mass, info.High_Mass, info.Low_Pt, info.High_Pt), "workspace");
+    w->factory("pt[0,30], #it{p}_{T} (GeV/#it{c})");
+    RooRealVar *pt = (RooRealVar *)w->var("pt");
+    pt->setBins(info.Pt_Binning);
+    w->factory("m[4,30], #it{m}_{#mu#mu} (GeV/#it{c}^{2})");
+    RooRealVar *m = w->var("m");
+    w->var("m")->setRange("low", 4, 8);
+    w->var("m")->setRange("high", 11, 30);
 
     TString Mass_Factory_Info[n_DiMuSelection];
-    Mass_Factory_Info[0].Form("PtMassExpPdf::pdfDimuMassFromCharm(%s[%d,%d], B_DimuMassFromCharm[2.85,1e-3,100], n1_DimuMassFromCharm[2.81,1e-3,100], n2_DimuMassFromCharm[5,1e-3,100])", m->GetName(), Low_Mass, High_Mass);
-    Mass_Factory_Info[1].Form("PtMassExpPdf::pdfDimuMassFromBeauty(%s[%d,%d], B_DimuMassFromBeauty[4.16,1e-3,100], n1_DimuMassFromBeauty[2.256,1e-3,100], n2_DimuMassFromBeauty[2.83,1e-3,100])", m->GetName(), Low_Mass, High_Mass);
-    Mass_Factory_Info[2].Form("PtMassExpPdf::pdfDimuMassFromHF_Mixed(%s[%d,%d], B_DimuMassFromHF_Mixed[2.65,1e-3,100], n1_DimuMassFromHF_Mixed[2.81,1e-3,100], n2_DimuMassFromHF_Mixed[5,1e-3,100])", m->GetName(), Low_Mass, High_Mass);
-    Mass_Factory_Info[3].Form("PtMassExpPdf::pdfDimuMassFromDY(%s[%d,%d], B_DimuMassFromDY[2.65,1e-3,100], n1_DimuMassFromDY[2.81,1e-3,100], n2_DimuMassFromDY[5,1e-3,100])", m->GetName(), Low_Mass, High_Mass);
+    Mass_Factory_Info[0].Form("PtMassExpPdf::pdfDimuMassFromCharm(m, B_DimuMassFromCharm[2.85,1e-4,1e+4], n1_DimuMassFromCharm[2.81,1e-4,1e+4], n2_DimuMassFromCharm[5,1e-3,100])");
+    Mass_Factory_Info[1].Form("PtMassExpPdf::pdfDimuMassFromBeauty(m, B_DimuMassFromBeauty[4.16,1e-4,1e+4], n1_DimuMassFromBeauty[2.256,1e-4,1e+4], n2_DimuMassFromBeauty[2.83,1e-3,100])");
+    Mass_Factory_Info[2].Form("PtMassExpPdf::pdfDimuMassFromHF_Mixed(m, B_DimuMassFromHF_Mixed[2.65,1e-4,1e+4], n1_DimuMassFromHF_Mixed[2.81,1e-4,1e+4], n2_DimuMassFromHF_Mixed[5,1e-3,100])");
+    Mass_Factory_Info[3].Form("PtMassExpPdf::pdfDimuMassFromDY(m, B_DimuMassFromDY[2.65,1e-4,1e+4], n1_DimuMassFromDY[2.81,1e-4,1e+4], n2_DimuMassFromDY[5,1e-4,1e+4])");
+    Mass_Factory_Info[4].Form("PtMassExpPdf::pdfDimuMassFromLF_HF_Mixed(m, B_DimuMassFromLF_HF_Mixed[2.65,1e-4,1e+4], n1_DimuMassFromLF_HF_Mixed[2.81,1e-4,1e+4], n2_DimuMassFromLF_HF_Mixed[5,1e-4,1e+4])");
+    Mass_Factory_Info[5].Form("PtMassExpPdf::pdfDimuMassFromLF(m, B_DimuMassFromLF[2.65,1e-4,1e+4], n1_DimuMassFromLF[2.81,1e-4,1e+4], n2_DimuMassFromLF[5,1e-4,1e+4])");
+    Mass_Factory_Info[6].Form("PtMassExpPdf::pdfDimuMassFromData(m, B_DimuMassFromData[2.65,1e-4,1e+4], n1_DimuMassFromData[2.81,1e-4,1e+4], n2_DimuMassFromData[5,1e-4,1e+4])");
 
     TString Pt_Factory_Info[n_DiMuSelection];
-    Pt_Factory_Info[0].Form("PtMassExpPdf::pdfDimuPtFromCharm(%s[%d,%d], B_DimuPtFromCharm[2.85,1e-3,100], n1_DimuPtFromCharm[2.81,1e-3,100], n2_DimuPtFromCharm[2.43,1e-3,100])", pt->GetName(), Low_Pt, High_Pt);
-    Pt_Factory_Info[1].Form("PtMassExpPdf::pdfDimuPtFromBeauty(%s[%d,%d], B_DimuPtFromBeauty[2.85,1e-3,100], n1_DimuPtFromBeauty[2.81,1e-3,100], n2_DimuPtFromBeauty[2.43,1e-3,100])", pt->GetName(), Low_Pt, High_Pt);
-    Pt_Factory_Info[2].Form("PtMassExpPdf::pdfDimuPtFromHF_Mixed(%s[%d,%d], B_DimuPtFromHF_Mixed[2.85,1e-3,100], n1_DimuPtFromHF_Mixed[2.81,1e-3,100], n2_DimuPtFromHF_Mixed[2.43,1e-3,100])", pt->GetName(), Low_Pt, High_Pt);
-    Pt_Factory_Info[3].Form("PtMassExpPdf::pdfDimuPtFromDY(%s[%d,%d], B_DimuPtFromDY[2.85,1e-3,100], n1_DimuPtFromDY[2.81,1e-3,100], n2_DimuPtFromDY[2.43,1e-3,100])", pt->GetName(), Low_Pt, High_Pt);
+    Pt_Factory_Info[0].Form("PtMassExpPdf::pdfDimuPtFromCharm(pt, B_DimuPtFromCharm[2.85,1e-4,1e+4], n1_DimuPtFromCharm[2.81,1e-4,1e+4], n2_DimuPtFromCharm[2.43,1e-4,1e+4])");
+    Pt_Factory_Info[1].Form("PtMassExpPdf::pdfDimuPtFromBeauty(pt, B_DimuPtFromBeauty[2.85,1e-4,1e+4], n1_DimuPtFromBeauty[2.81,1e-4,1e+4], n2_DimuPtFromBeauty[2.43,1e-4,1e+4])");
+    Pt_Factory_Info[2].Form("PtMassExpPdf::pdfDimuPtFromHF_Mixed(pt, B_DimuPtFromHF_Mixed[2.85,1e-4,1e+4], n1_DimuPtFromHF_Mixed[2.81,1e-4,1e+4], n2_DimuPtFromHF_Mixed[2.43,1e-4,1e+4])");
+    Pt_Factory_Info[3].Form("PtMassExpPdf::pdfDimuPtFromDY(pt, B_DimuPtFromDY[2.85,1e-4,1e+4], n1_DimuPtFromDY[2.81,1e-4,1e+4], n2_DimuPtFromDY[2.43,1e-4,1e+4])");
+    Pt_Factory_Info[4].Form("PtMassExpPdf::pdfDimuPtFromLF_HF_Mixed(pt, B_DimuPtFromLF_HF_Mixed[2.85,1e-4,1e+4], n1_DimuPtFromLF_HF_Mixed[2.81,1e-4,1e+4], n2_DimuPtFromLF_HF_Mixed[2.43,1e-4,1e+4])");
+    Pt_Factory_Info[5].Form("PtMassExpPdf::pdfDimuPtFromLF(pt, B_DimuPtFromLF[2.85,1e-4,1e+4], n1_DimuPtFromLF[2.81,1e-4,1e+4], n2_DimuPtFromLF[2.43,1e-4,1e+4])");
+    Pt_Factory_Info[6].Form("PtMassExpPdf::pdfDimuPtFromData(pt, B_DimuPtFromData[2.85,1e-4,1e+4], n1_DimuPtFromData[2.81,1e-4,1e+4], n2_DimuPtFromData[2.43,1e-4,1e+4])");
 
     RooAbsPdf *pdfDimuPt[n_DiMuSelection];
     RooAbsPdf *pdfDimuM[n_DiMuSelection];
@@ -417,67 +752,88 @@ void pdf_extraction(Int_t Mass_Binning = 19, Int_t Low_Mass = 11, Int_t High_Mas
     TCanvas *pt_canvas[n_DiMuSelection];
     TCanvas *m_canvas[n_DiMuSelection];
 
-    for (Int_t i_DimuSel = 0; i_DimuSel < n_DiMuSelection; i_DimuSel++)
+    for (Int_t i_DimuSel = 0; i_DimuSel < n_DiMuSelection -1 ; i_DimuSel++)
     {
         // Select the region of the MC distribution to be extracted and creation of the RooDataSet
+        // fTree_cut[i_DimuSel] = (TTree *)fTree[i_DimuSel]->CopyTree(Form("(m>%d && m<%d ) && (pt > %d && pt <%d)", info.Low_Mass, info.High_Mass, info.Low_Pt, info.High_Pt));
+        fTree_x_pt[i_DimuSel] = (TTree *)fTree[i_DimuSel]->CopyTree(Form("((m>%d && m<%0.1f) || (m>%0.1f && m<%d) ) && (pt > %d && pt <%d)", info.Low_Mass, info.LowM_cut, info.HighM_cut, info.High_Mass, info.Low_Pt, info.High_Pt));
+        fTree_x_pt[i_DimuSel]->SetName(Form("Tree_removeY_%s_M_%d_%d_Pt_%d_%d", Name_DimuSel[i_DimuSel].Data(), info.Low_Mass, info.High_Mass, info.Low_Pt, info.High_Pt));
+        fTree_x_pt[i_DimuSel]->GetBranch("pt")->SetName(pt->GetName());
+        Pt_Dimu[i_DimuSel] = new RooDataSet(Form("Pt_Dimu_%s", Name_DimuSel[i_DimuSel].Data()), Form("Pt_Dimu_%s", Name_DimuSel[i_DimuSel].Data()), RooArgSet(*pt), Import(*fTree_x_pt[i_DimuSel]));
 
-        fTree_cut[i_DimuSel] = (TTree *)fTree[i_DimuSel]->CopyTree(Form("(m>%d && m<%d) && (pt > %d && pt <%d)", Low_Mass, High_Mass, Low_Pt, High_Pt));
-        fTree_cut[i_DimuSel]->SetName(Form("Tree_%s_M_%d_%d_Pt_%d_%d", Name_DimuSel[i_DimuSel].Data(), Low_Mass, High_Mass, Low_Pt, High_Pt));
-        fTree_cut[i_DimuSel]->GetBranch("m")->SetName(m->GetName());
-        fTree_cut[i_DimuSel]->GetBranch("pt")->SetName(pt->GetName());
-        M_Dimu[i_DimuSel] = new RooDataSet(Form("M_Dimu_%s", Name_DimuSel[i_DimuSel].Data()), Form("M_Dimu_%s", Name_DimuSel[i_DimuSel].Data()), RooArgSet(*m), Import(*fTree_cut[i_DimuSel]));
-        Pt_Dimu[i_DimuSel] = new RooDataSet(Form("Pt_Dimu_%s", Name_DimuSel[i_DimuSel].Data()), Form("Pt_Dimu_%s", Name_DimuSel[i_DimuSel].Data()), RooArgSet(*pt), Import(*fTree_cut[i_DimuSel]));
+        fTree_x_m[i_DimuSel] = (TTree *)fTree[i_DimuSel]->CopyTree(Form("(m>%d && m<%d ) && (pt > %d && pt <%d)", info.Low_Mass, info.High_Mass, info.Low_Pt, info.High_Pt));
+        fTree_x_m[i_DimuSel]->SetName(Form("Tree_%s_M_%d_%d_Pt_%d_%d", Name_DimuSel[i_DimuSel].Data(), info.Low_Mass, info.High_Mass, info.Low_Pt, info.High_Pt));
+        fTree_x_m[i_DimuSel]->GetBranch("m")->SetName(m->GetName());
+        M_Dimu[i_DimuSel] = new RooDataSet(Form("M_Dimu_%s", Name_DimuSel[i_DimuSel].Data()), Form("M_Dimu_%s", Name_DimuSel[i_DimuSel].Data()), RooArgSet(*m), Import(*fTree_x_m[i_DimuSel]));
 
-        w->factory(Mass_Factory_Info[0]);
-        w->factory(Mass_Factory_Info[1]);
-        w->factory(Mass_Factory_Info[2]);
-        w->factory(Mass_Factory_Info[3]);
-
-        w->factory(Pt_Factory_Info[0]);
-        w->factory(Pt_Factory_Info[1]);
-        w->factory(Pt_Factory_Info[2]);
-        w->factory(Pt_Factory_Info[3]);
+        w->factory(Mass_Factory_Info[i_DimuSel]);
+        w->factory(Pt_Factory_Info[i_DimuSel]);
 
         pdfDimuPt[i_DimuSel] = w->pdf(Form("pdfDimuPtFrom%s", Name_DimuSel[i_DimuSel].Data()));
         auto result1 = pdfDimuPt[i_DimuSel]->fitTo(*Pt_Dimu[i_DimuSel], Minimizer("Minuit2"), Save(), SumW2Error(true));
 
         pdfDimuM[i_DimuSel] = w->pdf(Form("pdfDimuMassFrom%s", Name_DimuSel[i_DimuSel].Data()));
-        auto result2 = pdfDimuM[i_DimuSel]->fitTo(*M_Dimu[i_DimuSel], Minimizer("Minuit2"), Save(), SumW2Error(true));
+        auto result2 = pdfDimuM[i_DimuSel]->fitTo(*M_Dimu[i_DimuSel], Range("low,high"), SumCoefRange("low,high"), Minimizer("Minuit2"), Save(), SumW2Error(true));
+        result2->Print("v");
 
         // Drawing the data and pdf on RooPlot
 
         frameDimuMass[i_DimuSel] = m->frame(Title(Form("frameDimuMass_%s", Name_DimuSel[i_DimuSel].Data())));
         frameDimuMass[i_DimuSel]->GetYaxis()->SetTitle("d#it{N}/d#it{m}_{#mu^{#plus}#mu^{#minus}} (GeV/#it{c}^{2})^{-1}");
-        M_Dimu[i_DimuSel]->plotOn(frameDimuMass[i_DimuSel], Name(Form("M_%s", Name_DimuSel[i_DimuSel].Data())), MarkerSize(1.75), MarkerStyle(24), MarkerColor(color[i_DimuSel]), LineColor(color[i_DimuSel]), LineWidth(2), DrawOption("PEZ"), Binning(Mass_Binning));
-        pdfDimuM[i_DimuSel]->plotOn(frameDimuMass[i_DimuSel], Name(Form("pdfDimuMFrom%s", Name_DimuSel[i_DimuSel].Data())), LineStyle(kSolid), LineColor(color[i_DimuSel]));
+        M_Dimu[i_DimuSel]->plotOn(frameDimuMass[i_DimuSel], Name(Form("M_%s", Name_DimuSel[i_DimuSel].Data())), MarkerSize(1.75), MarkerStyle(24), MarkerColor(color[i_DimuSel]), LineColor(color[i_DimuSel]), LineWidth(2), DrawOption("PEZ"), Binning(info.Mass_Binning));
+        pdfDimuM[i_DimuSel]->plotOn(frameDimuMass[i_DimuSel], Name(Form("pdfDimuMFrom%s", Name_DimuSel[i_DimuSel].Data())), Range("low,high"), NormRange("low,high"), LineStyle(kSolid), LineColor(color[i_DimuSel]));
+        frameDimuMass[i_DimuSel]->SetMaximum(fTree_x_m[i_DimuSel]->GetEntries());
+        frameDimuMass[i_DimuSel]->SetMinimum(1e-1);
 
         frameDimuPt[i_DimuSel] = pt->frame(Title(Form("frameDimuPt_%s", Name_DimuSel[i_DimuSel].Data())));
         frameDimuPt[i_DimuSel]->GetYaxis()->SetTitle("d#it{N}/d#it{p}_{T} (GeV/#it{c})^{-1}");
-        Pt_Dimu[i_DimuSel]->plotOn(frameDimuPt[i_DimuSel], Name(Form("Pt_%s", Name_DimuSel[i_DimuSel].Data())), MarkerSize(1.75), MarkerStyle(24), MarkerColor(color[i_DimuSel]), LineColor(color[i_DimuSel]), LineWidth(2), DrawOption("PEZ"), Binning(Pt_Binning));
+        Pt_Dimu[i_DimuSel]->plotOn(frameDimuPt[i_DimuSel], Name(Form("Pt_%s", Name_DimuSel[i_DimuSel].Data())), MarkerSize(1.75), MarkerStyle(24), MarkerColor(color[i_DimuSel]), LineColor(color[i_DimuSel]), LineWidth(2), DrawOption("PEZ"), Binning(info.Pt_Binning));
         pdfDimuPt[i_DimuSel]->plotOn(frameDimuPt[i_DimuSel], Name(Form("pdfDimuPtFrom%s", Name_DimuSel[i_DimuSel].Data())), LineStyle(kSolid), LineColor(color[i_DimuSel]));
+        frameDimuPt[i_DimuSel]->SetMaximum(fTree_x_pt[i_DimuSel]->GetEntries());
+        frameDimuPt[i_DimuSel]->SetMinimum(1e-1);
 
         // Conversion of the RooDataSet in TH1 & RooPdf in a TF1 object to calculate the ratio
 
-        m_histo[i_DimuSel] = M_Dimu[i_DimuSel]->createHistogram(Form("h_M_Dimu_%s", Name_DimuSel[i_DimuSel].Data()), *m, Binning(Mass_Binning, Low_Mass, High_Mass));
-        pt_histo[i_DimuSel] = Pt_Dimu[i_DimuSel]->createHistogram(Form("h_Pt_Dimu_%s", Name_DimuSel[i_DimuSel].Data()), *pt, Binning(Pt_Binning, Low_Pt, High_Pt));
+        m_histo[i_DimuSel] = M_Dimu[i_DimuSel]->createHistogram(Form("h_M_Dimu_%s", Name_DimuSel[i_DimuSel].Data()), *m, Binning(info.Mass_Binning, info.Low_Mass, info.High_Mass));
+        m_histo[i_DimuSel]->SetMarkerStyle(24);
+        m_histo[i_DimuSel]->SetMarkerSize(1.75);
+        m_histo[i_DimuSel]->SetMarkerColor(color[i_DimuSel]);
+        m_histo[i_DimuSel]->SetMarkerColor(color[i_DimuSel]);
+
+        pt_histo[i_DimuSel] = Pt_Dimu[i_DimuSel]->createHistogram(Form("h_Pt_Dimu_%s", Name_DimuSel[i_DimuSel].Data()), *pt, Binning(info.Pt_Binning, info.Low_Pt, info.High_Pt));
+        pt_histo[i_DimuSel]->SetMarkerStyle(24);
+        pt_histo[i_DimuSel]->SetMarkerSize(1.75);
+        pt_histo[i_DimuSel]->SetMarkerColor(color[i_DimuSel]);
+        pt_histo[i_DimuSel]->SetMarkerColor(color[i_DimuSel]);
 
         RooArgSet *pt_model = static_cast<RooArgSet *>(RooArgSet(*pdfDimuPt[i_DimuSel]).snapshot(true));                       // True means copy the PDF and everything it depends on
         auto &pt_modelcopied = static_cast<RooAbsPdf &>((*pt_model)[Form("pdfDimuPtFrom%s", Name_DimuSel[i_DimuSel].Data())]); // Get back the copied pdf. It lives in the RooArgSet "copyOfEverything"
         RooArgSet *pt_modelobs = pt_modelcopied.getObservables(*Pt_Dimu[i_DimuSel]);
         RooArgSet *pt_modelPars = pt_modelcopied.getParameters(*pt_modelobs);
+        pt_modelPars->setName(Name_DimuSel[i_DimuSel].Data());
         pt_Func[i_DimuSel] = pt_modelcopied.asTF(*pt_modelobs, *pt_modelPars, *pt);
+        pt_Func[i_DimuSel]->SetName(Form("pdfDimuPtFrom%s_M_%d_%d_Pt_%d_%d", Name_DimuSel[i_DimuSel].Data(), info.Low_Mass, info.High_Mass, info.Low_Pt, info.High_Pt));
+        pt_Func[i_DimuSel]->SetLineWidth(2);
+        pt_Func[i_DimuSel]->SetLineColor(color[i_DimuSel]);
+        pt_Func[i_DimuSel]->Write(0, 2, 0);
 
         RooArgSet *m_model = static_cast<RooArgSet *>(RooArgSet(*pdfDimuM[i_DimuSel]).snapshot(true));                         // True means copy the PDF and everything it depends on
         auto &m_modelcopied = static_cast<RooAbsPdf &>((*m_model)[Form("pdfDimuMassFrom%s", Name_DimuSel[i_DimuSel].Data())]); // Get back the copied pdf. It lives in the RooArgSet "copyOfEverything"
         RooArgSet *m_modelobs = m_modelcopied.getObservables(*M_Dimu[i_DimuSel]);
         RooArgSet *m_modelPars = m_modelcopied.getParameters(*m_modelobs);
+        m_modelPars->setName(Name_DimuSel[i_DimuSel].Data());
         m_Func[i_DimuSel] = m_modelcopied.asTF(*m_modelobs, *m_modelPars, *m);
-
-        m_canvas[i_DimuSel] = printMC_ratio(Form("m_canvas_%s", Name_DimuSel[i_DimuSel].Data()), frameDimuMass[i_DimuSel], m_histo[i_DimuSel], m_Func[i_DimuSel], color[i_DimuSel], Low_Mass, High_Mass);
-        pt_canvas[i_DimuSel] = printMC_ratio(Form("pt_canvas_%s", Name_DimuSel[i_DimuSel].Data()), frameDimuPt[i_DimuSel], pt_histo[i_DimuSel], pt_Func[i_DimuSel], color[i_DimuSel], Low_Pt, High_Pt);
-
-        fOut->cd();
-        fTree_cut[i_DimuSel]->Write();
+        m_Func[i_DimuSel]->SetName(Form("pdfDimuMassFrom%s_M_%d_%d_Pt_%d_%d", Name_DimuSel[i_DimuSel].Data(), info.Low_Mass, info.High_Mass, info.Low_Pt, info.High_Pt));
+        m_Func[i_DimuSel]->SetLineWidth(2);
+        m_Func[i_DimuSel]->SetLineColor(color[i_DimuSel]);
+        m_Func[i_DimuSel]->Write(0, 2, 0);
+        RooArgSet *param = nullptr;
+        TString Title = "#it{p}_{T} < 30 GeV/#it{c}";
+        m_canvas[i_DimuSel] = printMC_ratio(Form("m_canvas_%s", Name_DimuSel[i_DimuSel].Data()), Title, frameDimuMass[i_DimuSel], m_modelPars, m_histo[i_DimuSel], m_Func[i_DimuSel], color[i_DimuSel], info.Low_Mass, info.High_Mass);
+        m_canvas[i_DimuSel]->SaveAs(Form("images/pdf_extraction/%s.png", m_canvas[i_DimuSel]->GetName()));
+        Title.Form("#it{m}_{#mu#mu} < %0.1f && #it{m}_{#mu#mu} >%0.1f", info.LowM_cut, info.HighM_cut);
+        pt_canvas[i_DimuSel] = printMC_ratio(Form("pt_canvas_%s", Name_DimuSel[i_DimuSel].Data()), Title, frameDimuPt[i_DimuSel], pt_modelPars, pt_histo[i_DimuSel], pt_Func[i_DimuSel], color[i_DimuSel], info.Low_Pt, info.High_Pt);
+        pt_canvas[i_DimuSel]->SaveAs(Form("images/pdf_extraction/%s.png", pt_canvas[i_DimuSel]->GetName()));
 
         // Saving the paramater of the fit for Systematic errors calculations
 
@@ -495,7 +851,7 @@ void pdf_extraction(Int_t Mass_Binning = 19, Int_t Low_Mass = 11, Int_t High_Mas
         n2_DimuPt[i_DimuSel] = w->var(Form("n2_DimuPtFrom%s", Name_DimuSel[i_DimuSel].Data()));
         n2_DimuPt[i_DimuSel]->setConstant(kTRUE);
 
-        Param_Pt_unbinned[i_DimuSel] = new TH1D(Form("Param_Pt_unbinned_from%s_M_%d_%d_Pt_%d_%d", Name_DimuSel[i_DimuSel].Data(), Low_Mass, High_Mass, Low_Pt, High_Pt), "; coeff x Mass fit", 4, 0, 4);
+        Param_Pt_unbinned[i_DimuSel] = new TH1D(Form("Param_Pt_unbinned_from%s_M_%d_%d_Pt_%d_%d", Name_DimuSel[i_DimuSel].Data(), info.Low_Mass, info.High_Mass, info.Low_Pt, info.High_Pt), "; coeff x Mass fit", 4, 0, 4);
         Param_Pt_unbinned[i_DimuSel]->SetBinContent(1, B_DimuPt[i_DimuSel]->getVal());
         Param_Pt_unbinned[i_DimuSel]->SetBinContent(2, n1_DimuPt[i_DimuSel]->getVal());
         Param_Pt_unbinned[i_DimuSel]->SetBinContent(3, n2_DimuPt[i_DimuSel]->getVal());
@@ -505,8 +861,9 @@ void pdf_extraction(Int_t Mass_Binning = 19, Int_t Low_Mass = 11, Int_t High_Mas
         Param_Pt_unbinned[i_DimuSel]->SetBinError(2, n1_DimuPt[i_DimuSel]->getError());
         Param_Pt_unbinned[i_DimuSel]->SetBinError(3, n2_DimuPt[i_DimuSel]->getError());
         Param_Pt_unbinned[i_DimuSel]->SetBinError(4, 1);
+        Param_Pt_unbinned[i_DimuSel]->Write(0, 2, 0);
 
-        Param_M_unbinned[i_DimuSel] = new TH1D(Form("Param_M_unbinned_from%s_M_%d_%d_Pt_%d_%d", Name_DimuSel[i_DimuSel].Data(), Low_Mass, High_Mass, Low_Pt, High_Pt), "; coeff x Pt fit", 4, 0, 4);
+        Param_M_unbinned[i_DimuSel] = new TH1D(Form("Param_M_unbinned_from%s_M_%d_%d_Pt_%d_%d", Name_DimuSel[i_DimuSel].Data(), info.Low_Mass, info.High_Mass, info.Low_Pt, info.High_Pt), "; coeff x Pt fit", 4, 0, 4);
         Param_M_unbinned[i_DimuSel]->SetBinContent(1, B_DimuMass[i_DimuSel]->getVal());
         Param_M_unbinned[i_DimuSel]->SetBinContent(2, n1_DimuMass[i_DimuSel]->getVal());
         Param_M_unbinned[i_DimuSel]->SetBinContent(3, n2_DimuMass[i_DimuSel]->getVal());
@@ -516,20 +873,503 @@ void pdf_extraction(Int_t Mass_Binning = 19, Int_t Low_Mass = 11, Int_t High_Mas
         Param_M_unbinned[i_DimuSel]->SetBinError(2, n1_DimuMass[i_DimuSel]->getError());
         Param_M_unbinned[i_DimuSel]->SetBinError(3, n2_DimuMass[i_DimuSel]->getError());
         Param_M_unbinned[i_DimuSel]->SetBinError(4, 1);
+        Param_M_unbinned[i_DimuSel]->Write(0, 2, 0);
     }
 
     w->Write();
-    // w->writeToFile(Form("/home/michele_pennisi/cernbox/HF_dimuons/fit_data/results/Powheg_pdfMC_unbinnedprova.root"));
 
-    // fTree_cut[0]->Draw("m");
-    // new TCanvas();
-    // fTree_cut[0]->Draw("pt");
-    // fIn[0]->Close();
-
-    // return;
+    fOut->ls();
 }
 
-TCanvas *printMC_ratio(TString name, RooPlot *frame, TH1 *data, TF1 *pdf, Color_t color, Int_t minx = 0, Int_t max_x = 30)
+double FuncPtMass(double *x, double *par)
+{
+    return par[3] * (x[0] / TMath::Power(1 + TMath::Power(x[0] / par[0], par[1]), par[2]));
+}
+
+void MC_Data_shape(){
+    TFile *fY_cut = new TFile("results/removing_Y_POWHEG_PDF_full_stat.root", "READ");
+    const Int_t n_DiMuSelection = 7;
+    TString Name_DimuSel[n_DiMuSelection] = {"Charm", "Beauty", "HF_Mixed", "DY", "LF_HF_Mixed", "LF", "Data"};
+    TH1F *Data_shapes=new TH1F("Data_shapes",";#it{p}_{T}",300,0,30);
+    Data_shapes=(TH1F*)((TF1 *)fY_cut->Get(Form("pdfDimuPtFrom%s_M_4_30_Pt_0_30", Name_DimuSel[6].Data())))->CreateHistogram();
+    Data_shapes->SetTitle("Data fit");
+    TH1F *MC_shapes_sum=new TH1F("MC_shapes_sum","Sum MC contr. fit",300,0,30);
+    for(Int_t i_DimuSel=0;i_DimuSel<n_DiMuSelection;i_DimuSel++){
+
+        MC_shapes_sum->Add((TH1F*)((TF1 *)fY_cut->Get(Form("pdfDimuPtFrom%s_M_4_30_Pt_0_30", Name_DimuSel[i_DimuSel].Data())))->CreateHistogram());
+    }
+    TCanvas *c=new TCanvas("Fit_MC_Data_shape","Fit_MC_Data_shape",900,1000);
+    c->Divide(1,2);
+    c->cd(1);
+    gPad->SetLogy();
+    MC_shapes_sum->Scale(1./MC_shapes_sum->Integral(),"width");
+    Data_shapes->SetLineColor(kBlue);
+    MC_shapes_sum->SetLineColor(kRed);
+    Data_shapes->DrawCopy();
+    MC_shapes_sum->DrawCopy("hist same");
+    gPad->BuildLegend();
+    c->cd(2);
+    TH1F *ratio=(TH1F*)Data_shapes->Clone("ratio");
+    ratio->Divide(MC_shapes_sum);
+    ratio->DrawCopy("hist");
+
+
+
+
+}
+
+void cut_bias()
+{
+    gROOT->ProcessLineSync(".x /home/michele_pennisi/dimuon_HF_pp/fit_data/fit_library/PtMassExpPdf.cxx+");
+    opt info;
+    const Int_t n_DiMuSelection = 7;
+    TString Name_DimuSel[n_DiMuSelection] = {"Charm", "Beauty", "HF_Mixed", "DY", "LF_HF_Mixed", "LF", "Data"};
+    Color_t color[n_DiMuSelection] = {kMagenta + 2, kSpring - 6, kAzure + 9, kOrange + 7, kBlue, kRed, kBlack};
+
+    TString Dir_name = "/home/michele_pennisi/cernbox/output_HF_dimuons/mc_analysis_output";
+    TString Version_ALIAOD;
+    TString Tree_name;
+    if (info.stat_MC.Contains("small_stat"))
+    {
+        Version_ALIAOD = "Version3_AliAOD/save_output";
+        Tree_name = "DiMuon_Rec_FullMass_PowhegOnly";
+    }
+    else if (info.stat_MC.Contains("full_stat"))
+    {
+        Version_ALIAOD = "Version_5_AliAOD_skimmed_fwd_fullstat";
+        Tree_name = "DiMuon_Rec_PowhegOnly_";
+    }
+    cout << Version_ALIAOD.Data() << endl;
+
+    TFile *fIn[n_DiMuSelection] = {new TFile(Form("%s/LHC23i1/%s/LHC23i1_MC_output_Tree_merged.root", Dir_name.Data(), Version_ALIAOD.Data())), new TFile(Form("%s/LHC23i2/%s/LHC23i2_MC_output_Tree_merged.root", Dir_name.Data(), Version_ALIAOD.Data())), new TFile(Form("%s/LHC23i2/%s/LHC23i2_MC_output_Tree_merged.root", Dir_name.Data(), Version_ALIAOD.Data())), new TFile(Form("%s/LHC18p_DY/Version_2_AliAOD/LHC18p_DY_MC_output_Tree_merged.root", Dir_name.Data())), new TFile(Form("%s/LHC23i2/%s/LHC23i2_MC_output_Tree_merged.root", Dir_name.Data(), Version_ALIAOD.Data())), new TFile(Form("%s/LHC23i2/%s/LHC23i2_MC_output_Tree_merged.root", Dir_name.Data(), Version_ALIAOD.Data())), new TFile("/home/michele_pennisi/cernbox/HF_dimuons/data_analysis/Tree_MassPt_MassCut4_Run2.root", "READ")};
+    fIn[0]->ls();
+    TTree *fTree[n_DiMuSelection] = {(TTree *)fIn[0]->Get(Form("%sCharm", Tree_name.Data())), (TTree *)fIn[1]->Get(Form("%sBeauty", Tree_name.Data())), (TTree *)fIn[2]->Get(Form("%sHF_Mixed", Tree_name.Data())), (TTree *)fIn[3]->Get("DiMuon_Rec_DY"), (TTree *)fIn[4]->Get("DiMuon_Rec_PythiaOnly_LF_HF_Mixed"), (TTree *)fIn[5]->Get("DiMuon_Rec_PythiaOnly_LF"), (TTree *)fIn[6]->Get("rec_data_tree")};
+    gROOT->cd();
+
+    Int_t i_DimuSel = 6;
+
+    TTree *fTree_std_cut = (TTree *)fTree[i_DimuSel]->CopyTree(Form("(m>%d && m<%d) && (pt > %d && pt <%d)", info.Low_Mass, info.High_Mass, info.Low_Pt, info.High_Pt)); // standard cut for MC, no esclusion of Y region
+
+    fTree_std_cut->SetName(Form("fTree_std_cut_%s_M_%d_%d_Pt_%d_%d", Name_DimuSel[i_DimuSel].Data(), info.Low_Mass, info.High_Mass, info.Low_Pt, info.High_Pt));
+    RooWorkspace *w = new RooWorkspace(Form("w_M_%d_%d_Pt_%d_%d", info.Low_Mass, info.High_Mass, info.Low_Pt, info.High_Pt), "workspace");
+
+    w->factory("pt[0,30], #it{p}_{T} (GeV/#it{c})");
+    RooRealVar *pt = (RooRealVar *)w->var("pt");
+    pt->setBins(info.Pt_Binning);
+    w->factory("m[4,30], #it{m}_{#mu#mu} (GeV/#it{c}^{2})");
+    RooRealVar *m = w->var("m");
+    m->setBins(info.Mass_Binning);
+
+    TString Pt_Factory_Info;
+    TString M_Factory_Info;
+    // Construction fit without removing Y region
+    Pt_Factory_Info.Form("PtMassExpPdf::pdfDimuPtFrom%s(pt, B_DimuPtFrom%s[2.85,1e-4,1e+4], n1_DimuPtFrom%s[2.81,1e-4,1e+4], n2_DimuPtFrom%s[2.43,1e-4,1e+4])", Name_DimuSel[i_DimuSel].Data(), Name_DimuSel[i_DimuSel].Data(), Name_DimuSel[i_DimuSel].Data(), Name_DimuSel[i_DimuSel].Data());
+    M_Factory_Info.Form("PtMassExpPdf::pdfDimuMFrom%s(m, B_DimuMassFrom%s[2.85,1e-4,1e+4], n1_DimuMassFrom%s[2.81,1e-4,1e+4], n2_DimuMassFrom%s[5,1e-3,100])", Name_DimuSel[i_DimuSel].Data(), Name_DimuSel[i_DimuSel].Data(), Name_DimuSel[i_DimuSel].Data(), Name_DimuSel[i_DimuSel].Data());
+
+    w->factory(Pt_Factory_Info);
+    w->factory(M_Factory_Info);
+
+    RooDataSet *Pt_Dimu_std_cut = new RooDataSet(Form("Pt_Dimu_%s", Name_DimuSel[i_DimuSel].Data()), Form("Pt_Dimu_%s", Name_DimuSel[i_DimuSel].Data()), RooArgSet(*pt), Import(*fTree_std_cut));
+    RooDataSet *M_Dimu_std_cut = new RooDataSet(Form("M_Dimu_%s", Name_DimuSel[i_DimuSel].Data()), Form("M_Dimu_%s", Name_DimuSel[i_DimuSel].Data()), RooArgSet(*m), Import(*fTree_std_cut));
+
+    RooAbsPdf *pdfDimuPt = w->pdf(Form("pdfDimuPtFrom%s", Name_DimuSel[i_DimuSel].Data()));
+    RooAbsPdf *pdfDimuM = w->pdf(Form("pdfDimuMFrom%s", Name_DimuSel[i_DimuSel].Data()));
+
+    auto Pt_result1 = pdfDimuPt->fitTo(*Pt_Dimu_std_cut, Minimizer("Minuit2"), Save(), SumW2Error(true));
+    auto M_result1 = pdfDimuM->fitTo(*M_Dimu_std_cut, Minimizer("Minuit2"), Save(), SumW2Error(true));
+
+    // Rooplot def
+    RooPlot *frameDimuPt = pt->frame(Name(Form("std_cut_frameDimuPt_%s", Name_DimuSel[i_DimuSel].Data())), Title(Form("frameDimuPt_%s", Name_DimuSel[i_DimuSel].Data())));
+    frameDimuPt->GetYaxis()->SetTitle("d#it{N}/d#it{p}_{T} (GeV/#it{c})^{-1}");
+    Pt_Dimu_std_cut->plotOn(frameDimuPt, Name(Form("Pt_%s", Name_DimuSel[i_DimuSel].Data())), MarkerSize(1.75), MarkerStyle(24), MarkerColor(color[i_DimuSel]), LineColor(color[i_DimuSel]), LineWidth(2), DrawOption("PEZ"), Binning(info.Pt_Binning));
+    pdfDimuPt->plotOn(frameDimuPt, Name(TString::Format("pdfDimuPtFrom%s", Name_DimuSel[i_DimuSel].Data()).Data()), LineStyle(kSolid), LineColor(color[i_DimuSel]));
+
+    RooPlot *frameDimuM = m->frame(Name(Form("std_cut_frameDimuM_%s", Name_DimuSel[i_DimuSel].Data())), Title(Form("frameDimuM_%s", Name_DimuSel[i_DimuSel].Data())));
+    frameDimuM->GetYaxis()->SetTitle("d#it{N}/d#it{m}_{#mu#mu} (GeV/#it{c}^{2})^{-1}");
+    M_Dimu_std_cut->plotOn(frameDimuM, Name(Form("M_%s", Name_DimuSel[i_DimuSel].Data())), MarkerSize(1.75), MarkerStyle(24), MarkerColor(color[i_DimuSel]), LineColor(color[i_DimuSel]), LineWidth(2), DrawOption("PEZ"), Binning(info.Mass_Binning));
+    pdfDimuM->plotOn(frameDimuM, Name(TString::Format("pdfDimuMFrom%s", Name_DimuSel[i_DimuSel].Data()).Data()), LineStyle(kSolid), LineColor(color[i_DimuSel]));
+
+    // TF1 and TH1F Pt extraction for drawing
+    RooArgSet *Pt_model = static_cast<RooArgSet *>(RooArgSet(*pdfDimuPt).snapshot(true));                                  // True means copy the PDF and everything it depends on
+    auto &Pt_modelcopied = static_cast<RooAbsPdf &>((*Pt_model)[Form("pdfDimuPtFrom%s", Name_DimuSel[i_DimuSel].Data())]); // Get back the copied pdf. It lives in the RooArgSet "copyOfEverything"
+    RooArgSet *Pt_modelobs = Pt_modelcopied.getObservables(*Pt_Dimu_std_cut);
+    RooArgSet *Pt_modelPars = Pt_modelcopied.getParameters(*Pt_modelobs);
+    Pt_modelPars->setName(Name_DimuSel[i_DimuSel].Data());
+
+    TF1 *Pt_Func = Pt_modelcopied.asTF(*Pt_modelobs, *Pt_modelPars, *pt);
+    Pt_Func->SetName(Form("std_cut_pdfDimuPtFrom%s_M_%d_%d_Pt_%d_%d", Name_DimuSel[i_DimuSel].Data(), info.Low_Mass, info.High_Mass, info.Low_Pt, info.High_Pt));
+    Pt_Func->SetTitle(Form("Fit no Y cut"));
+
+    TH1F *Pt_histo = (TH1F *)Pt_Dimu_std_cut->createHistogram(Form("std_cut_h_Pt_Dimu_%s", Name_DimuSel[i_DimuSel].Data()), *pt, Binning(info.Pt_Binning, info.Low_Pt, info.High_Pt));
+
+    TH1F *ratio_std_Y_cut = (TH1F *)Pt_Func->CreateHistogram();
+    ratio_std_Y_cut->SetName("ratio_std_Y_cut");
+    ratio_std_Y_cut->SetTitle("fit ratios");
+    ratio_std_Y_cut->SetLineColor(kRed);
+
+    // TF1 and TH1F Mass extraction for drawing
+
+    RooArgSet *M_model = static_cast<RooArgSet *>(RooArgSet(*pdfDimuM).snapshot(true));                                 // True means copy the PDF and everything it depends on
+    auto &M_modelcopied = static_cast<RooAbsPdf &>((*M_model)[Form("pdfDimuMFrom%s", Name_DimuSel[i_DimuSel].Data())]); // Get back the copied pdf. It lives in the RooArgSet "copyOfEverything"
+    RooArgSet *M_modelobs = M_modelcopied.getObservables(*M_Dimu_std_cut);
+    RooArgSet *M_modelPars = M_modelcopied.getParameters(*M_modelobs);
+    M_modelPars->setName(Name_DimuSel[i_DimuSel].Data());
+
+    TF1 *M_Func = M_modelcopied.asTF(*M_modelobs, *M_modelPars, *m);
+    M_Func->SetName(Form("std_cut_pdfDimuMFrom%s_M_%d_%d_M_%d_%d", Name_DimuSel[i_DimuSel].Data(), info.Low_Mass, info.High_Mass, info.Low_Mass, info.High_Mass));
+    M_Func->SetTitle(Form("std_cut_pdfDimuMFrom%s_M_%d_%d_M_%d_%d", Name_DimuSel[i_DimuSel].Data(), info.Low_Mass, info.High_Mass, info.Low_Mass, info.High_Mass));
+
+    TH1F *M_histo = (TH1F *)M_Dimu_std_cut->createHistogram(Form("std_cut_h_M_Dimu_%s", Name_DimuSel[i_DimuSel].Data()), *m, Binning(info.Mass_Binning, info.Low_Mass, info.High_Mass));
+
+    // Drawing Canvas
+
+    TString c_Title = "4 < #it{m}_{#mu#mu} < 30 GeV/#it{c}^2";
+
+    frameDimuPt->SetMaximum(1.2e+6);
+    frameDimuPt->SetMinimum(1.2e-3);
+
+    TCanvas *Pt_canvas = printMC_ratio(Form("std_cut_Pt_canvas_%s", Name_DimuSel[i_DimuSel].Data()), c_Title, frameDimuPt, Pt_modelPars, Pt_histo, Pt_Func, color[i_DimuSel], info.Low_Pt, info.High_Pt);
+    Pt_canvas->SaveAs(Form("images/cut_bias/%s.png", Pt_canvas->GetName()));
+
+    frameDimuM->SetMaximum(1.2e+6);
+    frameDimuM->SetMinimum(1.2e-3);
+
+    TCanvas *M_canvas = printMC_ratio(Form("std_cut_M_canvas_%s", Name_DimuSel[i_DimuSel].Data()), c_Title, frameDimuM, M_modelPars, M_histo, M_Func, color[i_DimuSel], info.Low_Mass, info.High_Mass);
+    M_canvas->SaveAs(Form("images/cut_bias/%s.png", M_canvas->GetName()));
+
+    TTree *fTree_Y_cut = (TTree *)fTree[i_DimuSel]->CopyTree(Form("((m>%d && m<%0.1f) || (m>%0.0f && m<%d)) && (pt > %d && pt <%d)", info.Low_Mass, info.LowM_cut, info.HighM_cut, info.High_Mass, info.Low_Pt, info.High_Pt)); // cut escluding Y region
+    fTree_Y_cut->SetName(Form("fTree_Y_cut_%s_M_%d_%d_Pt_%d_%d", Name_DimuSel[i_DimuSel].Data(), info.Low_Mass, info.High_Mass, info.Low_Pt, info.High_Pt));
+
+    TCanvas *Pt_control = new TCanvas(Form("Pt_control_%s", Name_DimuSel[i_DimuSel].Data()), Form("Pt_control_%s", Name_DimuSel[i_DimuSel].Data()), 900, 1000);
+    Pt_control->Divide(1, 2);
+    Pt_control->cd(1);
+    gPad->SetLogy();
+    TH1F *htemp = new TH1F("htemp", ";#it{p}_{T} (GeV/#it{c})", info.Pt_Binning, 0, 30);
+    fTree_std_cut->Draw("pt>>htemp", "", "goff");
+    htemp->Rebin(2);
+    htemp->Scale(1. / htemp->GetEntries(), "width");
+    htemp->SetTitle(Form("4 < #it{m}< 9 (GeV/#it{c}^{2}), #it{N}_{#mu#mu}: %0.0f", htemp->GetEntries()));
+    htemp->DrawCopy();
+
+    TH1F *ratio = (TH1F *)htemp->Clone("ratio");
+    ratio->SetTitle("std cut / Y cut");
+    fTree_Y_cut->Draw("pt>>htemp", "", "goff");
+    htemp->Scale(1. / htemp->GetEntries(), "width");
+    ratio->SetMarkerStyle(20);
+    ratio->SetMarkerSize(1.5);
+    ratio->Divide(htemp);
+    ratio->GetYaxis()->SetRangeUser(0.2, 2.3);
+    htemp->SetTitle(Form("Y cut, %0.1f < #it{m} < %0.1f  (GeV/#it{c}^{2}), #it{N}_{#mu#mu}: %0.0f", info.LowM_cut, info.HighM_cut, htemp->GetEntries()));
+    htemp->SetLineColor(kRed);
+    htemp->DrawCopy("same");
+    Pt_Func->SetLineWidth(2);
+    Pt_Func->SetLineColor(color[i_DimuSel]);
+    Pt_Func->SetTitle("fit");
+    Pt_Func->DrawCopy("same");
+    TFile *fY_cut = new TFile("results/removing_Y_POWHEG_PDF_full_stat.root", "READ");
+    TF1 *Pt_Func_Y_removed = (TF1 *)fY_cut->Get(Form("pdfDimuPtFrom%s_M_4_30_Pt_0_30", Name_DimuSel[i_DimuSel].Data()));
+    Pt_Func_Y_removed->SetLineStyle(kDashed);
+    Pt_Func_Y_removed->SetTitle("fit Y removed");
+    Pt_Func_Y_removed->SetLineWidth(2);
+    Pt_Func_Y_removed->DrawCopy("same");
+    gPad->BuildLegend();
+    Pt_control->cd(2);
+    ratio->SetTitle("distr ratios");
+    ratio->DrawCopy("PE");
+
+    TH1F *ratio_fit = (TH1F *)Pt_Func->CreateHistogram();
+    ratio_fit->Divide((TH1F *)Pt_Func_Y_removed->CreateHistogram());
+    ratio_fit->SetTitle("fit ratios");
+    ratio_fit->DrawCopy("same");
+    gPad->BuildLegend();
+    Pt_control->SaveAs(Form("images/cut_bias/%s.png", Pt_control->GetName()));
+
+    TCanvas *M_control = new TCanvas(Form("M_control_%s", Name_DimuSel[i_DimuSel].Data()), Form("M_control_%s", Name_DimuSel[i_DimuSel].Data()), 900, 1000);
+    M_control->Divide(1, 2);
+    M_control->cd(1);
+    gPad->SetLogy();
+    TH1F *hM_temp = new TH1F("hM_temp", ";#it{m}_{#mu#mu} (GeV/#it{c}^2)", info.Mass_Binning, 4, 30);
+    fTree_std_cut->Draw("m>>hM_temp", "", "goff");
+    hM_temp->Rebin(2);
+    cout<<"Entries: "<<hM_temp->GetEntries()<<endl;
+    hM_temp->Scale(1. / hM_temp->GetEntries(), "width");
+    hM_temp->SetTitle(Form("4 < #it{m}< 9 (GeV/#it{c}^{2}), #it{N}_{#mu#mu}: %0.0f", hM_temp->GetEntries()));
+    hM_temp->DrawCopy();
+
+    ratio = (TH1F *)hM_temp->Clone("ratio");
+    ratio->SetTitle("std cut / Y cut");
+    Double_t Int = hM_temp->GetEntries();
+    fTree_Y_cut->Draw("m>>hM_temp", "", "goff");
+    hM_temp->Scale(1. / Int, "width");
+    ratio->SetMarkerStyle(20);
+    ratio->SetMarkerSize(1.5);
+    ratio->Divide(hM_temp);
+    ratio->GetYaxis()->SetRangeUser(0.8, ratio->GetMaximum() * 1.1);
+    hM_temp->SetTitle(Form("Y cut, %0.1f < #it{m} < %0.1f  (GeV/#it{c}^{2}), #it{N}_{#mu#mu}: %0.0f", info.LowM_cut, info.HighM_cut, hM_temp->GetEntries()));
+    hM_temp->SetLineColor(kRed);
+    hM_temp->DrawCopy("same");
+    M_Func->SetLineWidth(2);
+    M_Func->SetLineColor(color[i_DimuSel]);
+    M_Func->SetTitle("fit");
+    M_Func->DrawCopy("same");
+    TF1 *M_Func_Y_removed = (TF1 *)fY_cut->Get(Form("pdfDimuMassFrom%s_M_4_30_Pt_0_30", Name_DimuSel[i_DimuSel].Data()));
+    M_Func_Y_removed->SetLineStyle(kDashed);
+    M_Func_Y_removed->SetTitle("fit Y removed");
+    M_Func_Y_removed->SetLineWidth(2);
+    M_Func_Y_removed->DrawCopy("same");
+    gPad->BuildLegend();
+    M_control->cd(2);
+    ratio->SetTitle("distr ratios");
+    ratio->DrawCopy("PE");
+
+    ratio_fit = (TH1F *)M_Func->CreateHistogram();
+    ratio_fit->Divide((TH1F *)M_Func_Y_removed->CreateHistogram());
+    ratio_fit->SetTitle("fit ratios");
+    ratio_fit->DrawCopy("same");
+    gPad->BuildLegend();
+    M_control->SaveAs(Form("images/cut_bias/%s.png", M_control->GetName()));
+
+    // TCanvas *M_control = new TCanvas(Form("M_control_%s", Name_DimuSel[i_DimuSel].Data()), Form("M_control_%s", Name_DimuSel[i_DimuSel].Data()), 900, 1000);
+    // M_control->Divide(1, 2);
+    // M_control->cd(1);
+    // gPad->SetLogy();
+    // TH1F *htemp = new TH1F("htemp", ";#it{p}_{T} (GeV/#it{c})", info.Pt_Binning, 0, 30);
+    // fTree_std_cut->Draw("pt>>htemp", "", "goff");
+    // htemp->Rebin(2);
+    // htemp->Scale(1. / htemp->GetEntries(), "width");
+    // htemp->SetTitle(Form("4 < #it{m}< 9 (GeV/#it{c}^{2}), #it{N}_{#mu#mu}: %0.0f", htemp->GetEntries()));
+    // htemp->DrawCopy();
+
+    // M_control->cd();
+    // M_Func->SetLineColor(kRed);
+    // M_Func->DrawCopy("same");
+
+    //     Pt_control->cd(1);
+    // Pt_Func->SetLineColor(kBlue);
+    // Pt_Func->SetLineWidth(2);
+    // Pt_Func->DrawCopy("same");
+
+    // Pt_control->cd(1);
+    // Pt_Func->SetLineColor(kRed);
+    // Pt_Func->SetLineWidth(2);
+    // Pt_Func->DrawCopy("same");
+
+    // Pt_control->cd(2);
+    // ratio_std_Y_cut->Divide((TH1F *)Pt_Func->CreateHistogram());
+    // ratio_std_Y_cut->Draw("same");
+    // gPad->BuildLegend();
+    // gPad->Modified();
+    // gPad->Update();
+    // Pt_control->SaveAs(Form("images/cut_bias/%s.png", Pt_control->GetName()));
+}
+
+void data_pdf()
+{
+    opt info;
+    gROOT->ProcessLineSync(".x /home/michele_pennisi/dimuon_HF_pp/fit_data/fit_library/PtMassExpPdf.cxx+");
+    gROOT->ProcessLineSync(".x /home/michele_pennisi/dimuon_HF_pp/fit_data/fit_library/PtMassPol1ExpPdf.cxx+");
+
+    TFile *fIn_data;
+    if (info.stat_Data.Contains("Run2"))
+        fIn_data = new TFile("/home/michele_pennisi/cernbox/HF_dimuons/data_analysis/Tree_MassPt_MassCut4_Run2.root", "READ");
+    else
+        fIn_data = new TFile("~/dimuon_HF_pp/data/LHC18p/Hist_AOD/3_11_2022/TreeResults_merged.root", "READ");
+    fIn_data->ls();
+
+    // Taking data saved in tree
+    TTree *tree_data = (TTree *)fIn_data->Get("rec_data_tree");
+    // tree_data->Draw("m", Form("((m>%d && m<9) || (m>11 && m<%d)) && (pt > %d && pt <%d)", Low_Mass, High_Mass, Low_Pt, High_Pt));
+    gROOT->cd();
+    RooRealVar m("m", "#it{m}_{#mu^{#plus}#mu^{#minus}} (GeV/#it{c}^{2})", 4., 30.);
+    RooRealVar low_m("low_m", "#it{m}_{#mu^{#plus}#mu^{#minus}} (GeV/#it{c}^{2})", 4., 9.);
+    RooRealVar high_m("high_m", "#it{m}_{#mu^{#plus}#mu^{#minus}} (GeV/#it{c}^{2})", 11., 30.);
+
+    RooCategory sample("sample", "sample");
+    sample.defineType("low_mass");
+    sample.defineType("high_mass");
+
+    RooRealVar pt("pt", "#it{p}_{T} (GeV/#it{c})", info.Low_Pt, info.High_Pt);
+    // pt.setRange("pluto", 4, info.LowM_cut);
+    // pt.setRange("pippo", info.HighM_cut, 30);
+    // Select the region of the MC distribution to be extracted and creation of the RooDataSet
+
+    TTree *low_m_tree_data_cutted = (TTree *)tree_data->CopyTree(Form("(m>%d && m<%0.1f) && pt<%d", 4, 9., 30));
+    low_m_tree_data_cutted->GetBranch("m")->SetName("low_m");
+    low_m_tree_data_cutted->Print();
+
+    RooDataSet *low_M_Dimu = new RooDataSet("low_M_Dimu_data", "M_Dimu_data", RooArgSet(low_m), Import(*low_m_tree_data_cutted));
+    low_M_Dimu->Print();
+
+    TTree *high_m_tree_data_cutted = (TTree *)tree_data->CopyTree(Form("(m>%d && m<%0.1f) && pt<%d", 11, 30., 30));
+    high_m_tree_data_cutted->GetBranch("m")->SetName("high_m");
+    high_m_tree_data_cutted->Print();
+
+    RooDataSet *high_M_Dimu = new RooDataSet("high_M_Dimu_data", "M_Dimu_data", RooArgSet(high_m), Import(*high_m_tree_data_cutted));
+    high_M_Dimu->Print();
+
+    RooDataSet *unbinned_combData_set = new RooDataSet("combData", "combined data", RooArgSet(low_m, high_m), Index(sample), Import("low_mass", *low_M_Dimu), Import("high_mass", *high_M_Dimu));
+    unbinned_combData_set->Print();
+
+    RooWorkspace *w = new RooWorkspace(Form("w_M_%d_%d_Pt_%d_%d", info.Low_Mass, info.High_Mass, info.Low_Pt, info.High_Pt), "workspace");
+
+    TString Mass_Factory_Info;
+    Mass_Factory_Info.Form("PtMassExpPdf::pdfDimu_Low_MassFromData(%s[%d,%d], B_DimuMassFromData[2.85,1e-4,1e+4], n1_DimuMassFromData[2.81,1e-4,1e+4], n2_DimuMassFromData[5,1e-3,100])", low_m.GetName(), 4, 9);
+    w->factory(Mass_Factory_Info);
+
+    RooAbsPdf *low_pdfDimuM = w->pdf("pdfDimu_Low_MassFromData");
+
+    Mass_Factory_Info.Form("PtMassExpPdf::pdfDimu_High_MassFromData(%s[%d,%d], B_DimuMassFromData[2.85,1e-4,1e+4], n1_DimuMassFromData[2.81,1e-4,1e+4], n2_DimuMassFromData[5,1e-3,100])", high_m.GetName(), 11, 30);
+
+    w->factory(Mass_Factory_Info);
+
+    RooAbsPdf *high_pdfDimuM = w->pdf("pdfDimu_High_MassFromData");
+
+    RooSimultaneous simPdf("simPdf", "simultaneous pdf", sample);
+    simPdf.addPdf(*low_pdfDimuM, "low_mass");
+    simPdf.addPdf(*high_pdfDimuM, "high_mass");
+    simPdf.Print("t");
+    // RooFitResult *r = simPdf.fitTo(*unbinned_combData_set, Save(), SumW2Error(true));
+
+    // RooRealVar *B_DimuMass = w->var("B_DimuMassFromData");
+    // B_DimuMass->setConstant(kTRUE);
+    // RooRealVar *n1_DimuMass = w->var("n1_DimuMassFromData");
+    // n1_DimuMass->setConstant(kTRUE);
+    // RooRealVar *n2_DimuMass = w->var("n2_DimuMassFromData");
+    // n2_DimuMass->setConstant(kTRUE);
+
+    TF1 *pdf_low_m = new TF1("pdf_low_m", FuncPtMass, 4, 9, 4);
+    pdf_low_m->SetTitle("Fit");
+    // pdf_low_m->FixParameter(0, B_DimuMass->getVal());
+    // pdf_low_m->FixParameter(1, n1_DimuMass->getVal());
+    // pdf_low_m->FixParameter(2, n2_DimuMass->getVal());
+
+    // pdf_low_m->SetParError(0, B_DimuMass->getError());
+    // pdf_low_m->SetParError(1, n1_DimuMass->getError());
+    // pdf_low_m->SetParError(2, n2_DimuMass->getError());
+
+    pdf_low_m->FixParameter(0, 1.60856e+01);
+    pdf_low_m->FixParameter(1, 2.70776e-01);
+    pdf_low_m->FixParameter(2, 4.55889e+01);
+
+    // f_M_PYTHIA6->SetParameter(3, 1);
+    pdf_low_m->SetLineColor(kMagenta + 2);
+    pdf_low_m->SetLineStyle(kDashed);
+    pdf_low_m->SetLineWidth(3);
+
+    TH1F *low_m_histo = new TH1F("low_m_histo", "low_m_histo", 150, 4, 9);
+    low_m_tree_data_cutted->Draw("low_m>>low_m_histo", "", "goff");
+    low_m_histo->Scale(1., "width");
+    low_m_histo->SetMarkerSize(1.5);
+    low_m_histo->SetMarkerStyle(20);
+    low_m_histo->SetMarkerColor(kBlack);
+    low_m_histo->Fit(pdf_low_m, "R0I");
+
+    TH1F *ratio_low_m = (TH1F *)low_m_histo->Clone("ratio_lowm_fit");
+    ratio_low_m->Divide(pdf_low_m);
+    ratio_low_m->GetYaxis()->SetTitle("MC/Fit");
+    ratio_low_m->GetYaxis()->SetRangeUser(-0.2, 2.2);
+    TCanvas *c_fit = histo_fit_ratio(low_m_histo, pdf_low_m, ratio_low_m, "low_m_extr", "#splitline{ALICE Simulation, pp #sqrt{s} = 13 TeV}{POWHEG+PYTHIA6 simulation}", kTRUE);
+
+    TF1 *pdf_high_m = new TF1("pdf_high_m", FuncPtMass, info.HighM_cut, 30, 4);
+    pdf_high_m->SetTitle("Fit");
+    // pdf_high_m->FixParameter(0, B_DimuMass->getVal());
+    // pdf_high_m->FixParameter(1, n1_DimuMass->getVal());
+    // pdf_high_m->FixParameter(2, n2_DimuMass->getVal());
+
+    // pdf_high_m->SetParError(0, B_DimuMass->getError());
+    // pdf_high_m->SetParError(1, n1_DimuMass->getError());
+    // pdf_high_m->SetParError(2, n2_DimuMass->getError());
+
+    pdf_high_m->FixParameter(0, 1.60856e+01);
+    pdf_high_m->FixParameter(1, 2.70776e-01);
+    pdf_high_m->FixParameter(2, 4.55889e+01);
+
+    // f_M_PYTHIA6->SetParameter(3, 1);
+    pdf_high_m->SetLineColor(kMagenta + 2);
+    pdf_high_m->SetLineStyle(kDashed);
+    pdf_high_m->SetLineWidth(3);
+
+    TH1F *high_m_histo = new TH1F("high_m_histo", "high_m_histo", 28, info.HighM_cut, 30);
+    high_m_tree_data_cutted->Draw("high_m>>high_m_histo", "", "goff");
+    high_m_histo->Scale(1., "width");
+    high_m_histo->SetMarkerSize(1.5);
+    high_m_histo->SetMarkerStyle(20);
+    high_m_histo->SetMarkerColor(kBlack);
+    high_m_histo->Fit(pdf_high_m, "R0I");
+
+    TH1F *ratio_high_m = (TH1F *)high_m_histo->Clone("ratio_highm_fit");
+    ratio_high_m->Divide(pdf_high_m);
+    ratio_high_m->GetYaxis()->SetTitle("MC/Fit");
+    ratio_high_m->GetYaxis()->SetRangeUser(-0.2, 2.2);
+    c_fit = histo_fit_ratio(high_m_histo, pdf_high_m, ratio_high_m, "high_m_extr", "#splitline{ALICE Simulation, pp #sqrt{s} = 13 TeV}{POWHEG+PYTHIA6 simulation}", kTRUE);
+
+    TCanvas *c = new TCanvas("c", "c", 1200, 1200);
+    c->Divide(1, 2);
+    c->cd(1);
+    gPad->SetLogy();
+    TH1F *m_histo = new TH1F("m_histo", "m_histo", 260, 4, 30);
+    m_histo->GetYaxis()->SetRangeUser(1.2, 1.2e+6);
+    m_histo->DrawCopy();
+    low_m_histo->Draw("PEsame");
+    pdf_low_m->Draw("same");
+    high_m_histo->Draw("PEsame");
+    pdf_high_m->Draw("same");
+
+    c->cd(2);
+    m_histo->GetYaxis()->SetRangeUser(0.2, 2.2);
+    m_histo->DrawCopy();
+    ratio_low_m->Draw("PESAME");
+    ratio_high_m->Draw("PESAME");
+
+    return;
+
+    gROOT->cd();
+
+    Color_t color = {kBlack};
+    Color_t fillcolor = {kBlack};
+
+    return;
+    TString Pt_Factory_Info;
+    // Pt_Factory_Info.Form("PtMassExpPdf::pdfDimuPtFromData(%s[%d,%d], B_DimuPtFromData[2.85,1e-4,1e+4], n1_DimuPtFromData[2.81,1e-4,1e+4], n2_DimuPtFromData[2.43,1e-4,1e+4])", pt->GetName(), info.Low_Pt, info.High_Pt);
+
+    // w->factory(Pt_Factory_Info);
+
+    // RooAbsPdf *pdfDimuPt = w->pdf("pdfDimuPtFromData");
+    // auto result1 = pdfDimuPt->fitTo(*Pt_Dimu, Minimizer("Minuit2"), Save(), SumW2Error(true));
+    // RooPlot *frameDimuPt = pt->frame(Title("frameDimuMass_Data"));
+    // frameDimuPt->GetYaxis()->SetTitle("d#it{N}/d#it{p}_{T} (GeV/#it{c})^{-1}");
+    // Pt_Dimu->plotOn(frameDimuPt, Name("Pt_Data"), MarkerSize(1.75), MarkerStyle(24), MarkerColor(color), LineColor(color), LineWidth(2), DrawOption("PEZ"), Binning(info.Pt_Binning));
+    // pdfDimuPt->plotOn(frameDimuPt, Name("pdfDimuPtFromData"), LineStyle(kSolid), LineColor(color));
+    // TH1 *pt_histo = Pt_Dimu->createHistogram("h_Pt_Dimu_Data", *pt, Binning(info.Pt_Binning, info.Low_Pt, info.High_Pt));
+
+    // RooArgSet *pt_model = static_cast<RooArgSet *>(RooArgSet(*pdfDimuPt).snapshot(true)); // True means copy the PDF and everything it depends on
+    // auto &pt_modelcopied = static_cast<RooAbsPdf &>((*pt_model)["pdfDimuPtFromData"]);    // Get back the copied pdf. It lives in the RooArgSet "copyOfEverything"
+    // RooArgSet *pt_modelobs = pt_modelcopied.getObservables(*Pt_Dimu);
+    // RooArgSet *pt_modelPars = pt_modelcopied.getParameters(*pt_modelobs);
+    // TF1 *pt_Func = pt_modelcopied.asTF(*pt_modelobs, *pt_modelPars, *pt);
+    // pt_Func->SetName(Form("pdfDimuPtFrom%s_M_%d_%d_Pt_%d_%d", "Data", info.Low_Mass, info.High_Mass, info.Low_Pt, info.High_Pt));
+    // // pt_Func->Write(0, 2, 0);
+    // TCanvas *pt_canvas = printMC_ratio("pt_canvas_Data", frameDimuPt, pt_histo, pt_Func, color, info.Low_Pt, info.High_Pt);
+
+    // auto result2 = high_pdfDimuM->fitTo(*high_M_Dimu, Minimizer("Minuit2"), Range("pluto"), Save(), SumW2Error(true));
+    // RooPlot *frameDimuMass = m.frame(Title("frameDimuMass_Data"));
+    // frameDimuMass->GetYaxis()->SetTitle("d#it{N}/d#it{m}_{#mu^{#plus}#mu^{#minus}} (GeV/#it{c}^{2})^{-1}");
+    // high_M_Dimu->plotOn(frameDimuMass, Name("M_Data"), MarkerSize(1.75), MarkerStyle(24), MarkerColor(color), LineColor(color), LineWidth(2), DrawOption("PEZ"), Binning(info.Mass_Binning));
+    // high_pdfDimuM->plotOn(frameDimuMass, Name("pdfDimuMFromData"), LineStyle(kSolid), LineColor(color));
+    // TH1 *m_histo = high_M_Dimu->createHistogram("h_M_Dimu_Data", m, Binning(info.Mass_Binning, info.Low_Mass, info.High_Mass));
+
+    // RooArgSet *m_model = static_cast<RooArgSet *>(RooArgSet(*high_pdfDimuM).snapshot(true)); // True means copy the PDF and everything it depends on
+    // auto &m_modelcopied = static_cast<RooAbsPdf &>((*m_model)["pdfDimuMassFromData"]);       // Get back the copied pdf. It lives in the RooArgSet "copyOfEverything"
+    // RooArgSet *m_modelobs = m_modelcopied.getObservables(*high_M_Dimu);
+    // RooArgSet *m_modelPars = m_modelcopied.getParameters(*m_modelobs);
+    // TF1 *m_Func = m_modelcopied.asTF(*m_modelobs, *m_modelPars, m);
+    // m_Func->SetName(Form("pdfDimuMassFrom%s_M_%d_%d_Pt_%d_%d", "Data", info.Low_Mass, info.High_Mass, info.Low_Pt, info.High_Pt));
+    // // m_Func->Write(0, 2, 0);
+
+    // TCanvas *m_canvas = printMC_ratio("m_canvas_Data", frameDimuMass, m_histo, m_Func, color, info.Low_Mass, info.High_Mass);
+}
+
+TCanvas *printMC_ratio(TString name, TString Title, RooPlot *frame, RooArgSet *param, TH1 *data, TF1 *pdf, Color_t color, Int_t minx = 0, Int_t max_x = 30)
 {
     gStyle->SetOptStat(0);
     TCanvas *canvas = new TCanvas(name, name, 900, 1000);
@@ -554,17 +1394,20 @@ TCanvas *printMC_ratio(TString name, RooPlot *frame, TH1 *data, TF1 *pdf, Color_
 
     pad1->cd();
     TString str;
+    TString var_str;
     str.Form("%s", data->GetTitle());
 
     if (str.Contains("h_M"))
     {
         data->GetXaxis()->SetTitle("#it{m}_{#mu^{#plus}#mu^{#plus}} (GeV/#it{c}^{2})");
         data->GetYaxis()->SetTitle("d#it{N}/d#it{m}_{#mu^{#plus}#mu^{#plus}} (GeV/#it{c}^{2})^{-1}");
+        var_str.Form("Mass");
     }
     else
     {
         data->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
         data->GetYaxis()->SetTitle("d#it{N}/d#it{p}_{T} (GeV/#it{c})^{-1}");
+        var_str.Form("Pt");
     }
 
     // TH2D *h_grid = new TH2D("h_grid", "", 100, minx, max_x, 100, Lowy, frame->GetMaximum() * 1000);
@@ -596,7 +1439,13 @@ TCanvas *printMC_ratio(TString name, RooPlot *frame, TH1 *data, TF1 *pdf, Color_
     // data->SetMarkerColor(color);
     // data->SetLineColor(color);
     // data->SetLineWidth(2);
-    data->Scale(1. / data->Integral(), "width");
+    Double_t Integral = 0.;
+    for (Int_t i = 0; i < data->GetNbinsX(); i++)
+    {
+        Integral = Integral + data->GetBinContent(i + 1);
+        // data->SetBinContent(i+1,1./data->GetBinContent(i+1));
+    }
+    data->Scale(1. / Integral, "width");
     // data->Draw("PESAME");
 
     // pdf->SetLineColor(color);
@@ -651,15 +1500,25 @@ TCanvas *printMC_ratio(TString name, RooPlot *frame, TH1 *data, TF1 *pdf, Color_
     letexTitle->SetTextSize(0.055);
     letexTitle->DrawLatex(0.355, 0.88, "ALICE Simulation, pp #sqrt{#it{s}} = 13 TeV");
     letexTitle->DrawLatex(0.355, 0.81, "POWHEG+PYTHIA6, N_{ev} = 1.4 #upoint 10^{8}");
-    if (str.Contains("h_Pt"))
+    letexTitle->DrawLatex(0.355, 0.74, "Reconstructed #mu^{#plus}#mu^{#minus}, 2.5 < #it{#eta}_{#mu} < 4.0");
+    letexTitle->DrawLatex(0.355, 0.66, Title);
+
+    if (param != nullptr)
     {
-        letexTitle->DrawLatex(0.355, 0.74, "Reconstructed #mu^{#plus}#mu^{#minus}, 2.5 < #it{#eta}_{#mu} < 4.0");
-        letexTitle->DrawLatex(0.355, 0.66, Form("2.5 < #it{y}_{#mu^{#plus}#mu^{#minus}} < 4.0, 4 < #it{m}_{#mu^{#plus}#mu^{#minus}} < 9 GeV/#it{c}^{2}"));
-    }
-    else
-    {
-        letexTitle->DrawLatex(0.355, 0.74, "Reconstructed #mu^{#plus}#mu^{#minus}, 2.5 < #it{#eta}_{#mu} < 4.0");
-        letexTitle->DrawLatex(0.355, 0.66, Form("2.5 < #it{y}_{#mu^{#plus}#mu^{#minus}} < 4.0, #it{p}_{T} < 10 GeV/#it{c}"));
+        letexTitle->SetTextSize(0.045);
+        param->Print("v");
+        double_t var;
+        double_t error;
+
+        var = static_cast<RooRealVar &>((*param)[TString::Format("B_Dimu%sFrom%s", var_str.Data(), param->GetName())]).getVal();
+        error = static_cast<RooRealVar &>((*param)[TString::Format("B_Dimu%sFrom%s", var_str.Data(), param->GetName())]).getError();
+        letexTitle->DrawLatex(0.5, 0.60, Form("B: %0.3f #pm %0.3f", var, error));
+        var = static_cast<RooRealVar &>((*param)[TString::Format("n1_Dimu%sFrom%s", var_str.Data(), param->GetName())]).getVal();
+        error = static_cast<RooRealVar &>((*param)[TString::Format("n1_Dimu%sFrom%s", var_str.Data(), param->GetName())]).getError();
+        letexTitle->DrawLatex(0.5, 0.55, Form("n1: %0.3f #pm %0.3f", var, error));
+        var = static_cast<RooRealVar &>((*param)[TString::Format("n2_Dimu%sFrom%s", var_str.Data(), param->GetName())]).getVal();
+        error = static_cast<RooRealVar &>((*param)[TString::Format("n2_Dimu%sFrom%s", var_str.Data(), param->GetName())]).getError();
+        letexTitle->DrawLatex(0.5, 0.50, Form("n2: %0.3f #pm %0.3f", var, error));
     }
 
     pad2->cd();
@@ -704,8 +1563,20 @@ TCanvas *printMC_ratio(TString name, RooPlot *frame, TH1 *data, TF1 *pdf, Color_
     // c_data->Rebin(10);
     // c_data->Scale(1. / c_data->Integral(), "width");
     c_data->Divide(pdf);
-
-    c_data->Draw();
+    c_data->GetYaxis()->SetRangeUser(0.2, 2.2);
+    if (str.Contains("h_M"))
+    {
+        TH1F *blank = (TH1F *)c_data->Clone("blank");
+        blank->Reset();
+        blank->Draw();
+        TH1F *copy = (TH1F *)c_data->Clone("copy");
+        copy->GetXaxis()->SetRangeUser(4, 8);
+        copy->DrawCopy("same");
+        copy->GetXaxis()->SetRangeUser(11, 30);
+        copy->DrawCopy("same");
+    }
+    else
+        c_data->Draw();
     l->Draw();
     l1->Draw();
     l2->Draw();
@@ -714,7 +1585,7 @@ TCanvas *printMC_ratio(TString name, RooPlot *frame, TH1 *data, TF1 *pdf, Color_
     return canvas;
 }
 
-TCanvas *printRooPlot_ratio(RooPlot *frame, Bool_t norm, RooFitResult *r, Int_t choice, TString roohist_name, TF1 *pdf, TH1 *data, Double_t minx, Double_t max_x)
+TCanvas *printRooPlot_ratio(RooPlot *frame, Bool_t norm, RooFitResult *r, Int_t choice, TString roohist_name, TF1 *pdf, TH1 *data, Double_t minx, Double_t max_x, Double_t N_HFMixed, Double_t N_LF_HFMixed)
 {
     const RooArgList &fitParams = r->floatParsFinal();
 
@@ -777,12 +1648,13 @@ TCanvas *printRooPlot_ratio(RooPlot *frame, Bool_t norm, RooFitResult *r, Int_t 
     fit_legend->SetBorderSize(0);
     fit_legend->SetTextSize(0.0425);
     fit_legend->SetHeader("Fit");
-    TString Name_DimuSel[4] = {"Charm", "Beauty", "DY", "HF_Mixed"};
-    TString info_label[4];
+    TString Name_DimuSel[5] = {"Charm", "Beauty", "DY", "LF_HF_Mixed", "HF_Mixed"};
+    TString info_label[5];
     info_label[0].Form("#leftarrow c");
     info_label[1].Form("#leftarrow b");
     info_label[2].Form("#leftarrow DY");
-    info_label[3].Form("#leftarrow c,b ");
+    info_label[3].Form("#leftarrow LF,HF");
+    info_label[4].Form("#leftarrow c,b ");
 
     if (roohist_name.Contains("pt"))
         fit_legend->AddEntry("pdfpt", " ", "L");
@@ -810,30 +1682,33 @@ TCanvas *printRooPlot_ratio(RooPlot *frame, Bool_t norm, RooFitResult *r, Int_t 
     letexTitle->SetTextFont(42);
     letexTitle->SetTextSize(0.0475);
     letexTitle->DrawLatex(0.175, 0.875, "ALICE, pp #sqrt{#it{s}} = 13 TeV");
-    letexTitle->DrawLatex(0.175, 0.785, "LHC18p period");
+    letexTitle->DrawLatex(0.175, 0.805, "LHC18p period");
     letexTitle->SetTextSize(0.0425);
     vector<double> fit_result;
-    Double_t start_y_latex = 0.825;
+    Double_t start_y_latex = 0.875;
     Int_t i_par = 0;
     while (i_par < fitParams.getSize())
     {
         auto &fitPar = (RooRealVar &)fitParams[fitParams.getSize() - i_par - 1];
         fit_result.push_back(fitPar.getVal());
         info_label[i_par].Append(Form("} = %0.1f #pm %0.1f", fitPar.getVal(), fitPar.getError()));
-        letexTitle->DrawLatex(0.625, start_y_latex - 0.1 * i_par, Form("#it{N}_{#mu^{#plus}#mu^{#minus}%s", info_label[i_par].Data()));
+        letexTitle->DrawLatex(0.625, start_y_latex - 0.08 * i_par, Form("#it{N}_{#mu^{#plus}#mu^{#minus}%s", info_label[i_par].Data()));
         i_par++;
     }
 
-    info_label[i_par].Append(Form("} = 0"));
-    letexTitle->DrawLatex(0.625, start_y_latex - 0.1 * i_par, Form("#it{N}^{fixed}_{#mu^{#plus}#mu^{#minus}%s", info_label[i_par].Data()));
+    info_label[i_par].Append(Form("} = %0.1f", N_LF_HFMixed));
+    letexTitle->DrawLatex(0.625, start_y_latex - 0.08 * i_par, Form("#it{N}^{fixed}_{#mu^{#plus}#mu^{#minus}%s", info_label[i_par].Data()));
+    i_par++;
+    info_label[i_par].Append(Form("} = %0.1f", N_HFMixed));
+    letexTitle->DrawLatex(0.625, start_y_latex - 0.08 * i_par, Form("#it{N}^{fixed}_{#mu^{#plus}#mu^{#minus}%s", info_label[i_par].Data()));
 
     if (roohist_name.Contains("pt"))
     {
-        letexTitle->DrawLatex(0.175, 0.695, "Reconstructed #mu^{#plus}#mu^{#minus}, #it{m}_{#mu^{#plus}#mu^{#minus}} > 4 GeV/#it{c}^{2}");
-        letexTitle->DrawLatex(0.175, 0.605, "2.5 < #it{y}_{#mu} < 4.0");
+        letexTitle->DrawLatex(0.175, 0.735, "Reconstructed #mu^{#plus}#mu^{#minus}, #it{m}_{#mu^{#plus}#mu^{#minus}} > 4 GeV/#it{c}^{2}");
+        letexTitle->DrawLatex(0.175, 0.665, "2.5 < #it{y}_{#mu} < 4.0");
     }
     else
-        letexTitle->DrawLatex(0.175, 0.695, "Reconstructed #mu^{#plus}#mu^{#minus}, 2.5 < #it{y}_{#mu} < 4.0");
+        letexTitle->DrawLatex(0.175, 0.735, "Reconstructed #mu^{#plus}#mu^{#minus}, 2.5 < #it{y}_{#mu} < 4.0");
 
     pad2->cd();
     pad2->SetTicks();
@@ -1071,17 +1946,16 @@ void unbinned_fit_data_multiregion(Int_t Low_Mass = 4, Int_t High_Mass = 9, Int_
     pt_frame->Draw();
 }
 
-
 void conv_DY_cs()
 {
     TFile *fIn = new TFile("/home/michele_pennisi/cernbox/HF_dimuons/mc_analysis/analysis_grid/grid_sim/LHC18p_DY_Version_5/LHC18p_DY_MCDimuHFTree_294009.root", "READ");
-    
+
     TTree *MCTree = (TTree *)fIn->Get("MCTree");
     TH1F *h_NDY_event = new TH1F("h_NDY_event", "N #gamma^{*} from POWHEG", 10, 0, 10);
     TH1F *h_NDY_event_fwd = new TH1F("h_NDY_event_fwd", "N #gamma^{*} from POWHEG in 2.5 < #it{y} < 4", 10, 0, 10);
     TH1F *h_YDY = new TH1F("h_YDY", "h_YDY", 160, -8, 8);
     TH1F *h_YDY_fwd = new TH1F("h_YDY_fwd", "h_YDY_fwd", 150, -4, -2.5);
-    
+
     MCTree->Draw("N_gamma_gen>>h_NDY_event", "", "goff");
 
     MCTree->Draw("N_gamma_gen>>h_NDY_event_fwd", "Y_gamma_gen > -4 && Y_gamma_gen<-2.5", "goff");
@@ -1093,21 +1967,19 @@ void conv_DY_cs()
     c->Divide(2, 2);
     c->cd(1);
     gPad->SetLogy();
-    h_NDY_event->GetYaxis()->SetRangeUser(0.1,1.2e+4);
+    h_NDY_event->GetYaxis()->SetRangeUser(0.1, 1.2e+4);
     h_NDY_event->Draw();
     c->cd(2);
     gPad->SetLogy();
-    h_NDY_event_fwd->GetYaxis()->SetRangeUser(0.1,1.2e+4);
+    h_NDY_event_fwd->GetYaxis()->SetRangeUser(0.1, 1.2e+4);
     h_NDY_event_fwd->Draw();
     c->cd(3);
     h_YDY->Draw();
     c->cd(4);
     h_YDY_fwd->Draw();
 
-
-    TFile *fOut=new TFile("~/cernbox/HF_dimuons/fit_data/ingredient_cs_powheg/DY_cs.root","RECREATE");
+    TFile *fOut = new TFile("~/cernbox/HF_dimuons/fit_data/ingredient_cs_powheg/DY_cs.root", "RECREATE");
     fOut->cd();
     h_NDY_event->Write();
     h_NDY_event_fwd->Write();
-    
 }
