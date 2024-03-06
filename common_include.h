@@ -59,6 +59,36 @@ void progress_status(Int_t i_Event, Int_t total_entries)
     std::cout << std::endl;
 }
 
+TCanvas *canvas_ratio(TString name)
+{
+    TCanvas *canvas = new TCanvas(name, name, 1100, 1200);
+    canvas->Divide(1, 2, 0.0001, 0.0001);
+    canvas->cd(1)->SetLogy();
+    canvas->cd(1)->SetTopMargin(0.05);
+    canvas->cd(1)->SetRightMargin(0.03);
+    canvas->cd(1)->SetLeftMargin(0.17);
+    canvas->cd(1)->SetBottomMargin(0.0);
+
+    canvas->cd(2)->SetTopMargin(0.0);
+    canvas->cd(2)->SetRightMargin(0.03);
+    canvas->cd(2)->SetLeftMargin(0.17);
+    canvas->cd(2)->SetBottomMargin(0.225);
+    return canvas;
+}
+
+void Legend_settings(TLegend *legend, Double_t X1, Double_t X2, Double_t Y1, Double_t Y2, TString Header)
+{
+
+    legend->SetHeader(Header);
+    legend->SetX1(X1);
+    legend->SetX2(X2);
+    legend->SetY1(Y1);
+    legend->SetY2(Y2);
+    legend->SetFillStyle(0);
+    legend->SetLineColor(kWhite);
+    legend->SetBorderSize(0);
+    legend->SetTextSize(0.0425);
+};
 void hist1D_graphic_opt(TH1F *hist, Bool_t Scale, Int_t Rebin, Style_t style, Color_t color, Double_t scale_factor)
 {
     if (hist->IsZombie())
@@ -241,14 +271,14 @@ TCanvas *two_histo_ratio(TH1F *hist1, TH1F *hist2, TH1F *ratio_histo_fit, TStrin
     legend->SetBorderSize(0);
     legend->SetTextSize(0.045);
 
-    auto copy_hist1=hist1->DrawCopy("P");
-    auto copy_hist2=hist2->DrawCopy("PSAME");
+    auto copy_hist1 = hist1->DrawCopy("P");
+    auto copy_hist2 = hist2->DrawCopy("PSAME");
     legend->AddEntry(copy_hist1);
     legend->AddEntry(copy_hist2);
 
     if (draw_lagend)
         legend->Draw();
-    
+
     pad2->cd();
     pad2->SetTicks();
     pad2->SetTopMargin(0.0);
