@@ -1,4 +1,4 @@
-#include "/home/michele_pennisi/cernbox/common_include.h"
+#include "/home/michele_pennisi/cernbox/HF_dimuons/common_include.h"
 
 TCanvas *canvas_for_prel()
 {
@@ -23,9 +23,52 @@ TCanvas *canvas_for_prel()
     return canvas;
 }
 
-void cross_section_result(TString HF = "Beauty", TString Generator = "pythia")
+struct opt
 {
+    TString HF = "Beauty";
+    TString Generator = "pythia";
 
+    //----MY measurament----//
+    Double_t PYTHIA_ds_dy_fwd[2] = {1540., 22.4};
+    Double_t PYTHIA_stat_ds_dy_fwd[2] = {21.2, 1.};
+    Double_t PYTHIA_syst_ds_dy_fwd[2] = {203.4, 8.26};
+
+    Double_t POWHEG_ds_dy_fwd[2] = {2258, 14.93};
+    Double_t POWHEG_stat_ds_dy_fwd[2] = {21.2, 1.};
+    Double_t POWHEG_syst_ds_dy_fwd[2] = {203.4, 8.26};
+
+    //----ELECTRONS measurament----//
+
+    Double_t PYTHIA_ds_dy_ALICE_ELECTRON[2] = {974., 79.};
+    Double_t PYTHIA_stat_ds_dy_ALICE_ELECTRON[2] = {138., 14.};
+    Double_t PYTHIA_syst_ds_dy_ALICE_ELECTRON[2] = {140., 11.};
+
+    Double_t POWHEG_ds_dy_ALICE_ELECTRON[2] = {1417, 48.};
+    Double_t POWHEG_stat_ds_dy_ALICE_ELECTRON[2] = {184., 14.};
+    Double_t POWHEG_syst_ds_dy_ALICE_ELECTRON[2] = {204., 7.};
+
+    //----HF measurament----//
+
+    Double_t ds_dy_ALICE_HF[2] = {2021., 75.2};
+    Double_t stat_ds_dy_ALICE_HF[2] = {140., 3.2};
+    Double_t syst_ds_dy_ALICE_HF[2] = {150., 5.2};
+
+    //----LHCb measurament----//
+
+    Double_t ds_dy_Charm_LHCb[2] = {1086.3, 1086.3};
+    Double_t stat_ds_dy_Charm_LHCb[2] = {27., 27.};
+    Double_t syst_ds_dy_Charm_LHCb[2] = {282., 282.};
+
+    Double_t ds_deta_Beauty_LHCb[12] = {29.2, 43.2, 54.6, 58.4, 57.4, 45.2, 45.2, 57.4, 58.4, 54.6, 43.2, 29.2};
+    Double_t stat_ds_deta_Beauty_LHCb[12] = {1.6, 0.8, 1.2, 0.8, 1.0, 1.0, 1.6, 0.8, 1.2, 0.8, 1.0, 1.0};
+    Double_t syst_ds_deta_Beauty_LHCb[12] = {4.8, 6.0, 5.8, 5.4, 4.4, 3.0, 4.8, 6.0, 5.8, 5.4, 4.4, 3.0};
+
+    Bool_t Fullerror = kFALSE;
+};
+
+void cross_section_result()
+{
+    opt info;
     gStyle->SetFrameBorderMode(0);
     gStyle->SetFrameFillColor(0);
     gStyle->SetCanvasBorderMode(0);
@@ -58,12 +101,18 @@ void cross_section_result(TString HF = "Beauty", TString Generator = "pythia")
     gStyle->SetCanvasPreferGL(kTRUE);
     gStyle->SetHatchesSpacing(0.5);
 
-    Double_t y_fwd[2] = {-3.25, 3.25};
-    Double_t dy_fwd[2] = {0.75, 0.75};
+    Double_t y_fwd_ALICE[2] = {-3.25, 3.25};
+    Double_t dy_fwd_ALICE[2] = {0.75, 0.75};
 
-    Double_t ds_bb_dy_PYTHIA_fwd[2];
-    Double_t stat_ds_bb_dy_PYTHIA_fwd[2];
-    Double_t syst_ds_bb_dy_PYTHIA_fwd[2];
+    Double_t y_fwd_LHCb[2] = {-2.75, 2.75};
+    Double_t dy_fwd_LHCb[2] = {1.75, 1.75};
+
+    Double_t eta_fwd_LHCb[12] = {-4.75, -4.25, -3.75, -3.25, -2.75, -2.25, 2.25, 2.75, 3.25, 3.75, 4.25, 4.75};
+    Double_t deta_fwd_LHCb[12] = {0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25};
+
+    Double_t ds_dy_fwd_ALICE[2];
+    Double_t stat_ds_dy_fwd_ALICE[2];
+    Double_t syst_ds_dy_fwd_ALICE[2];
 
     // bb_cs_PYTHIA_fwd->GetAttLine(0)->SetLineColor(kRed);
     // bb_cs_PYTHIA_fwd->GetAttLine(0)->SetLineWidth(1);
@@ -74,96 +123,139 @@ void cross_section_result(TString HF = "Beauty", TString Generator = "pythia")
     Double_t y_mid[1] = {0};
     Double_t dy_mid[1] = {0.5};
 
-    Double_t ds_bb_dy_PYTHIA_mid[1];
-    Double_t stat_ds_bb_dy_PYTHIA_mid[1];
-    Double_t syst_ds_bb_dy_PYTHIA_mid[1];
+    Double_t ds_dy_ALICE_ELECTRON[1];
+    Double_t stat_ds_dy_ALICE_ELECTRON[1];
+    Double_t syst_ds_dy_ALICE_ELECTRON[1];
+
+    Double_t ds_dy_ALICE_HF[1];
+    Double_t stat_ds_dy_ALICE_HF[1];
+    Double_t syst_ds_dy_ALICE_HF[1];
+
+    Double_t ds_dy_LHCb_CHARM[2] = {info.ds_dy_Charm_LHCb[0], info.ds_dy_Charm_LHCb[1]};
+    Double_t stat_ds_dy_LHCb_CHARM[2] = {info.stat_ds_dy_Charm_LHCb[0], info.stat_ds_dy_Charm_LHCb[1]};
+    Double_t syst_ds_dy_LHCb_CHARM[2] = {info.syst_ds_dy_Charm_LHCb[0], info.syst_ds_dy_Charm_LHCb[1]};
+
+    Double_t ds_deta_LHCb_BEAUTY[12];
+    Double_t stat_ds_deta_LHCb_BEAUTY[12];
+    Double_t syst_ds_deta_LHCb_BEAUTY[12];
+    for (Int_t i = 0; i < 12; i++)
+    {
+        ds_deta_LHCb_BEAUTY[i] = info.ds_deta_Beauty_LHCb[i];
+        stat_ds_deta_LHCb_BEAUTY[i] = info.stat_ds_deta_Beauty_LHCb[i];
+        syst_ds_deta_LHCb_BEAUTY[i] = info.syst_ds_deta_Beauty_LHCb[i];
+    }
 
     TString FONLL_filename;
-    if (HF.Contains("Beauty"))
-    {
-        FONLL_filename.Form("FONLL_bb_Pt_0_30_CTEQ6.txt");
-        if (Generator.Contains("pythia"))
-        {
-            ds_bb_dy_PYTHIA_fwd[0] = 22.4;
-            ds_bb_dy_PYTHIA_fwd[1] = 22.4;
-            stat_ds_bb_dy_PYTHIA_fwd[0] = 1.0;
-            stat_ds_bb_dy_PYTHIA_fwd[1] = 1.0;
-            syst_ds_bb_dy_PYTHIA_fwd[0] = 8.26;
-            syst_ds_bb_dy_PYTHIA_fwd[1] = 8.26;
+    Int_t HF_Selector = 999; // 0 for CHARM, 1 for BEAUTY
 
-            ds_bb_dy_PYTHIA_mid[0] = 79.;
-            stat_ds_bb_dy_PYTHIA_mid[0] = 14.;
-            syst_ds_bb_dy_PYTHIA_mid[0] = 11.;
-        }
-        else if (Generator.Contains("powheg"))
-        {
-            ds_bb_dy_PYTHIA_fwd[0] = 14.93;
-            ds_bb_dy_PYTHIA_fwd[1] = 14.93;
-            stat_ds_bb_dy_PYTHIA_fwd[0] = 1.0;
-            stat_ds_bb_dy_PYTHIA_fwd[1] = 1.0;
-            syst_ds_bb_dy_PYTHIA_fwd[0] = 8.26;
-            syst_ds_bb_dy_PYTHIA_fwd[1] = 8.26;
-
-            ds_bb_dy_PYTHIA_mid[0] = 48.;
-            stat_ds_bb_dy_PYTHIA_mid[0] = 14.;
-            syst_ds_bb_dy_PYTHIA_mid[0] = 7.;
-        }
-    }
-    else if (HF.Contains("Charm"))
+    if (info.HF.Contains("Charm"))
     {
         FONLL_filename.Form("FONLL_cc_Pt_0_30_CTEQ6.txt");
-        if (Generator.Contains("pythia"))
-        {
-            ds_bb_dy_PYTHIA_fwd[0] = 1540.;
-            ds_bb_dy_PYTHIA_fwd[1] = 1540.;
-            stat_ds_bb_dy_PYTHIA_fwd[0] = 21.2;
-            stat_ds_bb_dy_PYTHIA_fwd[1] = 21.2;
-            syst_ds_bb_dy_PYTHIA_fwd[0] = 203.4;
-            syst_ds_bb_dy_PYTHIA_fwd[1] = 203.4;
-
-            ds_bb_dy_PYTHIA_mid[0] = 974.;
-            stat_ds_bb_dy_PYTHIA_mid[0] = 138.;
-            syst_ds_bb_dy_PYTHIA_mid[0] = 140.;
-        }
-        else if (Generator.Contains("powheg"))
-        {
-            ds_bb_dy_PYTHIA_fwd[0] = 2258;
-            ds_bb_dy_PYTHIA_fwd[1] = 2258;
-            stat_ds_bb_dy_PYTHIA_fwd[0] = 1.0;
-            stat_ds_bb_dy_PYTHIA_fwd[1] = 1.0;
-            syst_ds_bb_dy_PYTHIA_fwd[0] = 8.26;
-            syst_ds_bb_dy_PYTHIA_fwd[1] = 8.26;
-
-            ds_bb_dy_PYTHIA_mid[0] = 1417.;
-            stat_ds_bb_dy_PYTHIA_mid[0] = 184.;
-            syst_ds_bb_dy_PYTHIA_mid[0] = 204.;
-        }
+        HF_Selector = 0;
+        ds_dy_ALICE_HF[0] = info.ds_dy_ALICE_HF[HF_Selector];
+        stat_ds_dy_ALICE_HF[0] = info.stat_ds_dy_ALICE_HF[HF_Selector];
+        syst_ds_dy_ALICE_HF[0] = info.syst_ds_dy_ALICE_HF[HF_Selector];
     }
-    TGraphMultiErrors *bb_cs_PYTHIA_fwd = new TGraphMultiErrors("bb_cs_PYTHIA_fwd", "TGraphMultiErrors Example", 2, y_fwd, ds_bb_dy_PYTHIA_fwd, dy_fwd, dy_fwd, stat_ds_bb_dy_PYTHIA_fwd, stat_ds_bb_dy_PYTHIA_fwd);
-    bb_cs_PYTHIA_fwd->AddYError(2, syst_ds_bb_dy_PYTHIA_fwd, syst_ds_bb_dy_PYTHIA_fwd);
-    bb_cs_PYTHIA_fwd->SetMarkerStyle(20);
-    bb_cs_PYTHIA_fwd->SetMarkerColor(kRed);
-    bb_cs_PYTHIA_fwd->SetLineColor(kRed);
-    bb_cs_PYTHIA_fwd->SetLineWidth(1);
-    bb_cs_PYTHIA_fwd->SetMarkerSize(2);
-    bb_cs_PYTHIA_fwd->GetAttLine(0)->SetLineColor(kRed);
-    bb_cs_PYTHIA_fwd->GetAttLine(0)->SetLineWidth(2);
-    bb_cs_PYTHIA_fwd->GetAttLine(1)->SetLineColor(kRed);
-    bb_cs_PYTHIA_fwd->GetAttLine(1)->SetLineWidth(2);
-    bb_cs_PYTHIA_fwd->GetAttFill(1)->SetFillStyle(0);
+    else if (info.HF.Contains("Beauty"))
+    {
+        FONLL_filename.Form("FONLL_bb_Pt_0_30_CTEQ6.txt");
+        HF_Selector = 1;
+        ds_dy_ALICE_HF[0] = info.ds_dy_ALICE_HF[HF_Selector];
+        stat_ds_dy_ALICE_HF[0] = info.stat_ds_dy_ALICE_HF[HF_Selector];
+        syst_ds_dy_ALICE_HF[0] = info.syst_ds_dy_ALICE_HF[HF_Selector];
+    }
 
-    TGraphMultiErrors *bb_cs_PYTHIA_mid = new TGraphMultiErrors("bb_cs_PYTHIA_mid", "TGraphMultiErrors Example", 1, y_mid, ds_bb_dy_PYTHIA_mid, dy_mid, dy_mid, stat_ds_bb_dy_PYTHIA_mid, stat_ds_bb_dy_PYTHIA_mid);
-    bb_cs_PYTHIA_mid->AddYError(1, syst_ds_bb_dy_PYTHIA_mid, syst_ds_bb_dy_PYTHIA_mid);
-    bb_cs_PYTHIA_mid->SetMarkerStyle(21);
-    bb_cs_PYTHIA_mid->SetMarkerColor(kMagenta + 2);
-    bb_cs_PYTHIA_mid->SetLineColor(kMagenta + 2);
-    bb_cs_PYTHIA_mid->SetLineWidth(1);
-    bb_cs_PYTHIA_mid->SetMarkerSize(2);
-    bb_cs_PYTHIA_mid->GetAttLine(0)->SetLineColor(kMagenta + 2);
-    bb_cs_PYTHIA_mid->GetAttLine(0)->SetLineWidth(1);
-    bb_cs_PYTHIA_mid->GetAttLine(1)->SetLineColor(kMagenta + 2);
-    bb_cs_PYTHIA_mid->GetAttLine(1)->SetLineWidth(1);
-    bb_cs_PYTHIA_mid->GetAttFill(1)->SetFillStyle(0);
+    if (info.Generator.Contains("pythia"))
+    {
+        ds_dy_fwd_ALICE[0] = info.PYTHIA_ds_dy_fwd[HF_Selector];
+        ds_dy_fwd_ALICE[1] = info.PYTHIA_ds_dy_fwd[HF_Selector];
+        stat_ds_dy_fwd_ALICE[0] = info.PYTHIA_stat_ds_dy_fwd[HF_Selector];
+        stat_ds_dy_fwd_ALICE[1] = info.PYTHIA_stat_ds_dy_fwd[HF_Selector];
+        syst_ds_dy_fwd_ALICE[0] = info.PYTHIA_syst_ds_dy_fwd[HF_Selector];
+        syst_ds_dy_fwd_ALICE[1] = info.PYTHIA_syst_ds_dy_fwd[HF_Selector];
+
+        ds_dy_ALICE_ELECTRON[0] = info.PYTHIA_ds_dy_ALICE_ELECTRON[HF_Selector];
+        stat_ds_dy_ALICE_ELECTRON[0] = info.PYTHIA_stat_ds_dy_ALICE_ELECTRON[HF_Selector];
+        syst_ds_dy_ALICE_ELECTRON[0] = info.PYTHIA_syst_ds_dy_ALICE_ELECTRON[HF_Selector];
+    }
+    else if (info.Generator.Contains("powheg"))
+    {
+        ds_dy_fwd_ALICE[0] = info.POWHEG_ds_dy_fwd[HF_Selector];
+        ds_dy_fwd_ALICE[1] = info.POWHEG_ds_dy_fwd[HF_Selector];
+        stat_ds_dy_fwd_ALICE[0] = info.POWHEG_stat_ds_dy_fwd[HF_Selector];
+        stat_ds_dy_fwd_ALICE[1] = info.POWHEG_stat_ds_dy_fwd[HF_Selector];
+        syst_ds_dy_fwd_ALICE[0] = info.POWHEG_syst_ds_dy_fwd[HF_Selector];
+        syst_ds_dy_fwd_ALICE[1] = info.POWHEG_syst_ds_dy_fwd[HF_Selector];
+
+        ds_dy_ALICE_ELECTRON[0] = info.POWHEG_ds_dy_ALICE_ELECTRON[HF_Selector];
+        stat_ds_dy_ALICE_ELECTRON[0] = info.POWHEG_stat_ds_dy_ALICE_ELECTRON[HF_Selector];
+        syst_ds_dy_ALICE_ELECTRON[0] = info.POWHEG_syst_ds_dy_ALICE_ELECTRON[HF_Selector];
+    }
+
+    TGraphMultiErrors *cs_fwd_ALICE = new TGraphMultiErrors("cs_fwd_ALICE", "TGraphMultiErrors Example", 2, y_fwd_ALICE, ds_dy_fwd_ALICE, dy_fwd_ALICE, dy_fwd_ALICE, stat_ds_dy_fwd_ALICE, stat_ds_dy_fwd_ALICE);
+    cs_fwd_ALICE->AddYError(2, syst_ds_dy_fwd_ALICE, syst_ds_dy_fwd_ALICE);
+    cs_fwd_ALICE->SetMarkerStyle(20);
+    cs_fwd_ALICE->SetMarkerColor(kRed);
+    cs_fwd_ALICE->SetLineColor(kRed);
+    cs_fwd_ALICE->SetLineWidth(2);
+    cs_fwd_ALICE->SetMarkerSize(2);
+    cs_fwd_ALICE->GetAttLine(0)->SetLineColor(kRed);
+    cs_fwd_ALICE->GetAttLine(0)->SetLineWidth(2);
+    cs_fwd_ALICE->GetAttLine(1)->SetLineColor(kRed);
+    cs_fwd_ALICE->GetAttLine(1)->SetLineWidth(2);
+    cs_fwd_ALICE->GetAttFill(1)->SetFillStyle(0);
+
+    TGraphMultiErrors *cs_ALICE_ELECTRON = new TGraphMultiErrors("cs_ALICE_ELECTRON", "TGraphMultiErrors Example", 1, y_mid, ds_dy_ALICE_ELECTRON, dy_mid, dy_mid, stat_ds_dy_ALICE_ELECTRON, stat_ds_dy_ALICE_ELECTRON);
+    cs_ALICE_ELECTRON->AddYError(1, syst_ds_dy_ALICE_ELECTRON, syst_ds_dy_ALICE_ELECTRON);
+    cs_ALICE_ELECTRON->SetMarkerStyle(21);
+    cs_ALICE_ELECTRON->SetMarkerColor(kMagenta + 2);
+    cs_ALICE_ELECTRON->SetLineColor(kMagenta + 2);
+    cs_ALICE_ELECTRON->SetLineWidth(2);
+    cs_ALICE_ELECTRON->SetMarkerSize(2);
+    cs_ALICE_ELECTRON->GetAttLine(0)->SetLineColor(kMagenta + 2);
+    cs_ALICE_ELECTRON->GetAttLine(0)->SetLineWidth(2);
+    cs_ALICE_ELECTRON->GetAttLine(1)->SetLineColor(kMagenta + 2);
+    cs_ALICE_ELECTRON->GetAttLine(1)->SetLineWidth(2);
+    cs_ALICE_ELECTRON->GetAttFill(1)->SetFillStyle(0);
+
+    TGraphMultiErrors *cs_ALICE_HF = new TGraphMultiErrors("cs_ALICE_HF", "TGraphMultiErrors Example", 1, y_mid, ds_dy_ALICE_HF, dy_mid, dy_mid, stat_ds_dy_ALICE_HF, stat_ds_dy_ALICE_HF);
+    cs_ALICE_HF->AddYError(1, syst_ds_dy_ALICE_ELECTRON, syst_ds_dy_ALICE_ELECTRON);
+    cs_ALICE_HF->SetMarkerStyle(91);
+    cs_ALICE_HF->SetMarkerColor(kAzure + 2);
+    cs_ALICE_HF->SetLineColor(kAzure + 2);
+    cs_ALICE_HF->SetLineWidth(2);
+    cs_ALICE_HF->SetMarkerSize(2);
+    cs_ALICE_HF->GetAttLine(0)->SetLineColor(kAzure + 2);
+    cs_ALICE_HF->GetAttLine(0)->SetLineWidth(2);
+    cs_ALICE_HF->GetAttLine(1)->SetLineColor(kAzure + 2);
+    cs_ALICE_HF->GetAttLine(1)->SetLineWidth(2);
+    cs_ALICE_HF->GetAttFill(1)->SetFillStyle(0);
+
+    TGraphMultiErrors *cs_LHCb_CHARM = new TGraphMultiErrors("cs_LHCb_CHARM", "TGraphMultiErrors Example", 2, y_fwd_LHCb, ds_dy_LHCb_CHARM, dy_fwd_LHCb, dy_fwd_LHCb, stat_ds_dy_LHCb_CHARM, stat_ds_dy_LHCb_CHARM);
+    cs_LHCb_CHARM->AddYError(2, syst_ds_dy_LHCb_CHARM, syst_ds_dy_LHCb_CHARM);
+    cs_LHCb_CHARM->SetMarkerStyle(95);
+    cs_LHCb_CHARM->SetMarkerColor(kGreen + 2);
+    cs_LHCb_CHARM->SetLineColor(kGreen + 2);
+    cs_LHCb_CHARM->SetLineWidth(2);
+    cs_LHCb_CHARM->SetMarkerSize(2);
+    cs_LHCb_CHARM->GetAttLine(0)->SetLineColor(kGreen + 2);
+    cs_LHCb_CHARM->GetAttLine(0)->SetLineWidth(2);
+    cs_LHCb_CHARM->GetAttLine(1)->SetLineColor(kGreen + 2);
+    cs_LHCb_CHARM->GetAttLine(1)->SetLineWidth(2);
+    cs_LHCb_CHARM->GetAttFill(1)->SetFillStyle(0);
+
+    TGraphMultiErrors *cs_LHCb_BEAUTY = new TGraphMultiErrors("cs_LHCb_BEAUTY", "TGraphMultiErrors Example", 12, eta_fwd_LHCb, ds_deta_LHCb_BEAUTY, deta_fwd_LHCb, deta_fwd_LHCb, stat_ds_deta_LHCb_BEAUTY, stat_ds_deta_LHCb_BEAUTY);
+    cs_LHCb_BEAUTY->AddYError(12, syst_ds_deta_LHCb_BEAUTY, syst_ds_deta_LHCb_BEAUTY);
+    cs_LHCb_BEAUTY->SetMarkerStyle(21);
+    cs_LHCb_BEAUTY->SetMarkerColor(kGreen + 2);
+    cs_LHCb_BEAUTY->SetLineColor(kGreen + 2);
+    cs_LHCb_BEAUTY->SetLineWidth(1);
+    cs_LHCb_BEAUTY->SetMarkerSize(2);
+    cs_LHCb_BEAUTY->GetAttLine(0)->SetLineColor(kGreen + 2);
+    cs_LHCb_BEAUTY->GetAttLine(0)->SetLineWidth(1);
+    cs_LHCb_BEAUTY->GetAttLine(1)->SetLineColor(kGreen + 2);
+    cs_LHCb_BEAUTY->GetAttLine(1)->SetLineWidth(1);
+    cs_LHCb_BEAUTY->GetAttFill(1)->SetFillStyle(0);
 
     vector<double> vecY, vecL_Y, vecH_Y;
     vector<double> vec_central, vec_min_central, vec_max_central;
@@ -233,39 +325,66 @@ void cross_section_result(TString HF = "Beauty", TString Generator = "pythia")
 
     TGraphAsymmErrors *FONLL_bb_cs_NNPDF_minmaxerror = new TGraphAsymmErrors(vec_central.size(), &vecY[0], &vec_central[0], &vecL_Y[0], &vecH_Y[0], &low_central_error[0], &high_central_error[0]);
     FONLL_bb_cs_NNPDF_minmaxerror->SetLineWidth(2);
-    FONLL_bb_cs_NNPDF_minmaxerror->SetLineColorAlpha(kGray, 0.9);
-    FONLL_bb_cs_NNPDF_minmaxerror->SetFillColorAlpha(kGray, 0.7);
 
     TGraphAsymmErrors *FONLL_bb_cs_NNPDF_scale_error = new TGraphAsymmErrors(vec_central.size(), &vecY[0], &vec_central[0], &vecL_Y[0], &vecH_Y[0], &low_scale_error[0], &high_scale_error[0]);
     FONLL_bb_cs_NNPDF_scale_error->SetLineWidth(2);
-    FONLL_bb_cs_NNPDF_scale_error->SetFillColorAlpha(kCyan - 10, 0.7);
-    FONLL_bb_cs_NNPDF_scale_error->SetLineColorAlpha(kCyan - 10, 0.9);
 
     TGraphAsymmErrors *FONLL_bb_cs_NNPDF_mass_error = new TGraphAsymmErrors(vec_central.size(), &vecY[0], &vec_central[0], &vecL_Y[0], &vecH_Y[0], &low_mass_error[0], &high_mass_error[0]);
     FONLL_bb_cs_NNPDF_mass_error->SetLineWidth(2);
-    FONLL_bb_cs_NNPDF_mass_error->SetFillColorAlpha(kGreen, 0.7);
-    FONLL_bb_cs_NNPDF_mass_error->SetLineColorAlpha(kGreen, 0.9);
 
     TGraphAsymmErrors *FONLL_bb_cs_NNPDF_pdf_error = new TGraphAsymmErrors(vec_central.size(), &vecY[0], &vec_central[0], &vecL_Y[0], &vecH_Y[0], &low_pdf_error[0], &high_pdf_error[0]);
     FONLL_bb_cs_NNPDF_pdf_error->SetLineWidth(2);
-    FONLL_bb_cs_NNPDF_pdf_error->SetFillColorAlpha(kMagenta - 9, 0.7);
-    FONLL_bb_cs_NNPDF_pdf_error->SetLineColorAlpha(kMagenta - 9, 0.9);
+
+    if (info.Fullerror)
+    {
+        FONLL_bb_cs_NNPDF_minmaxerror->SetLineColorAlpha(kGray, 0.9);
+        FONLL_bb_cs_NNPDF_minmaxerror->SetFillColorAlpha(kGray, 0.7);
+        FONLL_bb_cs_NNPDF_scale_error->SetFillColorAlpha(kCyan - 10, 0.7);
+        FONLL_bb_cs_NNPDF_scale_error->SetLineColorAlpha(kCyan - 10, 0.9);
+        FONLL_bb_cs_NNPDF_mass_error->SetFillColorAlpha(kGreen, 0.7);
+        FONLL_bb_cs_NNPDF_mass_error->SetLineColorAlpha(kGreen, 0.9);
+        FONLL_bb_cs_NNPDF_pdf_error->SetFillColorAlpha(kMagenta - 9, 0.7);
+        FONLL_bb_cs_NNPDF_pdf_error->SetLineColorAlpha(kMagenta - 9, 0.9);
+    }
+    else
+    {
+        FONLL_bb_cs_NNPDF_minmaxerror->SetLineColorAlpha(kOrange + 1, 0.9);
+        FONLL_bb_cs_NNPDF_minmaxerror->SetFillColorAlpha(kOrange + 1, 0.7);
+        FONLL_bb_cs_NNPDF_minmaxerror->SetLineWidth(4);
+        FONLL_bb_cs_NNPDF_minmaxerror->SetFillStyle(3005);
+        FONLL_bb_cs_NNPDF_scale_error->SetFillColorAlpha(kOrange + 1, 0.7);
+        FONLL_bb_cs_NNPDF_scale_error->SetLineColorAlpha(kOrange + 1, 0.9);
+        FONLL_bb_cs_NNPDF_scale_error->SetFillStyle(3005);
+        FONLL_bb_cs_NNPDF_mass_error->SetFillColorAlpha(kOrange + 1, 0.7);
+        FONLL_bb_cs_NNPDF_mass_error->SetLineColorAlpha(kOrange + 1, 0.9);
+        FONLL_bb_cs_NNPDF_mass_error->SetFillStyle(3005);
+        FONLL_bb_cs_NNPDF_pdf_error->SetFillColorAlpha(kOrange + 1, 0.7);
+        FONLL_bb_cs_NNPDF_pdf_error->SetLineColorAlpha(kOrange + 1, 0.9);
+        FONLL_bb_cs_NNPDF_pdf_error->SetFillStyle(3005);
+    }
 
     TMultiGraph *bb_bar_cs_NNPDF = new TMultiGraph();
-    bb_bar_cs_NNPDF->Add(FONLL_bb_cs_NNPDF_minmaxerror);
+    bb_bar_cs_NNPDF->Add(FONLL_bb_cs_NNPDF_minmaxerror, "CX");
     bb_bar_cs_NNPDF->Add(FONLL_bb_cs_NNPDF_scale_error);
     bb_bar_cs_NNPDF->Add(FONLL_bb_cs_NNPDF_mass_error);
     bb_bar_cs_NNPDF->Add(FONLL_bb_cs_NNPDF_pdf_error);
-    bb_bar_cs_NNPDF->Add(bb_cs_PYTHIA_fwd, "APS; Z ; 5 s=0.5");
-    bb_bar_cs_NNPDF->Add(bb_cs_PYTHIA_mid, "APS; Z ; 5 s=0.5");
-    
-    if (HF.Contains("Beauty")){
+    bb_bar_cs_NNPDF->Add(cs_fwd_ALICE, "APS; Z ; 5 s=0.5");
+    bb_bar_cs_NNPDF->Add(cs_ALICE_ELECTRON, "APS; Z ; 5 s=0.5");
+    bb_bar_cs_NNPDF->Add(cs_ALICE_HF, "APS; Z ; 5 s=0.5");
+    if (info.HF.Contains("Charm"))
+        bb_bar_cs_NNPDF->Add(cs_LHCb_CHARM, "APS; Z ; 5 s=0.5");
+    else if (info.HF.Contains("Beauty"))
+        bb_bar_cs_NNPDF->Add(cs_LHCb_BEAUTY, "APS; Z ; 5 s=0.5");
+
+    if (info.HF.Contains("Beauty"))
+    {
         bb_bar_cs_NNPDF->GetYaxis()->SetRangeUser(0.08, 8e+2);
         bb_bar_cs_NNPDF->GetYaxis()->SetTitle("d#sigma_{b#bar{b}} / d#it{y} (#mub)");
     }
-    else if (HF.Contains("Charm")){
-        bb_bar_cs_NNPDF->GetYaxis()->SetRangeUser(1.2e-1, 1.2e+5);
-        bb_bar_cs_NNPDF->GetYaxis()->SetTitle("d#sigma_{c#bar{c}} / d#it{y} (#mub)");
+    else if (info.HF.Contains("Charm"))
+    {
+        bb_bar_cs_NNPDF->GetYaxis()->SetRangeUser(7.2e-2, 1.2e+5);
+        bb_bar_cs_NNPDF->GetYaxis()->SetTitle("d#sigma_{c#bar{c}} / d#it{y} or d#sigma_{c#bar{c}} / d#it{eta}(#mub)");
     }
 
     bb_bar_cs_NNPDF->GetXaxis()->SetTitle("#it{y}");
@@ -274,12 +393,21 @@ void cross_section_result(TString HF = "Beauty", TString Generator = "pythia")
     canvas->cd();
     bb_bar_cs_NNPDF->Draw("A3");
 
-    TLegend *Legend_bb_cs_NNPDF_FONLL = new TLegend(0.175, 0.18, 0.475, 0.525, " ", "brNDC");
-    Legend_bb_cs_NNPDF_FONLL->SetHeader("       #it{FONLL}");
-    Legend_bb_cs_NNPDF_FONLL->AddEntry(FONLL_bb_cs_NNPDF_minmaxerror, "unc. tot.", "F");
-    Legend_bb_cs_NNPDF_FONLL->AddEntry(FONLL_bb_cs_NNPDF_scale_error, "unc. scale", "F");
-    Legend_bb_cs_NNPDF_FONLL->AddEntry(FONLL_bb_cs_NNPDF_mass_error, "unc. mass", "F");
-    Legend_bb_cs_NNPDF_FONLL->AddEntry(FONLL_bb_cs_NNPDF_pdf_error, "unc. pdf", "F");
+    TLegend *Legend_bb_cs_NNPDF_FONLL;
+    if (info.Fullerror)
+    {
+        Legend_bb_cs_NNPDF_FONLL = new TLegend(0.175, 0.18, 0.475, 0.525, " ", "brNDC");
+        Legend_bb_cs_NNPDF_FONLL->SetHeader("       #it{FONLL}");
+        Legend_bb_cs_NNPDF_FONLL->AddEntry(FONLL_bb_cs_NNPDF_minmaxerror, "unc. tot.", "F");
+        Legend_bb_cs_NNPDF_FONLL->AddEntry(FONLL_bb_cs_NNPDF_scale_error, "unc. scale", "F");
+        Legend_bb_cs_NNPDF_FONLL->AddEntry(FONLL_bb_cs_NNPDF_mass_error, "unc. mass", "F");
+        Legend_bb_cs_NNPDF_FONLL->AddEntry(FONLL_bb_cs_NNPDF_pdf_error, "unc. pdf", "F");
+    }
+    else
+    {
+        Legend_bb_cs_NNPDF_FONLL = new TLegend(0.175, 0.18, 0.475, 0.325, " ", "brNDC");
+        Legend_bb_cs_NNPDF_FONLL->AddEntry(FONLL_bb_cs_NNPDF_minmaxerror, "FONLL", "F");
+    }
 
     Legend_bb_cs_NNPDF_FONLL->SetBorderSize(0);
     Legend_bb_cs_NNPDF_FONLL->SetFillColor(10);
@@ -290,15 +418,23 @@ void cross_section_result(TString HF = "Beauty", TString Generator = "pythia")
     Legend_bb_cs_NNPDF_FONLL->SetTextSize(0.04);
     Legend_bb_cs_NNPDF_FONLL->Draw("SAME");
 
-    TLegend *Legend_bb_cs_NNPDF_Meas = new TLegend(0.475, 0.18, 0.725, 0.525, " ", "brNDC");
-    if (Generator.Contains("pythia"))
-        Legend_bb_cs_NNPDF_Meas->AddEntry(bb_cs_PYTHIA_fwd, "(#it{m}_{#mu^{#plus}#mu^{#minus}}, #it{p}_{T, #mu^{#plus}#mu^{#minus}}) PYTHIA8 fit", "EP");
-    else if (Generator.Contains("powheg"))
-        Legend_bb_cs_NNPDF_Meas->AddEntry(bb_cs_PYTHIA_fwd, "(#it{m}_{#mu^{#plus}#mu^{#minus}}, #it{p}_{T, #mu^{#plus}#mu^{#minus}}) POWHEG fit", "EP");
-    if (Generator.Contains("pythia"))
-        Legend_bb_cs_NNPDF_Meas->AddEntry(bb_cs_PYTHIA_mid, "#splitline{(#it{m}_{e^{#plus}e^{#minus}}, #it{p}_{T, e^{#plus}e^{#minus}}) PYTHIA6 fit}{Phys. Lett. B788 (2019) 505}", "EP");
-    else if (Generator.Contains("powheg"))
-        Legend_bb_cs_NNPDF_Meas->AddEntry(bb_cs_PYTHIA_mid, "#splitline{(#it{m}_{e^{#plus}e^{#minus}}, #it{p}_{T, e^{#plus}e^{#minus}}) POWHEG fit}{Phys. Lett. B788 (2019) 505}", "EP");
+    TLegend *Legend_bb_cs_NNPDF_Meas = new TLegend(0.475, 0.18, 0.725, 0.575, " ", "brNDC");
+    if (info.Generator.Contains("pythia"))
+    {
+        Legend_bb_cs_NNPDF_Meas->AddEntry(cs_fwd_ALICE, "(#it{m}_{#mu^{#plus}#mu^{#minus}}, #it{p}_{T, #mu^{#plus}#mu^{#minus}}) PYTHIA8 fit", "EP");
+        Legend_bb_cs_NNPDF_Meas->AddEntry(cs_ALICE_ELECTRON, "#splitline{(#it{m}_{e^{#plus}e^{#minus}}, #it{p}_{T, e^{#plus}e^{#minus}}) PYTHIA6 fit}{Phys. Lett. B788 (2019) 505}", "EP");
+    }
+    else if (info.Generator.Contains("powheg"))
+    {
+
+        Legend_bb_cs_NNPDF_Meas->AddEntry(cs_fwd_ALICE, "(#it{m}_{#mu^{#plus}#mu^{#minus}}, #it{p}_{T, #mu^{#plus}#mu^{#minus}}) POWHEG fit", "EP");
+        Legend_bb_cs_NNPDF_Meas->AddEntry(cs_ALICE_ELECTRON, "#splitline{(#it{m}_{e^{#plus}e^{#minus}}, #it{p}_{T, e^{#plus}e^{#minus}}) POWHEG fit}{Phys. Lett. B788 (2019) 505}", "EP");
+    }
+    Legend_bb_cs_NNPDF_Meas->AddEntry(cs_ALICE_HF, "ALICE HF |#it{y}|<0.5", "EP");
+    if (info.HF.Contains("Charm"))
+        Legend_bb_cs_NNPDF_Meas->AddEntry(cs_LHCb_CHARM, "LHCb (est. from D^{0},D^{#plus},D^{#plus}_{s})", "EP");
+    else if (info.HF.Contains("Beauty"))
+        Legend_bb_cs_NNPDF_Meas->AddEntry(cs_LHCb_BEAUTY, "LHCb from B decays", "EP");
     Legend_bb_cs_NNPDF_Meas->SetBorderSize(0);
     Legend_bb_cs_NNPDF_Meas->SetFillColor(10);
     Legend_bb_cs_NNPDF_Meas->SetFillStyle(1);
@@ -315,7 +451,7 @@ void cross_section_result(TString HF = "Beauty", TString Generator = "pythia")
     letexTitle.DrawLatex(0.2, 0.82, "ALICE Preliminary, pp#sqrt{#it{s}} = 13 TeV");
     letexTitle.SetTextSize(0.0375);
     letexTitle.DrawLatex(0.2, 0.74, "FONLL CTEQ6");
-    canvas->SetName(Form("cs_%s_%s",HF.Data(),Generator.Data()));
-    canvas->SetTitle(Form("cs_%s_%s",HF.Data(),Generator.Data()));
-    canvas->SaveAs(Form("cs_%s_%s.pdf",HF.Data(),Generator.Data()));
+    canvas->SetName(Form("cs_%s_%s", info.HF.Data(), info.Generator.Data()));
+    canvas->SetTitle(Form("cs_%s_%s", info.HF.Data(), info.Generator.Data()));
+    // canvas->SaveAs(Form("cs_%s_%s.pdf", info.HF.Data(), info.Generator.Data()));
 }
