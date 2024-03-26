@@ -1,6 +1,6 @@
 # PYTHIA configuration file.
-# Generated on ven 3 feb 2023, 14:58:39, CET with the user supplied options:
-# --with-root=/home/michele_pennisi/alice/sw/ubuntu2004_x86-64/ROOT/latest
+# Generated on mar 24 ott 2023, 12:43:14, CEST with the user supplied options:
+# --with-root=/home/michele_pennisi/alice/sw/ubuntu2004_x86-64/ROOT/v6-28-04-local2
 
 # Install directory prefixes.
 PREFIX_BIN=/home/michele_pennisi/pythia8308/bin
@@ -66,9 +66,9 @@ RIVET_LIB=
 
 ROOT_USE=true
 ROOT_CONFIG=root-config
-ROOT_BIN=/home/michele_pennisi/alice/sw/ubuntu2004_x86-64/ROOT/v6-24-06-19/bin/
-ROOT_INCLUDE=-I/home/michele_pennisi/alice/sw/ubuntu2004_x86-64/ROOT/v6-24-06-19/include
-ROOT_LIB=-L/home/michele_pennisi/alice/sw/ubuntu2004_x86-64/ROOT/v6-24-06-19/lib -Wl,-rpath,/home/michele_pennisi/alice/sw/ubuntu2004_x86-64/ROOT/v6-24-06-19/lib -lCore
+ROOT_BIN=/home/michele_pennisi/alice/sw/ubuntu2004_x86-64/ROOT/v6-28-04-local2/bin/
+ROOT_INCLUDE=-I/home/michele_pennisi/alice/sw/ubuntu2004_x86-64/ROOT/v6-28-04-local2/include
+ROOT_LIB=-L/home/michele_pennisi/alice/sw/ubuntu2004_x86-64/ROOT/v6-28-04-local2/lib -Wl,-rpath,/home/michele_pennisi/alice/sw/ubuntu2004_x86-64/ROOT/v6-28-04-local2/lib -lCore
 
 GZIP_USE=false
 GZIP_CONFIG=

@@ -152,8 +152,7 @@ else
 	@echo "Error: $@ requires ROOT"
 endif
 
-# General ROOT examples without other external dependencies.
-Pythia_Sim: $$@.cc $(PREFIX_LIB)/libpythia8.a
+gen_pythia_sim: $$@.cc $(PREFIX_LIB)/libpythia8.a
 ifeq ($(ROOT_USE),true)
 	$(CXX) $< -o $@ -w $(CXX_COMMON) \
 	`$(ROOT_BIN)/root-config --cflags` \
@@ -162,7 +161,7 @@ else
 	@echo "Error: $@ requires ROOT"
 endif
 
-# Specific rule for main92.
+# Specific rule for main92. 
 main92: $(PYTHIA) $$@.cc main92.so
 	$(CXX) $@.cc main92.so -o $@ -w $(CXX_COMMON) -Wl,-rpath,./\
 	 $(shell $(ROOT_CONFIG) --cflags --glibs)
@@ -178,12 +177,12 @@ else
 	$(error Error: $@ requires RIVET)
 endif
 
-# ROOT with FastJet.
-main95: $(PYTHIA) $$@.cc
+# ROOT with FastJet. 
+main95: $(PYTHIA) $$@.cc 
 ifeq ($(ROOT_USE)$(FASTJET3_USE),truetrue)
 	$(CXX) $@.cc -o $@ -w $(CXX_COMMON) $(FASTJET3_INCLUDE)\
          $(FASTJET3_LIB) $(ROOT_LIB) $(shell $(ROOT_CONFIG) --cflags --glibs)
-else
+else	
 	$(error Error: $@ requires ROOT and FASTJET3)
 endif
 
