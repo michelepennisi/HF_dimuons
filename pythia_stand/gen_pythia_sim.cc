@@ -47,7 +47,7 @@ int main(int argc, char *argv[])
     int seed = 12345;
     int mode = -1;  //-1==Monash  .  1 not allowed. Check JHEP08(2015)003
     int n_MPI = -1; //-1==we take everything --> >0--> register only larger nMPI events
-    int chooseprocess = 1;
+    int chooseprocess = 4;
     int choosechange = 0; // 1 = SoftQCD, 2 = ccbar, 3 = bbbar
     int BR = 0;           // 0 = original BR, 1 = force semileptonic decay of charm
     int nchunk = 999;
@@ -117,7 +117,7 @@ int main(int argc, char *argv[])
         {
             cout << "choosechange 0" << endl;
             pythia.readString("SoftQCD:nonDiffractive = on ");
-            pythia.readString("211:mayDecay = true");
+            pythia.readString("211:mayDecay = false");
         }
         else if (choosechange == 1)
         {
@@ -318,6 +318,10 @@ int main(int argc, char *argv[])
     Int_t fPDG_HFquark_gen_daughter2[fMuons_dim]; // single gen c/cbar PDG mum
     Double_t fPt_HFquark_gen[fMuons_dim];         // single gen c/cbar or b/bbar HFquark pT
     Double_t fY_HFquark_gen[fMuons_dim];          // single gen c/cbar or b/bbar HFquark y
+    Double_t fPx_HFquark_gen[fMuons_dim];         // single gen c/cbar or b/bbar HFquark px
+    Double_t fPy_HFquark_gen[fMuons_dim];          // single gen c/cbar or b/bbar HFquark py
+    Double_t fPz_HFquark_gen[fMuons_dim];         // single gen c/cbar or b/bbar HFquark pz
+    Double_t fE_HFquark_gen[fMuons_dim];          // single gen c/cbar or b/bbar HFquark E
 
     Int_t fPDGmum_gen[fMuons_dim];    // single gen mu PDG mum
     Int_t fPDG_gen[fMuons_dim];       // single gen mu PDG mum
@@ -362,6 +366,10 @@ int main(int argc, char *argv[])
         fPDG_HFquark_gen[i] = 9999.;
         fPt_HFquark_gen[i] = 9999.;
         fY_HFquark_gen[i] = 9999.;
+        fPx_HFquark_gen[i] = 9999.;
+        fPy_HFquark_gen[i] = 9999.;
+        fPz_HFquark_gen[i] = 9999.;
+        fE_HFquark_gen[i] = 9999.;
 
         fPDGmum_gen[i] = 9999.;
         fPDG_gen[i] = 9999.;
@@ -398,11 +406,15 @@ int main(int argc, char *argv[])
 
     fOutputTree = new TTree("MCTree", "Data Tree");
 
-    // fOutputTree->Branch("PercentV0M",&fPercentV0M,"PercentV0M/D");
     fOutputTree->Branch("N_HFquarks_gen", &fN_HFquarks_gen, "N_HFquarks_gen/I");
     fOutputTree->Branch("PDG_HFquark_gen", fPDG_HFquark_gen, "PDG_HFquark_gen[N_HFquarks_gen]/I");
-    fOutputTree->Branch("Pt_HFquark_gen", fPt_HFquark_gen, "Pt_HFquark_gen[N_HFquarks_gen]/D");
     fOutputTree->Branch("Y_HFquark_gen", fY_HFquark_gen, "Y_HFquark_gen[N_HFquarks_gen]/D");
+    fOutputTree->Branch("Pt_HFquark_gen", fPt_HFquark_gen, "Pt_HFquark_gen[N_HFquarks_gen]/D");
+    fOutputTree->Branch("Px_HFquark_gen", fPx_HFquark_gen, "Px_HFquark_gen[N_HFquarks_gen]/D");
+    fOutputTree->Branch("Py_HFquark_gen", fPy_HFquark_gen, "Py_HFquark_gen[N_HFquarks_gen]/D");
+    fOutputTree->Branch("Pz_HFquark_gen", fPz_HFquark_gen, "Pz_HFquark_gen[N_HFquarks_gen]/D");
+    fOutputTree->Branch("E_HFquark_gen", fE_HFquark_gen, "E_HFquark_gen[N_HFquarks_gen]/D");
+
     fOutputTree->Branch("PDG_HFquark_gen_daughter1", fPDG_HFquark_gen_daughter1, "PDG_HFquark_gen_daughter1[N_HFquarks_gen]/I");
     fOutputTree->Branch("PDG_HFquark_gen_daughter2", fPDG_HFquark_gen_daughter2, "PDG_HFquark_gen_daughter2[N_HFquarks_gen]/I");
 
@@ -590,7 +602,10 @@ int main(int argc, char *argv[])
                     fPDG_HFquark_gen[nHFquark_gen] = pythia.event[i].id();
                     fPt_HFquark_gen[nHFquark_gen] = Particle.Pt();
                     fY_HFquark_gen[nHFquark_gen] = Particle.Rapidity();
-
+                    fPx_HFquark_gen[nHFquark_gen] = Particle.Px();
+                    fPy_HFquark_gen[nHFquark_gen] = Particle.Py();
+                    fPz_HFquark_gen[nHFquark_gen] = Particle.Pz();
+                    fE_HFquark_gen[nHFquark_gen] = Particle.E();
                     nHFquark_gen++;
                 }
             }
