@@ -752,6 +752,8 @@ void AliAnalysisTaskDimuon_HighMass::UserExec(Option_t *)
             PDG_Mum_MC_part0 = Mum_MC_part0->GetPdgCode();
         }
 
+        // if (kTRUE)
+        //     printf("i_nMCpart %d) PDG: %d | MCParticle Pt %0.1f | Px %0.1f | Py %0.1f | Pz %0.1f | Y %0.1f || Mother %d , PDG Mother %d \n", i_nMCpart, PDG_MC_part0, MC_part0->Pt(), MC_part0->Px(), MC_part0->Py(), MC_part0->Pz(), MC_part0->Y(), index_Mum_MC_part0, PDG_Mum_MC_part0);
         if (TMath::Abs(PDG_Mum_MC_part0) == TMath::Abs(PDG_MC_part0)) // Remove particles formally produced by the same particle (Powheg transport)
             continue;
 
@@ -897,9 +899,10 @@ void AliAnalysisTaskDimuon_HighMass::UserExec(Option_t *)
             //     // if (MC_part0->GetDaughterFirst() < 0 || MC_part0->GetDaughterLast() < 0)
             //     //     continue;
             // }
+
             Int_t *quark_ancestor;
-            if (index_Mum_MC_part0 == -1)
-                printf("i_nMCpart %d) PDG: %d | MCParticle Pt %0.1f | Px %0.1f | Py %0.1f | Pz %0.1f | Y %0.1f || Mother %d , PDG Mother %d \n", i_nMCpart, PDG_MC_part0, MC_part0->Pt(), MC_part0->Px(), MC_part0->Py(), MC_part0->Pz(), MC_part0->Y(), index_Mum_MC_part0, PDG_Mum_MC_part0);
+            // if (index_Mum_MC_part0 == -1)
+            //     printf("i_nMCpart %d) PDG: %d | MCParticle Pt %0.1f | Px %0.1f | Py %0.1f | Pz %0.1f | Y %0.1f || Mother %d , PDG Mother %d \n", i_nMCpart, PDG_MC_part0, MC_part0->Pt(), MC_part0->Px(), MC_part0->Py(), MC_part0->Pz(), MC_part0->Y(), index_Mum_MC_part0, PDG_Mum_MC_part0);
             if (index_Mum_MC_part0 == -1)
             {
                 HF_from_powheg_event++;
@@ -1042,8 +1045,8 @@ void AliAnalysisTaskDimuon_HighMass::UserExec(Option_t *)
             GoodMuon[j_nMCpart1] = kTRUE;
             ndimu_gen++;
         }
-        printf("Gen mu x event %d\n", nmu_gen);
-        printf("Gen dimu x event %d\n", ndimu_gen);
+        // printf("Gen mu x event %d\n", nmu_gen);
+        // printf("Gen dimu x event %d\n", ndimu_gen);
     }
 
     fN_gamma = n_gamma;
@@ -1051,7 +1054,7 @@ void AliAnalysisTaskDimuon_HighMass::UserExec(Option_t *)
     fNMuons_gen = nmu_gen;
     fNHadrons_gen = nHadron_gen;
     fNDimu_gen = ndimu_gen;
-
+    printf("nHFquark_gen %d\n", nHFquark_gen);
     // cout<<"HF quark with mother index x event "<<HF_from_powheg_event<<endl;
     // printf("End gen muons part \n");
     // if (nHFquark_gen % 2 != 0)
