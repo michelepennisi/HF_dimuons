@@ -1,4 +1,4 @@
-#include "/home/michele_pennisi/cernbox/common_include.h"
+#include "../../common_include.h"
 // #include "/alidata/mpennisi/HF_dimuons/common_include.h"
 Int_t N_HFquarks_gen; // gen c/cbar or b/bar HFquarks in the event
 
@@ -35,8 +35,14 @@ Int_t fFrom_Geant_rec[fMuons_dim];      // check muon gen origin
 
 Int_t PDG_HFquark_gen[fMuons_dim];   // single gen c/cbar PDG mum
 Double_t Pt_HFquark_gen[fMuons_dim]; // single gen c/cbar or b/bbar HFquark pT
+Double_t Px_HFquark_gen[fMuons_dim]; // single gen c/cbar or b/bbar HFquark px
+Double_t Py_HFquark_gen[fMuons_dim]; // single gen c/cbar or b/bbar HFquark py
+Double_t Pz_HFquark_gen[fMuons_dim]; // single gen c/cbar or b/bbar HFquark pz
+Double_t E_HFquark_gen[fMuons_dim];  // single gen c/cbar or b/bbar HFquark E
 Double_t Y_HFquark_gen[fMuons_dim];  // single gen c/cbar or b/bbar HFquark y
-Int_t Mother_index[fMuons_dim];      // single gen c/cbar or b/bbar HFquark y
+Int_t Index_HFquark_gen_mother1[fMuons_dim];
+Int_t Index_HFquark_gen_mother2[fMuons_dim]; 
+Int_t Mother_index[fMuons_dim]; // single gen c/cbar or b/bbar HFquark y
 
 Double_t fPt_gamma[fMuons_dim]; // Gamma star pt
 Double_t fM_gamma[fMuons_dim];  // Gamma star M
@@ -838,6 +844,15 @@ TChain *Importing_Tree(TString dir_filename, TString filename, TString Generator
         tree->SetBranchAddress("PDG_HFquark_gen", PDG_HFquark_gen);
         tree->SetBranchAddress("Pt_HFquark_gen", Pt_HFquark_gen);
         tree->SetBranchAddress("Y_HFquark_gen", Y_HFquark_gen);
+        if (Generator.Contains("stand"))
+        {
+            tree->SetBranchAddress("Px_HFquark_gen", Px_HFquark_gen);
+            tree->SetBranchAddress("Py_HFquark_gen", Py_HFquark_gen);
+            tree->SetBranchAddress("Pz_HFquark_gen", Pz_HFquark_gen);
+            tree->SetBranchAddress("E_HFquark_gen", E_HFquark_gen);
+            tree->SetBranchAddress("Index_HFquark_gen_mother1", Index_HFquark_gen_mother1);
+            tree->SetBranchAddress("Index_HFquark_gen_mother2", Index_HFquark_gen_mother2);
+        }
         if (Generator.Contains("Powheg"))
             tree->SetBranchAddress("Mother_index", Mother_index);
         tree->SetBranchAddress("NHadrons_gen", &NHadrons_gen);
