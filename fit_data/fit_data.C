@@ -191,6 +191,7 @@ const Int_t n_DiMuSelection = 6;
 
 struct opt
 {
+       TString path_to_file=TString::Format("%s",getenv("universal_PATH"));
     Int_t Mass_Binning = 52;
     Int_t Low_Mass = 4;
     Int_t High_Mass = 9;
