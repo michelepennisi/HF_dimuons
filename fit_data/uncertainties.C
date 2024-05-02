@@ -1,10 +1,13 @@
 #include "/home/michele_pennisi/cernbox/HF_dimuons/common_include.h"
 using namespace std;
 const Int_t N_DiMu_sel = 3;
+const Int_t N_Signal = 2;
+const Int_t N_Bkg = 4;
 const Int_t N_variation = 3;
 
 double FuncMass(double *x, double *par);
 double FuncPt(double *x, double *par);
+void param_deviation();
 
 struct info
 {
@@ -12,6 +15,8 @@ struct info
     TString new_syst_file = "";
 
     TString Name_DiMu_sel[N_DiMu_sel] = {"Charm", "Beauty", "HF_Mixed"};
+    TString Name_Signal[N_Signal] = {"Charm", "Beauty"};
+    TString Name_Bkg[N_Bkg] = {"HF_Mixed","DY", "LF_HF_Mixed", "LF"};
     TString Name_variation[N_variation] = {"original", "scaled_Low2Up", "scaled_Up2Low"};
 
     TString Bin_Label[3] = {"B", "n1", "n2"};
@@ -29,23 +34,27 @@ struct info
     Double_t LF_HF_Mixed_fraction = 14.9;
     // Double_t LF_HF_Mixed_fraction = 0.;
 
-    TString Generator = "PYTHIA";
+    TString Generator = "POWHEG";
     TString stat_MC = "full_stat";
     TString stat_Data = "LHC18p";
-    TString LF_HF = "noLF_HF_LHC23i2";
+    TString LF_HF = "withLF_HF_LHC23i2";
     TString DY = "noDY";
-    Color_t color[N_DiMu_sel] = {kMagenta + 2, kSpring - 6, kAzure + 9};
-    Color_t fillcolor[N_DiMu_sel] = {kMagenta - 10, kGreen - 10, kCyan - 10};
+    Color_t color[N_Signal + 1] = {kMagenta + 2, kSpring - 6, kAzure + 9};
+    Color_t fillcolor[N_Signal + 1] = {kMagenta - 10, kGreen - 10, kCyan - 10};
 };
 
 void uncertainties()
 {
+    param_deviation();
 }
 
 void workspace()
 {
     info opt;
     gROOT->ProcessLineSync(".x /home/michele_pennisi/high_mass_dimuons/fit_library/PtMassExpPdf.cxx+");
+
+    TFile *fIn_extra = new TFile(Form("/home/michele_pennisi/cernbox/HF_dimuons/fit_data/results/pdf_extraction/%s_PDF_%s_Mcut_%0.1f_%0.1f.root", opt.Generator.Data(), opt.LF_HF.Data(), opt.LowM_cut, opt.HighM_cut), "READ");
+    RooWorkspace *w_extra = (RooWorkspace *)fIn_extra->Get(Form("w_M_%d_%d_Pt_%d_%d", opt.Low_Mass, opt.High_Mass, opt.Low_Pt, opt.High_Pt));
 
     TFile *fIn_param = new TFile(Form("systematic/template_modification_%s.root", opt.Generator.Data()), "READ");
     fIn_param->ls();
@@ -55,53 +64,67 @@ void workspace()
 
     for (size_t p = 0; p < N_variation; p++)
     {
-        TH1D *Param_Pt[N_DiMu_sel];
-        TH1D *Param_M[N_DiMu_sel];
+        TH1D *Param_Pt[N_Signal];
+        TH1D *Param_M[N_Signal];
 
-        RooRealVar *m = new RooRealVar("m", "#it{m}_{#mu^{#plus}#mu^{#minus}} (GeV/#it{c}^{2})", 4, 30);
-        // m->setBins(Binning_m);
-        RooRealVar *pt = new RooRealVar("pt", "#it{p}_{T} (GeV/#it{c})", 0, 30);
-        // pt->setBins(Binning_pt);
+        RooRealVar *m = new RooRealVar("m", "#it{m}_{#mu^{#plus}#mu^{#minus}} (GeV/#it{c}^{2})", opt.Low_Mass, opt.High_Mass);
+        RooRealVar *pt = new RooRealVar("pt", "#it{p}_{T} (GeV/#it{c})", opt.Low_Pt, opt.High_Pt);
 
-        RooRealVar *B_DimuMass[N_DiMu_sel];
-        RooRealVar *n1_DimuMass[N_DiMu_sel];
-        RooRealVar *n2_DimuMass[N_DiMu_sel];
-        RooRealVar *B_DimuPt[N_DiMu_sel];
-        RooRealVar *n1_DimuPt[N_DiMu_sel];
-        RooRealVar *n2_DimuPt[N_DiMu_sel];
+        RooRealVar *B_DimuMass[N_Signal];
+        RooRealVar *n1_DimuMass[N_Signal];
+        RooRealVar *n2_DimuMass[N_Signal];
+        RooRealVar *B_DimuPt[N_Signal];
+        RooRealVar *n1_DimuPt[N_Signal];
+        RooRealVar *n2_DimuPt[N_Signal];
+
+        RooRealVar *B_DimuMass_extra[N_Bkg];
+        RooRealVar *n1_DimuMass_extra[N_Bkg];
+        RooRealVar *n2_DimuMass_extra[N_Bkg];
+        RooRealVar *B_DimuPt_extra[N_Bkg];
+        RooRealVar *n1_DimuPt_extra[N_Bkg];
+        RooRealVar *n2_DimuPt_extra[N_Bkg];
+
         w[p] = new RooWorkspace(Form("w_%s", opt.Name_variation[p].Data()), Form("w_%s", opt.Name_variation[p].Data()));
-        w_debug[p] = new RooWorkspace(Form("w_debug_%s", opt.Name_variation[p].Data()), Form("w_debug_%s", opt.Name_variation[p].Data()));
-
-        for (Int_t i = 0; i < N_DiMu_sel; i++)
+        TString txt_infos = Form("systematic/workspace_info_%s_%s.txt", opt.Generator.Data(), opt.Name_variation[p].Data());
+        std::ofstream out(txt_infos.Data(), std::ios_base::app);
+        TString output_fit;
+        out << output_fit.Data();
+        output_fit.Form("Generator : %s\n", opt.Generator.Data());
+        out << output_fit.Data();
+        output_fit.Form("Mass Range : [%d,%d] || Mass cut : ]%0.1f,%0.1f[\n", opt.Low_Mass, opt.High_Mass, opt.LowM_cut, opt.HighM_cut);
+        out << output_fit.Data();
+        output_fit.Form("Signals\n");
+        out << output_fit.Data();
+        for (Int_t i_Signal = 0; i_Signal < N_Signal; i_Signal++)
         {
-            Param_Pt[i] = (TH1D *)fIn_param->Get(Form("param_syst_M_%d_%d_Pt_%d_%d_Mcut_%0.1f_%0.1f/Param_Pt_%s_%s", opt.Low_Mass, opt.High_Mass, opt.Low_Pt, opt.High_Pt, opt.LowM_cut, opt.HighM_cut, opt.Name_variation[p].Data(), opt.Name_DiMu_sel[i].Data()));
-            Param_Pt[i]->Draw();
-            Param_M[i] = (TH1D *)fIn_param->Get(Form("param_syst_M_%d_%d_Pt_%d_%d_Mcut_%0.1f_%0.1f/Param_Mass_%s_%s", opt.Low_Mass, opt.High_Mass, opt.Low_Pt, opt.High_Pt, opt.LowM_cut, opt.HighM_cut, opt.Name_variation[p].Data(), opt.Name_DiMu_sel[i].Data()));
+            Param_Pt[i_Signal] = (TH1D *)fIn_param->Get(Form("param_syst_M_%d_%d_Pt_%d_%d_Mcut_%0.1f_%0.1f/Param_Pt_%s_%s", opt.Low_Mass, opt.High_Mass, opt.Low_Pt, opt.High_Pt, opt.LowM_cut, opt.HighM_cut, opt.Name_variation[p].Data(), opt.Name_Signal[i_Signal].Data()));
+            Param_Pt[i_Signal]->Draw();
+            Param_M[i_Signal] = (TH1D *)fIn_param->Get(Form("param_syst_M_%d_%d_Pt_%d_%d_Mcut_%0.1f_%0.1f/Param_Mass_%s_%s", opt.Low_Mass, opt.High_Mass, opt.Low_Pt, opt.High_Pt, opt.LowM_cut, opt.HighM_cut, opt.Name_variation[p].Data(), opt.Name_Signal[i_Signal].Data()));
 
-            B_DimuMass[i] = new RooRealVar(Form("B_DimuMass_from%s", opt.Name_DiMu_sel[i].Data()), Form("B_DimuMass_from%s", opt.Name_DiMu_sel[i].Data()), (Double_t)Param_M[i]->GetBinContent(1));
-            n1_DimuMass[i] = new RooRealVar(Form("n1_DimuMass_from%s", opt.Name_DiMu_sel[i].Data()), Form("n1_DimuMass_from%s", opt.Name_DiMu_sel[i].Data()), (Double_t)Param_M[i]->GetBinContent(2));
-            n2_DimuMass[i] = new RooRealVar(Form("n2_DimuMass_from%s", opt.Name_DiMu_sel[i].Data()), Form("n2_DimuMass_from%s", opt.Name_DiMu_sel[i].Data()), (Double_t)Param_M[i]->GetBinContent(3));
+            B_DimuMass[i_Signal] = new RooRealVar(Form("B_DimuMass_from%s", opt.Name_Signal[i_Signal].Data()), Form("B_DimuMass_from%s", opt.Name_Signal[i_Signal].Data()), (Double_t)Param_M[i_Signal]->GetBinContent(1));
+            n1_DimuMass[i_Signal] = new RooRealVar(Form("n1_DimuMass_from%s", opt.Name_Signal[i_Signal].Data()), Form("n1_DimuMass_from%s", opt.Name_Signal[i_Signal].Data()), (Double_t)Param_M[i_Signal]->GetBinContent(2));
+            n2_DimuMass[i_Signal] = new RooRealVar(Form("n2_DimuMass_from%s", opt.Name_Signal[i_Signal].Data()), Form("n2_DimuMass_from%s", opt.Name_Signal[i_Signal].Data()), (Double_t)Param_M[i_Signal]->GetBinContent(3));
 
-            B_DimuMass[i]->setError(Param_M[i]->GetBinError(1));
-            n1_DimuMass[i]->setError(Param_M[i]->GetBinError(2));
-            n2_DimuMass[i]->setError(Param_M[i]->GetBinError(3));
+            B_DimuMass[i_Signal]->setError(Param_M[i_Signal]->GetBinError(1));
+            n1_DimuMass[i_Signal]->setError(Param_M[i_Signal]->GetBinError(2));
+            n2_DimuMass[i_Signal]->setError(Param_M[i_Signal]->GetBinError(3));
 
-            B_DimuPt[i] = new RooRealVar(Form("B_DimuPt_from%s", opt.Name_DiMu_sel[i].Data()), Form("B_DimuPt_from%s", opt.Name_DiMu_sel[i].Data()), (Double_t)Param_Pt[i]->GetBinContent(1));
-            n1_DimuPt[i] = new RooRealVar(Form("n1_DimuPt_from%s", opt.Name_DiMu_sel[i].Data()), Form("n1_DimuPt_from%s", opt.Name_DiMu_sel[i].Data()), (Double_t)Param_Pt[i]->GetBinContent(2));
-            n2_DimuPt[i] = new RooRealVar(Form("n2_DimuPt_from%s", opt.Name_DiMu_sel[i].Data()), Form("n2_DimuMass_from%s", opt.Name_DiMu_sel[i].Data()), (Double_t)Param_Pt[i]->GetBinContent(3));
+            B_DimuPt[i_Signal] = new RooRealVar(Form("B_DimuPt_from%s", opt.Name_Signal[i_Signal].Data()), Form("B_DimuPt_from%s", opt.Name_Signal[i_Signal].Data()), (Double_t)Param_Pt[i_Signal]->GetBinContent(1));
+            n1_DimuPt[i_Signal] = new RooRealVar(Form("n1_DimuPt_from%s", opt.Name_Signal[i_Signal].Data()), Form("n1_DimuPt_from%s", opt.Name_Signal[i_Signal].Data()), (Double_t)Param_Pt[i_Signal]->GetBinContent(2));
+            n2_DimuPt[i_Signal] = new RooRealVar(Form("n2_DimuPt_from%s", opt.Name_Signal[i_Signal].Data()), Form("n2_DimuMass_from%s", opt.Name_Signal[i_Signal].Data()), (Double_t)Param_Pt[i_Signal]->GetBinContent(3));
 
-            B_DimuPt[i]->setError(Param_Pt[i]->GetBinError(1));
-            n1_DimuPt[i]->setError(Param_Pt[i]->GetBinError(2));
-            n2_DimuPt[i]->setError(Param_Pt[i]->GetBinError(3));
+            B_DimuPt[i_Signal]->setError(Param_Pt[i_Signal]->GetBinError(1));
+            n1_DimuPt[i_Signal]->setError(Param_Pt[i_Signal]->GetBinError(2));
+            n2_DimuPt[i_Signal]->setError(Param_Pt[i_Signal]->GetBinError(3));
 
             // B_DimuPt[i]->setConstant(kTRUE);
             // n1_DimuPt[i]->setConstant(kTRUE);
             // n2_DimuPt[i]->setConstant(kTRUE);
 
-            printf("%s\n", opt.Name_DiMu_sel[i].Data());
-            printf("B_DimuPt: %0.3f n1_DimuPt: %0.3f n2_DimuPt: %0.3f\n", B_DimuPt[i]->getVal(), n1_DimuPt[i]->getVal(), n2_DimuPt[i]->getVal());
+            printf("%s\n", opt.Name_Signal[i_Signal].Data());
+            printf("B_DimuPt: %0.3f n1_DimuPt: %0.3f n2_DimuPt: %0.3f\n", B_DimuPt[i_Signal]->getVal(), n1_DimuPt[i_Signal]->getVal(), n2_DimuPt[i_Signal]->getVal());
 
-            printf("B_DimuMass: %0.3f n1_DimuMass: %0.3f n2_DimuMass: %0.3f\n", B_DimuMass[i]->getVal(), n1_DimuMass[i]->getVal(), n2_DimuMass[i]->getVal());
+            printf("B_DimuMass: %0.3f n1_DimuMass: %0.3f n2_DimuMass: %0.3f\n", B_DimuMass[i_Signal]->getVal(), n1_DimuMass[i_Signal]->getVal(), n2_DimuMass[i_Signal]->getVal());
 
             w[p]->factory(Form("pt[%d,%d], #it{p}_{T} (GeV/#it{c})", opt.Low_Pt, opt.High_Pt));
             w[p]->factory(Form("m[%d,%d], #it{m}_{#mu#mu} (GeV/#it{c}^{2})", opt.Low_Mass, opt.High_Mass));
@@ -113,18 +136,74 @@ void workspace()
                 w[p]->var("m")->setRange("high", 11, 30);
             }
 
-            cout << Form("PtMassExpPdf::pdfDimuPtFrom%s(pt, B_DimuPtFrom%s[%0.10f], n1_DimuPtFrom%s[%0.10f], n2_DimuPtFrom%s[%0.10f])", opt.Name_DiMu_sel[i].Data(), opt.Name_DiMu_sel[i].Data(), B_DimuPt[i]->getVal(), opt.Name_DiMu_sel[i].Data(), n1_DimuPt[i]->getVal(), opt.Name_DiMu_sel[i].Data(), n2_DimuPt[i]->getVal()) << endl;
+            cout << Form("PtMassExpPdf::pdfDimuPtFrom%s(pt, B_DimuPtFrom%s[%0.10f], n1_DimuPtFrom%s[%0.10f], n2_DimuPtFrom%s[%0.10f])", opt.Name_Signal[i_Signal].Data(), opt.Name_Signal[i_Signal].Data(), B_DimuPt[i_Signal]->getVal(), opt.Name_Signal[i_Signal].Data(), n1_DimuPt[i_Signal]->getVal(), opt.Name_Signal[i_Signal].Data(), n2_DimuPt[i_Signal]->getVal()) << endl;
 
-            w[p]->factory(Form("PtMassExpPdf::pdfDimuPtFrom%s(pt, B_DimuPtFrom%s[%0.10f], n1_DimuPtFrom%s[%0.10f], n2_DimuPtFrom%s[%0.10f])", opt.Name_DiMu_sel[i].Data(), opt.Name_DiMu_sel[i].Data(), B_DimuPt[i]->getVal(), opt.Name_DiMu_sel[i].Data(), n1_DimuPt[i]->getVal(), opt.Name_DiMu_sel[i].Data(), n2_DimuPt[i]->getVal()));
+            w[p]->factory(Form("PtMassExpPdf::pdfDimuPtFrom%s(pt, B_DimuPtFrom%s[%0.10f], n1_DimuPtFrom%s[%0.10f], n2_DimuPtFrom%s[%0.10f])", opt.Name_Signal[i_Signal].Data(), opt.Name_Signal[i_Signal].Data(), B_DimuPt[i_Signal]->getVal(), opt.Name_Signal[i_Signal].Data(), n1_DimuPt[i_Signal]->getVal(), opt.Name_Signal[i_Signal].Data(), n2_DimuPt[i_Signal]->getVal()));
 
-            cout << (Form("PtMassExpPdf::pdfDimuMassFrom%s(m, B_DimuMassFrom%s[%0.10f], n1_DimuMassFrom%s[%0.10f], n2_DimuMassFrom%s[%0.10f])", opt.Name_DiMu_sel[i].Data(), opt.Name_DiMu_sel[i].Data(), B_DimuMass[i]->getVal(), opt.Name_DiMu_sel[i].Data(), n1_DimuMass[i]->getVal(), opt.Name_DiMu_sel[i].Data(), n2_DimuMass[i]->getVal())) << endl;
+            cout << (Form("PtMassExpPdf::pdfDimuMassFrom%s(m, B_DimuMassFrom%s[%0.10f], n1_DimuMassFrom%s[%0.10f], n2_DimuMassFrom%s[%0.10f])", opt.Name_Signal[i_Signal].Data(), opt.Name_Signal[i_Signal].Data(), B_DimuMass[i_Signal]->getVal(), opt.Name_Signal[i_Signal].Data(), n1_DimuMass[i_Signal]->getVal(), opt.Name_Signal[i_Signal].Data(), n2_DimuMass[i_Signal]->getVal())) << endl;
 
-            w[p]->factory(Form("PtMassExpPdf::pdfDimuMassFrom%s(m, B_DimuMassFrom%s[%0.10f], n1_DimuMassFrom%s[%0.10f], n2_DimuMassFrom%s[%0.10f])", opt.Name_DiMu_sel[i].Data(), opt.Name_DiMu_sel[i].Data(), B_DimuMass[i]->getVal(), opt.Name_DiMu_sel[i].Data(), n1_DimuMass[i]->getVal(), opt.Name_DiMu_sel[i].Data(), n2_DimuMass[i]->getVal()));
+            w[p]->factory(Form("PtMassExpPdf::pdfDimuMassFrom%s(m, B_DimuMassFrom%s[%0.10f], n1_DimuMassFrom%s[%0.10f], n2_DimuMassFrom%s[%0.10f])", opt.Name_Signal[i_Signal].Data(), opt.Name_Signal[i_Signal].Data(), B_DimuMass[i_Signal]->getVal(), opt.Name_Signal[i_Signal].Data(), n1_DimuMass[i_Signal]->getVal(), opt.Name_DiMu_sel[i_Signal].Data(), n2_DimuMass[i_Signal]->getVal()));
+
+            output_fit.Form("==============================================\n");
+            out << output_fit.Data();
+            output_fit.Form("%s\n", opt.Name_Signal[i_Signal].Data());
+            out << output_fit.Data();
+            output_fit.Form("B_DimuPt: %0.3e|| n1_DimuPt: %0.3e|| n2_DimuPt: %0.3e\n", B_DimuPt[i_Signal]->getVal(), n1_DimuPt[i_Signal]->getVal(), n2_DimuPt[i_Signal]->getVal());
+            out << output_fit.Data();
+            output_fit.Form("PtMassExpPdf::pdfDimuPtFrom%s(pt, B_DimuPtFrom%s[%0.10f], n1_DimuPtFrom%s[%0.10f], n2_DimuPtFrom%s[%0.10f])\n", opt.Name_Signal[i_Signal].Data(), opt.Name_Signal[i_Signal].Data(), B_DimuPt[i_Signal]->getVal(), opt.Name_Signal[i_Signal].Data(), n1_DimuPt[i_Signal]->getVal(), opt.Name_Signal[i_Signal].Data(), n2_DimuPt[i_Signal]->getVal());
+            out << output_fit.Data();
+            output_fit.Form("B_DimuMass: %0.3e|| n1_DimuMass: %0.3e|| n2_DimuMass: %0.3e\n", B_DimuMass[i_Signal]->getVal(), n1_DimuMass[i_Signal]->getVal(), n2_DimuMass[i_Signal]->getVal());
+            out << output_fit.Data();
+            output_fit.Form("PtMassExpPdf::pdfDimuMassFrom%s(pt, B_DimuMassFrom%s[%0.10f], n1_DimuMassFrom%s[%0.10f], n2_DimuMassFrom%s[%0.10f])\n", opt.Name_Signal[i_Signal].Data(), opt.Name_Signal[i_Signal].Data(), B_DimuMass[i_Signal]->getVal(), opt.Name_Signal[i_Signal].Data(), n1_DimuMass[i_Signal]->getVal(), opt.Name_Signal[i_Signal].Data(), n2_DimuMass[i_Signal]->getVal());
+            out << output_fit.Data();
         }
+        output_fit.Form("Backgrounds\n");
+        out << output_fit.Data();
+        for (Int_t i_Bkg = 0; i_Bkg < N_Bkg; i_Bkg++)
+        {
+            cout << opt.Name_Bkg[i_Bkg].Data() << endl;
+            B_DimuMass_extra[i_Bkg] = w_extra->var(Form("B_DimuMassFrom%s", opt.Name_Bkg[i_Bkg].Data()));
+            B_DimuMass_extra[i_Bkg]->setConstant(kTRUE);
+            n1_DimuMass_extra[i_Bkg] = w_extra->var(Form("n1_DimuMassFrom%s", opt.Name_Bkg[i_Bkg].Data()));
+            n1_DimuMass_extra[i_Bkg]->setConstant(kTRUE);
+            n2_DimuMass_extra[i_Bkg] = w_extra->var(Form("n2_DimuMassFrom%s", opt.Name_Bkg[i_Bkg].Data()));
+            n2_DimuMass_extra[i_Bkg]->setConstant(kTRUE);
 
+            B_DimuPt_extra[i_Bkg] = w_extra->var(Form("B_DimuPtFrom%s", opt.Name_Bkg[i_Bkg].Data()));
+            B_DimuPt_extra[i_Bkg]->setConstant(kTRUE);
+            n1_DimuPt_extra[i_Bkg] = w_extra->var(Form("n1_DimuPtFrom%s", opt.Name_Bkg[i_Bkg].Data()));
+            n1_DimuPt_extra[i_Bkg]->setConstant(kTRUE);
+            n2_DimuPt_extra[i_Bkg] = w_extra->var(Form("n2_DimuPtFrom%s", opt.Name_Bkg[i_Bkg].Data()));
+            n2_DimuPt_extra[i_Bkg]->setConstant(kTRUE);
+
+            printf("B_DimuPt: %0.3e|| n1_DimuPt: %0.3e|| n2_DimuPt: %0.3e\n", B_DimuPt_extra[i_Bkg]->getVal(), n1_DimuPt_extra[i_Bkg]->getVal(), n2_DimuPt_extra[i_Bkg]->getVal());
+
+            cout << Form("PtMassExpPdf::pdfDimuPtFrom%s(pt, B_DimuPtFrom%s[%0.10f], n1_DimuPtFrom%s[%0.10f], n2_DimuPtFrom%s[%0.10f])", opt.Name_Bkg[i_Bkg].Data(), opt.Name_Bkg[i_Bkg].Data(), B_DimuPt_extra[i_Bkg]->getVal(), opt.Name_Bkg[i_Bkg].Data(), n1_DimuPt_extra[i_Bkg]->getVal(), opt.Name_Bkg[i_Bkg].Data(), n2_DimuPt_extra[i_Bkg]->getVal()) << endl;
+
+            w[p]->factory(Form("PtMassExpPdf::pdfDimuPtFrom%s(pt, B_DimuPtFrom%s[%0.10f], n1_DimuPtFrom%s[%0.10f], n2_DimuPtFrom%s[%0.10f])", opt.Name_Bkg[i_Bkg].Data(), opt.Name_Bkg[i_Bkg].Data(), B_DimuPt_extra[i_Bkg]->getVal(), opt.Name_Bkg[i_Bkg].Data(), n1_DimuPt_extra[i_Bkg]->getVal(), opt.Name_Bkg[i_Bkg].Data(), n2_DimuPt_extra[i_Bkg]->getVal()));
+
+            printf("B_DimuMass: %0.3e|| n1_DimuMass: %0.3e|| n2_DimuMass: %0.3e\n", B_DimuMass_extra[i_Bkg]->getVal(), n1_DimuMass_extra[i_Bkg]->getVal(), n2_DimuMass_extra[i_Bkg]->getVal());
+            cout << (Form("PtMassExpPdf::pdfDimuMassFrom%s(m, B_DimuMassFrom%s[%0.10f], n1_DimuMassFrom%s[%0.10f], n2_DimuMassFrom%s[%0.10f])", opt.Name_Bkg[i_Bkg].Data(), opt.Name_Bkg[i_Bkg].Data(), B_DimuMass_extra[i_Bkg]->getVal(), opt.Name_Bkg[i_Bkg].Data(), n1_DimuMass_extra[i_Bkg]->getVal(), opt.Name_Bkg[i_Bkg].Data(), n2_DimuMass_extra[i_Bkg]->getVal())) << endl;
+
+            w[p]->factory(Form("PtMassExpPdf::pdfDimuMassFrom%s(m, B_DimuMassFrom%s[%0.10f], n1_DimuMassFrom%s[%0.10f], n2_DimuMassFrom%s[%0.10f])", opt.Name_Bkg[i_Bkg].Data(), opt.Name_Bkg[i_Bkg].Data(), B_DimuMass_extra[i_Bkg]->getVal(), opt.Name_Bkg[i_Bkg].Data(), n1_DimuMass_extra[i_Bkg]->getVal(), opt.Name_Bkg[i_Bkg].Data(), n2_DimuMass_extra[i_Bkg]->getVal()));
+
+            output_fit.Form("==============================================\n");
+            out << output_fit.Data();
+            output_fit.Form("%s\n", opt.Name_Bkg[i_Bkg].Data());
+            out << output_fit.Data();
+            output_fit.Form("B_DimuPt: %0.3e|| n1_DimuPt: %0.3e|| n2_DimuPt: %0.3e\n", B_DimuPt_extra[i_Bkg]->getVal(), n1_DimuPt_extra[i_Bkg]->getVal(), n2_DimuPt_extra[i_Bkg]->getVal());
+            out << output_fit.Data();
+            output_fit.Form("PtMassExpPdf::pdfDimuPtFrom%s(pt, B_DimuPtFrom%s[%0.10f], n1_DimuPtFrom%s[%0.10f], n2_DimuPtFrom%s[%0.10f])\n", opt.Name_Bkg[i_Bkg].Data(), opt.Name_Bkg[i_Bkg].Data(), B_DimuPt_extra[i_Bkg]->getVal(), opt.Name_Bkg[i_Bkg].Data(), n1_DimuPt_extra[i_Bkg]->getVal(), opt.Name_Bkg[i_Bkg].Data(), n2_DimuPt_extra[i_Bkg]->getVal());
+            out << output_fit.Data();
+            output_fit.Form("B_DimuMass: %0.3e|| n1_DimuMass: %0.3e|| n2_DimuMass: %0.3e\n", B_DimuMass_extra[i_Bkg]->getVal(), n1_DimuMass_extra[i_Bkg]->getVal(), n2_DimuMass_extra[i_Bkg]->getVal());
+            out << output_fit.Data();
+            output_fit.Form("PtMassExpPdf::pdfDimuMassFrom%s(pt, B_DimuMassFrom%s[%0.10f], n1_DimuMassFrom%s[%0.10f], n2_DimuMassFrom%s[%0.10f])\n", opt.Name_Bkg[i_Bkg].Data(), opt.Name_Bkg[i_Bkg].Data(), B_DimuMass_extra[i_Bkg]->getVal(), opt.Name_Bkg[i_Bkg].Data(), n1_DimuMass_extra[i_Bkg]->getVal(), opt.Name_Bkg[i_Bkg].Data(), n2_DimuMass_extra[i_Bkg]->getVal());
+            out << output_fit.Data();
+        }
+        out.close();
         // return;
 
-        w[p]->writeToFile(Form("systematic/syst_workspace_%s_M_%d_%d.root", opt.Generator.Data(), opt.Low_Mass, opt.High_Mass), kTRUE);
+        w[p]->writeToFile(Form("systematic/syst_workspace_%s_M_%d_%d.root", opt.Generator.Data(), opt.Low_Mass, opt.High_Mass), kFALSE);
         w[p]->Print();
         // gDirectory->Add(w[p]);
     }
@@ -250,6 +329,7 @@ TH1F *MC_deviation(TH1F *Original_MC, TF1 *linear_modification)
 
 void param_deviation()
 {
+    gStyle->SetOptStat(0);
     ROOT::Math::MinimizerOptions::SetDefaultMaxFunctionCalls(100000);
     info opt;
     TCanvas *mass_scaled_original_canvas[N_DiMu_sel];
@@ -549,6 +629,8 @@ void param_deviation()
         TCanvas *C_Pt_linear_deviation = canvas_noratio(Form("C_Pt_linear_deviation_%s", opt.Name_DiMu_sel[i].Data()));
         hist1D_graphic_opt(up_Pt_hint_error_cl95[i], kFALSE, 1, 22, opt.color[i], 1.);
         up_Pt_hint_error_cl95[i]->GetYaxis()->SetRangeUser(lo_Pt_hint_error_cl95[i]->GetMinimum() * 1.5, up_Pt_hint_error_cl95[i]->GetMaximum() * 1.5);
+        up_Pt_hint_error_cl95[i]->GetYaxis()->SetTitle("");
+        up_Pt_hint_error_cl95[i]->SetTitle(Form("#splitline{%s}{%d < #it{m} < %d, #it{p}_{T} < %d}", opt.Generator.Data(), opt.Low_Mass, opt.High_Mass, opt.High_Pt));
         up_Pt_hint_error_cl95[i]->Draw("PE");
         Pt_pdf_linear_var_Low2Up[i]->Draw("same");
         hist1D_graphic_opt(lo_Pt_hint_error_cl95[i], kFALSE, 1, 23, opt.color[i], 1.);
@@ -558,6 +640,7 @@ void param_deviation()
 
         TCanvas *C_Pt_MC_modification = canvas_noratio(Form("C_Pt_MC_modification_%s", opt.Name_DiMu_sel[i].Data()));
         C_Pt_MC_modification->SetLogy();
+        h_Pt_MC_scaled_Up2Low[i]->SetTitle(" ");
         h_Pt_MC_scaled_Up2Low[i]->Draw("PE");
         Pt_Conf_interval->Draw("E3same");
         h_Pt_MC_scaled_Up2Low[i]->Draw("PEsame");
@@ -567,8 +650,9 @@ void param_deviation()
         pdf_Pt_scaled_Up2Low[i]->Draw("same");
         Pt_Conf_interval->SetFillColor(opt.fillcolor[i]);
         TLegend *legend = new TLegend(0.625, 0.625, 0.925, 0.925);
+        legend->SetHeader(Form("#splitline{%s}{%d < #it{m} < %d, #it{p}_{T} < %d}", opt.Generator.Data(), opt.Low_Mass, opt.High_Mass, opt.High_Pt));
         legend->AddEntry(h_Pt_MC[i]);
-        legend->AddEntry(h_Pt_MC_scaled_Up2Low[i]);
+        legend->AddEntry(h_Pt_MC_scaled_Up2Low[i], "Up to Low");
         legend->AddEntry(h_Pt_MC_scaled_Low2Up[i]);
         legend->AddEntry(pdf_Pt[i]);
         legend->AddEntry(pdf_Pt_scaled_Up2Low[i]);
@@ -708,7 +792,9 @@ void param_deviation()
 
         TCanvas *C_M_linear_deviation = canvas_noratio(Form("C_M_linear_deviation_%s", opt.Name_DiMu_sel[i].Data()));
         hist1D_graphic_opt(up_Mass_hint_error_cl95[i], kFALSE, 1, 22, opt.color[i], 1.);
+        up_Mass_hint_error_cl95[i]->GetYaxis()->SetTitle("");
         up_Mass_hint_error_cl95[i]->GetYaxis()->SetRangeUser(lo_Mass_hint_error_cl95[i]->GetMinimum() * 1.5, up_Mass_hint_error_cl95[i]->GetMaximum() * 1.5);
+        up_Mass_hint_error_cl95[i]->SetTitle(Form("#splitline{%s}{%d < #it{m} < %d, #it{p}_{T} < %d}", opt.Generator.Data(), opt.Low_Mass, opt.High_Mass, opt.High_Pt));
         up_Mass_hint_error_cl95[i]->Draw("PE");
         Mass_pdf_linear_var_Low2Up[i]->Draw("same");
         hist1D_graphic_opt(lo_Mass_hint_error_cl95[i], kFALSE, 1, 23, opt.color[i], 1.);
@@ -718,6 +804,7 @@ void param_deviation()
 
         TCanvas *C_Mass_MC_modification = canvas_noratio(Form("C_Mass_MC_modification_%s", opt.Name_DiMu_sel[i].Data()));
         C_Mass_MC_modification->SetLogy();
+        h_Mass_MC_scaled_Up2Low[i]->SetTitle(" ");
         h_Mass_MC_scaled_Up2Low[i]->Draw("PE");
         M_Conf_interval->SetFillColor(opt.fillcolor[i]);
         if (opt.Low_Mass == 4 && opt.High_Mass == 30)
@@ -779,8 +866,9 @@ void param_deviation()
         h_Mass_MC_scaled_Low2Up[i]->Draw("PE same");
 
         legend = new TLegend(0.625, 0.625, 0.925, 0.925);
+        legend->SetHeader(Form("#splitline{%s}{%d < #it{m} < %d, #it{p}_{T} < %d}", opt.Generator.Data(), opt.Low_Mass, opt.High_Mass, opt.High_Pt));
         legend->AddEntry(h_Mass_MC[i]);
-        legend->AddEntry(h_Mass_MC_scaled_Up2Low[i]);
+        legend->AddEntry(h_Mass_MC_scaled_Up2Low[i], "Up to Low");
         legend->AddEntry(h_Mass_MC_scaled_Low2Up[i]);
         legend->AddEntry(pdf_Mass[i]);
         legend->AddEntry(pdf_Mass_scaled_Up2Low[i]);
@@ -804,7 +892,7 @@ void comparison_new_old()
 
     for (Int_t i_var = 0; i_var < N_variation; i_var++)
     {
-        for (Int_t i_dimu = 0; i_dimu < N_DiMu_sel-1; i_dimu++)
+        for (Int_t i_dimu = 0; i_dimu < N_DiMu_sel - 1; i_dimu++)
         {
             TH1F *Pt_old_syst_hist = (TH1F *)old_syst->Get(Form("Param_Pt_%s_from%s", opt.Name_variation[i_var].Data(), opt.Name_DiMu_sel[i_dimu].Data()));
             hist1D_graphic_opt(Pt_old_syst_hist, kFALSE, 1, 20, kAzure + 7, 1.);
