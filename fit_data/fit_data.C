@@ -13,12 +13,12 @@ struct opt
     TString path_to_file = TString::Format("%s", getenv("universal_PATH"));
     Int_t Mass_Binning = 52;
     Int_t Low_Mass = 4;
-    Int_t High_Mass = 9;
+    Int_t High_Mass = 30;
     Double_t LowM_cut = 8.;
     Double_t HighM_cut = 11.;
     Int_t Pt_Binning = 60;
     Int_t Low_Pt = 0;
-    Int_t High_Pt = 10;
+    Int_t High_Pt = 30;
 
     Double_t HF_Mixed_fraction = 3.0;
     Double_t LF_HF_Mixed_fraction = 14.9;
@@ -28,6 +28,7 @@ struct opt
     TString stat_MC = "full_stat";
     TString stat_Data = "LHC18p";
     // TString DY = "withDY";
+    // TString LF_HF = "withLF_HF_Mixed_Bkg";
     TString LF_HF = "withLF_HF_LHC23i2";
     TString DY = "noDY";
     // TString LF_HF = "noLF_HF_LHC23i1";
@@ -70,6 +71,7 @@ TCanvas *printMC_ratio(TString name, TString Title, RooPlot *frame, RooArgSet *p
 TCanvas *printRooPlot_ratio(RooPlot *frame, Bool_t norm, RooFitResult *r, Int_t choice, TString roohist_name, TF1 *pdf, TH1 *data, Double_t minx, Double_t max_x, Double_t N_HFMixed, Double_t N_LF_HFMixed);
 Double_t Lowy = 0.0025;
 
+void Mixing_background();
 void unbinned_fit_data_sample_singleregion();
 void shape_comparison();
 void plotting_fit();
@@ -78,7 +80,9 @@ void syst_plot();
 void fit_data()
 {
     // unbinned_fit_data_sample_singleregion();
-    plotting_fit();
+    // plotting_fit();
+    Mixing_background();
+
     // syst_plot();
 }
 
@@ -820,7 +824,7 @@ void Mixing_background()
     else
     {
         N_bins_Pt_shape = 100;
-        N_bins_Mass_shape = 100;
+        N_bins_Mass_shape = 50;
     }
 
     TH1F *Shape_Pt_LF_HF_LHC23i1 = new TH1F("Shape_Pt_LF_HF_LHC23i1", "Shape_Pt_LF_HF_LHC23i1", N_bins_Pt_shape, info.Low_Pt, info.High_Pt);
@@ -853,9 +857,9 @@ void Mixing_background()
 
     for (Int_t i_mass_bin = 0; i_mass_bin < Shape_Mass_LF_HF_LHC23i1->GetNbinsX(); i_mass_bin++)
     {
-        Shape_Mass_LF_HF_LHC23i1->SetBinContent(i_mass_bin + 1, Pt_LF_HF_LHC23i1_BINNED->Eval(Shape_Mass_LF_HF_LHC23i1->GetBinCenter(i_mass_bin + 1)));
+        Shape_Mass_LF_HF_LHC23i1->SetBinContent(i_mass_bin + 1, Mass_LF_HF_LHC23i1_BINNED->Eval(Shape_Mass_LF_HF_LHC23i1->GetBinCenter(i_mass_bin + 1)));
         Shape_Mass_LF_HF_LHC23i1->SetBinError(i_mass_bin + 1, Error_Mass_LHC23i1->GetBinError(i_mass_bin + 1));
-        Shape_Mass_LF_HF_LHC23i2->SetBinContent(i_mass_bin + 1, Pt_LF_HF_LHC23i2_BINNED->Eval(Shape_Mass_LF_HF_LHC23i2->GetBinCenter(i_mass_bin + 1)));
+        Shape_Mass_LF_HF_LHC23i2->SetBinContent(i_mass_bin + 1, Mass_LF_HF_LHC23i2_BINNED->Eval(Shape_Mass_LF_HF_LHC23i2->GetBinCenter(i_mass_bin + 1)));
         Shape_Mass_LF_HF_LHC23i2->SetBinError(i_mass_bin + 1, Error_Mass_LHC23i2->GetBinError(i_mass_bin + 1));
     }
 
@@ -913,6 +917,8 @@ void Mixing_background()
     Pt_Diff1->GetYaxis()->SetRangeUser(-0.04, 0.04);
     Pt_Diff1->Draw();
     Pt_Diff2->Draw("same");
+
+    cout << "===MASS====" << endl;
     TCanvas *c_Mass = new TCanvas("c_Mass", "c_Mass", 1200, 1200);
 
     Shape_Mass_LF_HF_LHC23i1->SetLineColor(kGreen);
@@ -922,16 +928,18 @@ void Mixing_background()
     Shape_Mass_LF_HF_LHC23i1->Draw();
     Shape_Mass_LF_HF_LHC23i2->Draw("SAME");
     Shape_Mass_LF_HF_mid->Draw("SAME");
-    TF1 *Mass_LF_HF_MID = new TF1("Mass_LF_HF_MID", FuncMass, info.Low_Mass, info.High_Mass, 4);
+    TF1 *Mass_LF_HF_MID = new TF1("Mass_LF_HF_MID", FuncPt, info.Low_Mass, info.High_Mass, 4);
     Mass_LF_HF_MID->SetParameter(0, Mass_LF_HF_LHC23i2_TEST->GetParameter(0));
     Mass_LF_HF_MID->SetParameter(1, Mass_LF_HF_LHC23i2_TEST->GetParameter(1));
     Mass_LF_HF_MID->SetParameter(2, Mass_LF_HF_LHC23i2_TEST->GetParameter(2));
-    if (info.Low_Mass == 4 && info.High_Mass == 30)
-        Mass_LF_HF_MID->SetParLimits(3, 0, 3);
-    else if (info.Low_Mass == 4 && info.High_Mass == 9)
-        Mass_LF_HF_MID->SetParameter(3, 0.75);
 
-    Shape_Mass_LF_HF_mid->Fit(Mass_LF_HF_MID, "R0I");
+    if (info.Low_Mass == 4 && info.High_Mass == 30)
+        Mass_LF_HF_MID->SetParLimits(3, 0, 10000);
+
+    else if (info.Low_Mass == 4 && info.High_Mass == 9)
+        Mass_LF_HF_MID->SetParLimits(3, 0, 10000);
+
+    Shape_Mass_LF_HF_mid->Fit(Mass_LF_HF_MID, "LR0");
     Mass_LF_HF_MID->Draw("same");
     gPad->BuildLegend();
 
@@ -954,6 +962,198 @@ void Mixing_background()
     Mass_Diff1->GetYaxis()->SetRangeUser(-0.04, 0.04);
     Mass_Diff1->Draw();
     Mass_Diff2->Draw("same");
+    TCanvas *test_hist = canvas_noratio("test_hist");
+    test_hist->Divide(2, 1);
+    test_hist->cd(1);
+    TH1F *Param_Pt_LF_HF = new TH1F(Form("Param_Pt_LF_HF_M_%d_%d_Pt_%d_%d", info.Low_Mass, info.High_Mass, info.Low_Pt, info.High_Pt), Form("Param_Pt_LF_HF_M_%d_%d_Pt_%d_%d", info.Low_Mass, info.High_Mass, info.Low_Pt, info.High_Pt), 4, 0, 4);
+    for (Int_t bin = 0; bin < Param_Pt_LF_HF->GetNbinsX(); bin++)
+    {
+        Param_Pt_LF_HF->SetBinContent(bin + 1, Pt_LF_HF_MID->GetParameter(bin));
+        Param_Pt_LF_HF->SetBinError(bin + 1, Pt_LF_HF_MID->GetParError(bin));
+    }
+
+    Param_Pt_LF_HF->Draw();
+    test_hist->cd(2);
+
+    TH1F *Param_Mass_LF_HF = new TH1F(Form("Param_Mass_LF_HF_M_%d_%d_Pt_%d_%d", info.Low_Mass, info.High_Mass, info.Low_Pt, info.High_Pt), Form("Param_Mass_LF_HF_M_%d_%d_Pt_%d_%d", info.Low_Mass, info.High_Mass, info.Low_Pt, info.High_Pt), 4, 0, 4);
+    for (Int_t bin = 0; bin < Param_Mass_LF_HF->GetNbinsX(); bin++)
+    {
+        Param_Mass_LF_HF->SetBinContent(bin + 1, Mass_LF_HF_MID->GetParameter(bin));
+        Param_Mass_LF_HF->SetBinError(bin + 1, Mass_LF_HF_MID->GetParError(bin));
+    }
+
+    Param_Mass_LF_HF->Draw();
+    // fOut_param->cd(saving_dir);
+    // Param_Pt_LF_HF->Write(0, 2, 0);
+    cout<<"Output file: "<<Form("results/pdf_extraction/LF_HF_Mixed_bkg_fromPOWHEG_M_%d_%d_Pt_%d_%d.root", info.Low_Mass, info.High_Mass, info.Low_Pt, info.High_Pt)<<endl;
+    TFile *fOut_param = new TFile(Form("results/pdf_extraction/LF_HF_Mixed_bkg_fromPOWHEG_M_%d_%d_Pt_%d_%d.root", info.Low_Mass, info.High_Mass, info.Low_Pt, info.High_Pt), "UPDATE");
+    Param_Pt_LF_HF->Write(0, 2, 0);
+    Param_Mass_LF_HF->Write(0, 2, 0);
+
+    return;
+}
+
+void workspace_Mixing_bkg()
+{
+    opt info;
+    gROOT->ProcessLineSync(Form(".x %s/HF_dimuons/PtMassExpPdf.cxx+", info.path_to_file.Data()));
+
+    TFile *fIn_extra = new TFile(Form("results/pdf_extraction/%s_PDF_%s_Mcut_%0.1f_%0.1f.root", info.Generator.Data(), "withLF_HF_LHC23i2", info.LowM_cut, info.HighM_cut), "READ");
+    RooWorkspace *w_extra = (RooWorkspace *)fIn_extra->Get(Form("w_M_%d_%d_Pt_%d_%d", info.Low_Mass, info.High_Mass, info.Low_Pt, info.High_Pt));
+    w_extra->Print();
+    TFile *fIn_param = new TFile(Form("results/pdf_extraction/LF_HF_Mixed_bkg_fromPOWHEG_M_%d_%d_Pt_%d_%d.root", info.Low_Mass, info.High_Mass, info.Low_Pt, info.High_Pt), "READ");
+    fIn_param->ls();
+
+    const Int_t N_Signal = 5;
+    const Int_t N_Bkg = 1;
+
+    TString Name_Signal[N_Signal] = {"Beauty", "Charm", "DY", "HF_Mixed", "LF"};
+    TString Name_Bkg[N_Bkg] = {"LF_HF_Mixed"};
+
+    TH1D *Param_Pt[N_Signal];
+    TH1D *Param_M[N_Signal];
+
+    RooRealVar *m = new RooRealVar("m", "#it{m}_{#mu^{#plus}#mu^{#minus}} (GeV/#it{c}^{2})", info.Low_Mass, info.High_Mass);
+    RooRealVar *pt = new RooRealVar("pt", "#it{p}_{T} (GeV/#it{c})", info.Low_Pt, info.High_Pt);
+
+    RooRealVar *B_DimuMass_extra[N_Signal];
+    RooRealVar *n1_DimuMass_extra[N_Signal];
+    RooRealVar *n2_DimuMass_extra[N_Signal];
+    RooRealVar *B_DimuPt_extra[N_Signal];
+    RooRealVar *n1_DimuPt_extra[N_Signal];
+    RooRealVar *n2_DimuPt_extra[N_Signal];
+
+    RooRealVar *B_DimuMass[N_Bkg];
+    RooRealVar *n1_DimuMass[N_Bkg];
+    RooRealVar *n2_DimuMass[N_Bkg];
+    RooRealVar *B_DimuPt[N_Bkg];
+    RooRealVar *n1_DimuPt[N_Bkg];
+    RooRealVar *n2_DimuPt[N_Bkg];
+
+    RooWorkspace *w = new RooWorkspace(Form("w_M_%d_%d_Pt_%d_%d", info.Low_Mass, info.High_Mass, info.Low_Pt, info.High_Pt), Form("w_M_%d_%d_Pt_%d_%d", info.Low_Mass, info.High_Mass, info.Low_Pt, info.High_Pt));
+    w->factory(Form("pt[%d,%d], #it{p}_{T} (GeV/#it{c})", info.Low_Pt, info.High_Pt));
+    w->factory(Form("m[%d,%d], #it{m}_{#mu#mu} (GeV/#it{c}^{2})", info.Low_Mass, info.High_Mass));
+
+    if (info.Low_Mass == 4 && info.High_Mass == 30)
+    {
+        w->var("m")->setRange("low", 4, 8);
+        w->var("m")->setRange("high", 11, 30);
+    }
+
+    TString txt_infos = Form("results/pdf_extractio/workspace_info_%s_withLF_HF_MixedBkg.txt", info.Generator.Data());
+    std::ofstream out(txt_infos.Data(), std::ios_base::app);
+    TString output_fit;
+    out << output_fit.Data();
+    output_fit.Form("Generator : %s\n", info.Generator.Data());
+    out << output_fit.Data();
+    output_fit.Form("Mass Range : [%d,%d] || Mass cut : ]%0.1f,%0.1f[\n", info.Low_Mass, info.High_Mass, info.LowM_cut, info.HighM_cut);
+    out << output_fit.Data();
+    output_fit.Form("Signals\n");
+    out << output_fit.Data();
+
+    for (Int_t i_Signal = 0; i_Signal < N_Signal; i_Signal++)
+    {
+        cout << Name_Signal[i_Signal].Data() << endl;
+        B_DimuMass_extra[i_Signal] = w_extra->var(Form("B_DimuMassFrom%s", Name_Signal[i_Signal].Data()));
+        B_DimuMass_extra[i_Signal]->setConstant(kTRUE);
+        n1_DimuMass_extra[i_Signal] = w_extra->var(Form("n1_DimuMassFrom%s", Name_Signal[i_Signal].Data()));
+        n1_DimuMass_extra[i_Signal]->setConstant(kTRUE);
+        n2_DimuMass_extra[i_Signal] = w_extra->var(Form("n2_DimuMassFrom%s", Name_Signal[i_Signal].Data()));
+        n2_DimuMass_extra[i_Signal]->setConstant(kTRUE);
+
+        B_DimuPt_extra[i_Signal] = w_extra->var(Form("B_DimuPtFrom%s", Name_Signal[i_Signal].Data()));
+        B_DimuPt_extra[i_Signal]->setConstant(kTRUE);
+        n1_DimuPt_extra[i_Signal] = w_extra->var(Form("n1_DimuPtFrom%s", Name_Signal[i_Signal].Data()));
+        n1_DimuPt_extra[i_Signal]->setConstant(kTRUE);
+        n2_DimuPt_extra[i_Signal] = w_extra->var(Form("n2_DimuPtFrom%s", Name_Signal[i_Signal].Data()));
+        n2_DimuPt_extra[i_Signal]->setConstant(kTRUE);
+
+        printf("B_DimuPt: %0.3e|| n1_DimuPt: %0.3e|| n2_DimuPt: %0.3e\n", B_DimuPt_extra[i_Signal]->getError(), n1_DimuPt_extra[i_Signal]->getError(), n2_DimuPt_extra[i_Signal]->getError());
+
+        cout << Form("PtMassExpPdf::pdfDimuPtFrom%s(pt, B_DimuPtFrom%s[%0.10f], n1_DimuPtFrom%s[%0.10f], n2_DimuPtFrom%s[%0.10f])", Name_Signal[i_Signal].Data(), Name_Signal[i_Signal].Data(), B_DimuPt_extra[i_Signal]->getVal(), Name_Signal[i_Signal].Data(), n1_DimuPt_extra[i_Signal]->getVal(), Name_Signal[i_Signal].Data(), n2_DimuPt_extra[i_Signal]->getVal()) << endl;
+
+        w->factory(Form("PtMassExpPdf::pdfDimuPtFrom%s(pt, B_DimuPtFrom%s[%0.10f], n1_DimuPtFrom%s[%0.10f], n2_DimuPtFrom%s[%0.10f])", Name_Signal[i_Signal].Data(), Name_Signal[i_Signal].Data(), B_DimuPt_extra[i_Signal]->getVal(), Name_Signal[i_Signal].Data(), n1_DimuPt_extra[i_Signal]->getVal(), Name_Signal[i_Signal].Data(), n2_DimuPt_extra[i_Signal]->getVal()));
+
+        printf("B_DimuMass: %0.3e|| n1_DimuMass: %0.3e|| n2_DimuMass: %0.3e\n", B_DimuMass_extra[i_Signal]->getError(), n1_DimuMass_extra[i_Signal]->getError(), n2_DimuMass_extra[i_Signal]->getError());
+        cout << (Form("PtMassExpPdf::pdfDimuMassFrom%s(m, B_DimuMassFrom%s[%0.10f], n1_DimuMassFrom%s[%0.10f], n2_DimuMassFrom%s[%0.10f])", Name_Signal[i_Signal].Data(), Name_Signal[i_Signal].Data(), B_DimuMass_extra[i_Signal]->getVal(), Name_Signal[i_Signal].Data(), n1_DimuMass_extra[i_Signal]->getVal(), Name_Signal[i_Signal].Data(), n2_DimuMass_extra[i_Signal]->getVal())) << endl;
+
+        w->factory(Form("PtMassExpPdf::pdfDimuMassFrom%s(m, B_DimuMassFrom%s[%0.10f], n1_DimuMassFrom%s[%0.10f], n2_DimuMassFrom%s[%0.10f])", Name_Signal[i_Signal].Data(), Name_Signal[i_Signal].Data(), B_DimuMass_extra[i_Signal]->getVal(), Name_Signal[i_Signal].Data(), n1_DimuMass_extra[i_Signal]->getVal(), Name_Signal[i_Signal].Data(), n2_DimuMass_extra[i_Signal]->getVal()));
+
+        output_fit.Form("==============================================\n");
+        out << output_fit.Data();
+        output_fit.Form("%s\n", Name_Signal[i_Signal].Data());
+        out << output_fit.Data();
+        output_fit.Form("B_DimuPt: %0.3e|| n1_DimuPt: %0.3e|| n2_DimuPt: %0.3e\n", B_DimuPt_extra[i_Signal]->getVal(), n1_DimuPt_extra[i_Signal]->getVal(), n2_DimuPt_extra[i_Signal]->getVal());
+        out << output_fit.Data();
+        output_fit.Form("PtMassExpPdf::pdfDimuPtFrom%s(pt, B_DimuPtFrom%s[%0.10f], n1_DimuPtFrom%s[%0.10f], n2_DimuPtFrom%s[%0.10f])\n", Name_Signal[i_Signal].Data(), Name_Signal[i_Signal].Data(), B_DimuPt_extra[i_Signal]->getVal(), Name_Signal[i_Signal].Data(), n1_DimuPt_extra[i_Signal]->getVal(), Name_Signal[i_Signal].Data(), n2_DimuPt_extra[i_Signal]->getVal());
+        out << output_fit.Data();
+        output_fit.Form("B_DimuMass: %0.3e|| n1_DimuMass: %0.3e|| n2_DimuMass: %0.3e\n", B_DimuMass_extra[i_Signal]->getVal(), n1_DimuMass_extra[i_Signal]->getVal(), n2_DimuMass_extra[i_Signal]->getVal());
+        out << output_fit.Data();
+        output_fit.Form("PtMassExpPdf::pdfDimuMassFrom%s(pt, B_DimuMassFrom%s[%0.10f], n1_DimuMassFrom%s[%0.10f], n2_DimuMassFrom%s[%0.10f])\n", Name_Signal[i_Signal].Data(), Name_Signal[i_Signal].Data(), B_DimuMass_extra[i_Signal]->getVal(), Name_Signal[i_Signal].Data(), n1_DimuMass_extra[i_Signal]->getVal(), Name_Signal[i_Signal].Data(), n2_DimuMass_extra[i_Signal]->getVal());
+        out << output_fit.Data();
+    }
+    output_fit.Form("Mixed Backgrounds\n");
+    out << output_fit.Data();
+    for (Int_t i_Bkg = 0; i_Bkg < N_Bkg; i_Bkg++)
+    {
+        Param_Pt[i_Bkg] = (TH1D *)fIn_param->Get(Form("Param_Pt_LF_HF_M_%d_%d_Pt_%d_%d", info.Low_Mass, info.High_Mass, info.Low_Pt, info.High_Pt));
+        Param_Pt[i_Bkg]->Draw();
+        Param_M[i_Bkg] = (TH1D *)fIn_param->Get(Form("Param_Mass_LF_HF_M_%d_%d_Pt_%d_%d", info.Low_Mass, info.High_Mass, info.Low_Pt, info.High_Pt));
+
+        B_DimuMass[i_Bkg] = new RooRealVar(Form("B_DimuMass_from%s", Name_Bkg[i_Bkg].Data()), Form("B_DimuMass_from%s", Name_Bkg[i_Bkg].Data()), (Double_t)Param_M[i_Bkg]->GetBinContent(1));
+        n1_DimuMass[i_Bkg] = new RooRealVar(Form("n1_DimuMass_from%s", Name_Bkg[i_Bkg].Data()), Form("n1_DimuMass_from%s", Name_Bkg[i_Bkg].Data()), (Double_t)Param_M[i_Bkg]->GetBinContent(2));
+        n2_DimuMass[i_Bkg] = new RooRealVar(Form("n2_DimuMass_from%s", Name_Bkg[i_Bkg].Data()), Form("n2_DimuMass_from%s", Name_Bkg[i_Bkg].Data()), (Double_t)Param_M[i_Bkg]->GetBinContent(3));
+
+        B_DimuMass[i_Bkg]->setError(Param_M[i_Bkg]->GetBinError(1));
+        n1_DimuMass[i_Bkg]->setError(Param_M[i_Bkg]->GetBinError(2));
+        n2_DimuMass[i_Bkg]->setError(Param_M[i_Bkg]->GetBinError(3));
+
+        B_DimuPt[i_Bkg] = new RooRealVar(Form("B_DimuPt_from%s", Name_Bkg[i_Bkg].Data()), Form("B_DimuPt_from%s", Name_Bkg[i_Bkg].Data()), (Double_t)Param_Pt[i_Bkg]->GetBinContent(1));
+        n1_DimuPt[i_Bkg] = new RooRealVar(Form("n1_DimuPt_from%s", Name_Bkg[i_Bkg].Data()), Form("n1_DimuPt_from%s", Name_Bkg[i_Bkg].Data()), (Double_t)Param_Pt[i_Bkg]->GetBinContent(2));
+        n2_DimuPt[i_Bkg] = new RooRealVar(Form("n2_DimuPt_from%s", Name_Bkg[i_Bkg].Data()), Form("n2_DimuMass_from%s", Name_Bkg[i_Bkg].Data()), (Double_t)Param_Pt[i_Bkg]->GetBinContent(3));
+
+        B_DimuPt[i_Bkg]->setError(Param_Pt[i_Bkg]->GetBinError(1));
+        n1_DimuPt[i_Bkg]->setError(Param_Pt[i_Bkg]->GetBinError(2));
+        n2_DimuPt[i_Bkg]->setError(Param_Pt[i_Bkg]->GetBinError(3));
+
+        // B_DimuPt[i]->setConstant(kTRUE);
+        // n1_DimuPt[i]->setConstant(kTRUE);
+        // n2_DimuPt[i]->setConstant(kTRUE);
+
+        printf("%s\n", Name_Bkg[i_Bkg].Data());
+        printf("B_DimuPt: %0.3f n1_DimuPt: %0.3f n2_DimuPt: %0.3f\n", B_DimuPt[i_Bkg]->getVal(), n1_DimuPt[i_Bkg]->getVal(), n2_DimuPt[i_Bkg]->getVal());
+        printf("B_DimuMass: %0.3f n1_DimuMass: %0.3f n2_DimuMass: %0.3f\n", B_DimuMass[i_Bkg]->getVal(), n1_DimuMass[i_Bkg]->getVal(), n2_DimuMass[i_Bkg]->getVal());
+
+        cout << Form("PtMassExpPdf::pdfDimuPtFrom%s(pt, B_DimuPtFrom%s[%0.10f], n1_DimuPtFrom%s[%0.10f], n2_DimuPtFrom%s[%0.10f])", Name_Bkg[i_Bkg].Data(), Name_Bkg[i_Bkg].Data(), B_DimuPt[i_Bkg]->getVal(), Name_Bkg[i_Bkg].Data(), n1_DimuPt[i_Bkg]->getVal(), Name_Bkg[i_Bkg].Data(), n2_DimuPt[i_Bkg]->getVal()) << endl;
+
+        w->factory(Form("PtMassExpPdf::pdfDimuPtFrom%s(pt, B_DimuPtFrom%s[%0.10f], n1_DimuPtFrom%s[%0.10f], n2_DimuPtFrom%s[%0.10f])", Name_Bkg[i_Bkg].Data(), Name_Bkg[i_Bkg].Data(), B_DimuPt[i_Bkg]->getVal(), Name_Bkg[i_Bkg].Data(), n1_DimuPt[i_Bkg]->getVal(), Name_Bkg[i_Bkg].Data(), n2_DimuPt[i_Bkg]->getVal()));
+
+        cout << (Form("PtMassExpPdf::pdfDimuMassFrom%s(m, B_DimuMassFrom%s[%0.10f], n1_DimuMassFrom%s[%0.10f], n2_DimuMassFrom%s[%0.10f])", Name_Bkg[i_Bkg].Data(), Name_Bkg[i_Bkg].Data(), B_DimuMass[i_Bkg]->getVal(), Name_Bkg[i_Bkg].Data(), n1_DimuMass[i_Bkg]->getVal(), Name_Bkg[i_Bkg].Data(), n2_DimuMass[i_Bkg]->getVal())) << endl;
+
+        w->factory(Form("PtMassExpPdf::pdfDimuMassFrom%s(m, B_DimuMassFrom%s[%0.10f], n1_DimuMassFrom%s[%0.10f], n2_DimuMassFrom%s[%0.10f])", Name_Bkg[i_Bkg].Data(), Name_Bkg[i_Bkg].Data(), B_DimuMass[i_Bkg]->getVal(), Name_Bkg[i_Bkg].Data(), n1_DimuMass[i_Bkg]->getVal(), Name_Bkg[i_Bkg].Data(), n2_DimuMass[i_Bkg]->getVal()));
+
+        output_fit.Form("==============================================\n");
+        out << output_fit.Data();
+        output_fit.Form("%s\n", Name_Bkg[i_Bkg].Data());
+        out << output_fit.Data();
+        output_fit.Form("B_DimuPt: %0.3e|| n1_DimuPt: %0.3e|| n2_DimuPt: %0.3e\n", B_DimuPt[i_Bkg]->getVal(), n1_DimuPt[i_Bkg]->getVal(), n2_DimuPt[i_Bkg]->getVal());
+        out << output_fit.Data();
+        output_fit.Form("PtMassExpPdf::pdfDimuPtFrom%s(pt, B_DimuPtFrom%s[%0.10f], n1_DimuPtFrom%s[%0.10f], n2_DimuPtFrom%s[%0.10f])\n", Name_Bkg[i_Bkg].Data(), Name_Bkg[i_Bkg].Data(), B_DimuPt[i_Bkg]->getVal(), Name_Bkg[i_Bkg].Data(), n1_DimuPt[i_Bkg]->getVal(), Name_Bkg[i_Bkg].Data(), n2_DimuPt[i_Bkg]->getVal());
+        out << output_fit.Data();
+        output_fit.Form("B_DimuMass: %0.3e|| n1_DimuMass: %0.3e|| n2_DimuMass: %0.3e\n", B_DimuMass[i_Bkg]->getVal(), n1_DimuMass[i_Bkg]->getVal(), n2_DimuMass[i_Bkg]->getVal());
+        out << output_fit.Data();
+        output_fit.Form("PtMassExpPdf::pdfDimuMassFrom%s(pt, B_DimuMassFrom%s[%0.10f], n1_DimuMassFrom%s[%0.10f], n2_DimuMassFrom%s[%0.10f])\n", Name_Bkg[i_Bkg].Data(), Name_Bkg[i_Bkg].Data(), B_DimuMass[i_Bkg]->getVal(), Name_Bkg[i_Bkg].Data(), n1_DimuMass[i_Bkg]->getVal(), Name_Bkg[i_Bkg].Data(), n2_DimuMass[i_Bkg]->getVal());
+        out << output_fit.Data();
+    }
+
+    output_fit.Form("Backgrounds\n");
+    out << output_fit.Data();
+    out.close();
+    // return;
+
+    w->writeToFile(Form("results/pdf_extraction/%s_PDF_%s_Mcut_%0.1f_%0.1f.root", info.Generator.Data(), "withLF_HF_Mixed_Bkg", info.LowM_cut, info.HighM_cut), kFALSE);
+    w->Print();
+    // gDirectory->Add(w[p]);
 
     return;
 }
@@ -962,7 +1162,7 @@ void unbinned_fit_data_sample_singleregion()
 {
 
     opt info;
-    gROOT->ProcessLineSync(".x /home/michele_pennisi/high_mass_dimuons/fit_library/PtMassExpPdf.cxx+");
+    gROOT->ProcessLineSync(Form(".x %s/HF_dimuons/PtMassExpPdf.cxx+", info.path_to_file.Data()));
 
     // TFile *fIn = new TFile(Form("/home/michele_pennisi/cernbox/HF_dimuons/fit_data/results/PROVA_LF_HF_mixed_LHC23i2_removing_Y_POWHEG_PDF_%s.root", info.stat_MC.Data()), "READ");
     TFile *fIn;
@@ -977,13 +1177,12 @@ void unbinned_fit_data_sample_singleregion()
     }
     else
     {
-        cout << Form("/home/michele_pennisi/cernbox/HF_dimuons/fit_data/results/pdf_extraction/%s_PDF_%s_Mcut_%0.1f_%0.1f.root", info.Generator.Data(), info.LF_HF.Data(), info.LowM_cut, info.HighM_cut) << endl;
-        fIn = new TFile(Form("/home/michele_pennisi/cernbox/HF_dimuons/fit_data/results/pdf_extraction/%s_PDF_%s_Mcut_%0.1f_%0.1f.root", info.Generator.Data(), info.LF_HF.Data(), info.LowM_cut, info.HighM_cut), "READ");
+        cout << Form("results/pdf_extraction/%s_PDF_%s_Mcut_%0.1f_%0.1f.root", info.Generator.Data(), info.LF_HF.Data(), info.LowM_cut, info.HighM_cut) << endl;
+        fIn = new TFile(Form("results/pdf_extraction/%s_PDF_%s_Mcut_%0.1f_%0.1f.root", info.Generator.Data(), info.LF_HF.Data(), info.LowM_cut, info.HighM_cut), "READ");
         w = (RooWorkspace *)fIn->Get(Form("w_M_%d_%d_Pt_%d_%d", info.Low_Mass, info.High_Mass, info.Low_Pt, info.High_Pt));
     }
 
     w->Print("s");
-    return;
     // RooRealVar *m = new RooRealVar("m", "#it{m}_{#mu^{#plus}#mu^{#minus}} (GeV/#it{c}^{2})", Low_Mass, High_Mass);
     // RooRealVar *pt = new RooRealVar("pt", "#it{p}_{T} (GeV/#it{c})", Low_Pt, High_Pt);
 
@@ -1006,11 +1205,10 @@ void unbinned_fit_data_sample_singleregion()
     sample.defineType("transversemomentum");
     TFile *fIn_data;
     if (info.stat_Data.Contains("Run2"))
-        fIn_data = new TFile("/home/michele_pennisi/cernbox/HF_dimuons/data_analysis/Tree_MassPt_MassCut4_Run2.root", "READ");
+        fIn_data = new TFile(Form("%s/HF_dimuons/data_analysis/Tree_MassPt_MassCut4_Run2.root", info.path_to_file.Data()), "READ");
     else
-        fIn_data = new TFile("~/dimuon_HF_pp/data/LHC18p/Hist_AOD/3_11_2022/TreeResults_merged.root", "READ");
+        fIn_data = new TFile(Form("%s/HF_dimuons/data_analysis/3_11_2022/TreeResults_merged.root", info.path_to_file.Data()), "READ");
     fIn_data->ls();
-
     // Taking data saved in tree
     TTree *tree_data = (TTree *)fIn_data->Get("rec_data_tree");
     // tree_data->Draw("m", Form("((m>%d && m<9) || (m>11 && m<%d)) && (pt > %d && pt <%d)", Low_Mass, High_Mass, Low_Pt, High_Pt));
@@ -1048,7 +1246,6 @@ void unbinned_fit_data_sample_singleregion()
     RooRealVar *n2_DimuPt[n_DiMuSelection];
     RooAbsPdf *pdfDimuMass[n_DiMuSelection];
     RooAbsPdf *pdfDimuPt[n_DiMuSelection];
-
     for (Int_t i_DiMu_Sel = 0; i_DiMu_Sel < n_DiMuSelection; i_DiMu_Sel++)
     {
         cout << info.Name_DimuSel[i_DiMu_Sel].Data() << endl;
@@ -1064,14 +1261,14 @@ void unbinned_fit_data_sample_singleregion()
         n1_DimuPt[i_DiMu_Sel]->setConstant(kTRUE);
         n2_DimuPt[i_DiMu_Sel] = w->var(Form("n2_DimuPtFrom%s", info.Name_DimuSel[i_DiMu_Sel].Data()));
         n2_DimuPt[i_DiMu_Sel]->setConstant(kTRUE);
-        printf("B_DimuMass: %0.3e|| n1_DimuMass: %0.3e|| n2_DimuMass: %0.3e\n", B_DimuMass[i_DiMu_Sel]->getVal(), n1_DimuMass[i_DiMu_Sel]->getVal(), n2_DimuMass[i_DiMu_Sel]->getVal());
+        printf("B_DimuMass: %0.3e|| n1_DimuMass: %0.3e|| n2_DimuMass: %0.3e\n", B_DimuMass[i_DiMu_Sel]->getError(), n1_DimuMass[i_DiMu_Sel]->getError(), n2_DimuMass[i_DiMu_Sel]->getError());
 
         pdfDimuMass[i_DiMu_Sel] = w->pdf(Form("pdfDimuMassFrom%s", info.Name_DimuSel[i_DiMu_Sel].Data()));
         pdfDimuPt[i_DiMu_Sel] = w->pdf(Form("pdfDimuPtFrom%s", info.Name_DimuSel[i_DiMu_Sel].Data()));
     }
 
     RooRealVar *normForC = new RooRealVar(Form("n_%s_output", info.Name_DimuSel[0].Data()), "number dimuon from c", 980000, 0, 2000000);
-    RooRealVar *normForB = new RooRealVar(Form("n_%s_output", info.Name_DimuSel[1].Data()), "number dimuon from b", 380000, 0, 2000000);
+    RooRealVar *normForB = new RooRealVar(Form("n_%s_output", info.Name_DimuSel[1].Data()), "number dimuon from b", 20000, 10000, 40000);
     RooRealVar *normForMixed = new RooRealVar(Form("n_%s_output", info.Name_DimuSel[2].Data()), "number dimuon from b,c", (info.HF_Mixed_fraction / 100) * tree_data_cutted->GetEntries());
     normForMixed->setConstant(kTRUE);
     RooRealVar *normForDY = new RooRealVar(Form("n_%s_output", info.Name_DimuSel[3].Data()), "number dimuon from DY", 380000, 0, 2000000);
@@ -1093,7 +1290,7 @@ void unbinned_fit_data_sample_singleregion()
         m_model = new RooAddPdf("m_model", "n_charm_output*dimuMassFromC + n_beauty_output*dimuMassFromB + n_mixed_output*dimuMassFromMixed + n_DY_output*dimuMassFromDY", RooArgList(*pdfDimuMass[0], *pdfDimuMass[1], *pdfDimuMass[3], *pdfDimuMass[2]), RooArgList(*normForC, *normForB, *normForMixed, *normForDY));
         pt_model = new RooAddPdf("pt_model", "n_charm_output*dimuPtFromC + n_beauty_output*dimuPtFromB + n_mixed_output*dimuPtFromMixed + n_DY_output*dimuPtFromDY", RooArgList(*pdfDimuPt[0], *pdfDimuPt[1], *pdfDimuPt[3], *pdfDimuPt[2]), RooArgList(*normForC, *normForB, *normForMixed, *normForDY));
     }
-    else if (info.DY.Contains("noDY") && info.LF_HF.Contains("withLF_HF_LHC23i2"))
+    else if (info.DY.Contains("noDY") && (info.LF_HF.Contains("withLF_HF_LHC23i2") || info.LF_HF.Contains("withLF_HF_LHC23i1") || info.LF_HF.Contains("withLF_HF_Mixed_Bkg")))
     {
         m_model = new RooAddPdf("m_model", "n_charm_output*dimuMassFromC + n_beauty_output*dimuMassFromB + n_mixed_output*dimuMassFromMixed++ n_DY_output*dimuMassFromDY", RooArgList(*pdfDimuMass[0], *pdfDimuMass[1], *pdfDimuMass[3], *pdfDimuMass[4]), RooArgList(*normForC, *normForB, *normForMixed, *normForLF_HF_Mixed));
         pt_model = new RooAddPdf("pt_model", "n_charm_output*dimuPtFromC + n_beauty_output*dimuPtFromB + n_mixed_output*dimuPtFromMixed++ DYed_output*dimuPtFromDY", RooArgList(*pdfDimuPt[0], *pdfDimuPt[1], *pdfDimuPt[3], *pdfDimuPt[4]), RooArgList(*normForC, *normForB, *normForMixed, *normForLF_HF_Mixed));
@@ -1182,7 +1379,12 @@ void unbinned_fit_data_sample_singleregion()
             simPdf.plotOn(pt_frame, Name(Form("pdfpt%s", info.Name_DimuSel[i_DiMu_Sel].Data())), Slice(sample, "transversemomentum"), Components(pdfDimuPt[i_DiMu_Sel]->GetName()), ProjWData(sample, *unbinned_combData_set), LineStyle(kDashed), LineColor(info.color[i_DiMu_Sel]), LineWidth(5));
         }
     }
-
+    RooFitter->floatParsFinal().Print("s");
+    new TCanvas();
+    m_frame->Draw();
+    new TCanvas();
+    pt_frame->Draw();
+    return;
     // convert Roofit to TF1 for ratios
     RooArgSet *m_modelcopyOfEverything = static_cast<RooArgSet *>(RooArgSet(*m_model).snapshot(true)); // True means copy the PDF and everything it depends on
     auto &m_modelcopiedPdf = static_cast<RooAbsPdf &>((*m_modelcopyOfEverything)["m_model"]);          // Get back the copied pdf. It lives in the RooArgSet "copyOfEverything"
