@@ -1,41 +1,34 @@
 #include "/home/michele_pennisi/cernbox/HF_dimuons/common_include.h"
 
-TCanvas *canvas_for_prel()
-{
-    gStyle->SetImageScaling(3.);
-    int font = 42;
-
-    TCanvas *canvas = new TCanvas("c", "c", 1600, 1200);
-    canvas->cd();
-    canvas->SetLogy();
-    canvas->SetLeftMargin(0.15);
-    canvas->SetRightMargin(0.10);
-    canvas->SetFillColor(0);
-    canvas->SetBorderMode(0);
-    canvas->SetBorderSize(0);
-    canvas->SetTickx(1);
-    canvas->SetTicky(1);
-    canvas->SetLeftMargin(0.15);
-    canvas->SetBottomMargin(0.1518219);
-    canvas->SetFrameBorderMode(0);
-    canvas->SetFrameBorderMode(0);
-
-    return canvas;
-}
-
 struct opt
 {
-    TString HF = "Beauty";
-    TString Generator = "pythia";
+    TString HF = "Charm";
+    TString Generator = "powheg";
 
     //----MY measurament----//
-    Double_t PYTHIA_ds_dy_fwd[2] = {1540., 22.4};
-    Double_t PYTHIA_stat_ds_dy_fwd[2] = {21.2, 1.};
-    Double_t PYTHIA_syst_ds_dy_fwd[2] = {203.4, 8.26};
+    Double_t PYTHIA_ds_dy_fwd_LowMass_LowPt_noLF_HF[2] = {1582.03, 22.97};
+    Double_t PYTHIA_stat_ds_dy_fwd_LowMass_LowPt_noLF_HF[2] = {1.43, 4.5};
+    Double_t PYTHIA_syst_ds_dy_fwd_LowMass_LowPt_noLF_HF[2] = {14.89, 48.36};
 
-    Double_t POWHEG_ds_dy_fwd[2] = {2258, 14.93};
-    Double_t POWHEG_stat_ds_dy_fwd[2] = {21.2, 1.};
-    Double_t POWHEG_syst_ds_dy_fwd[2] = {203.4, 8.26};
+    Double_t PYTHIA_ds_dy_fwd_LowMass_LowPt_withLF_HF[2] = {1335.77, 19.78};
+    Double_t PYTHIA_stat_ds_dy_fwd_LowMass_LowPt_withLF_HF[2] = {1.721, 5.32};
+    Double_t PYTHIA_syst_ds_dy_fwd_LowMass_LowPt_withLF_HF[2] = {15.17, 47.87};
+
+    Double_t PYTHIA_ds_dy_fwd_FullMass_withLF_HF[2] = {1177.83, 25.38};
+    Double_t PYTHIA_stat_ds_dy_fwd_FullMass_withLF_HF[2] = {1.63, 3.322};
+    Double_t PYTHIA_syst_ds_dy_fwd_FullMass_withLF_HF[2] = {14.02, 28.98};
+
+    Double_t POWHEG_ds_dy_fwd_LowMass_LowPt_noLF_HF[2] = {2009.21, 17.68};
+    Double_t POWHEG_stat_ds_dy_fwd_LowMass_LowPt_noLF_HF[2] = {2.36, 4.5};
+    Double_t POWHEG_syst_ds_dy_fwd_LowMass_LowPt_noLF_HF[2] = {8.44, 16.22};
+
+    Double_t POWHEG_ds_dy_fwd_LowMass_LowPt_withLF_HF[2] = {1532.3, 18.996};
+    Double_t POWHEG_stat_ds_dy_fwd_LowMass_LowPt_withLF_HF[2] = {3.24, 4.16};
+    Double_t POWHEG_syst_ds_dy_fwd_LowMass_LowPt_withLF_HF[2] = {7.82, 10.06};
+
+    Double_t POWHEG_ds_dy_fwd_FullMass_withLF_HF[2] = {1533.14, 16.13};
+    Double_t POWHEG_stat_ds_dy_fwd_FullMass_withLF_HF[2] = {2.98, 4.68};
+    Double_t POWHEG_syst_ds_dy_fwd_FullMass_withLF_HF[2] = {5.57, 8.73};
 
     //----ELECTRONS measurament----//
 
@@ -64,6 +57,8 @@ struct opt
     Double_t syst_ds_deta_Beauty_LHCb[12] = {4.8, 6.0, 5.8, 5.4, 4.4, 3.0, 4.8, 6.0, 5.8, 5.4, 4.4, 3.0};
 
     Bool_t Fullerror = kFALSE;
+    TString Res_selector = "OnlyPrel";
+    // TString Res_selector = "OnlyNew";
 };
 
 void cross_section_result()
@@ -110,9 +105,17 @@ void cross_section_result()
     Double_t eta_fwd_LHCb[12] = {-4.75, -4.25, -3.75, -3.25, -2.75, -2.25, 2.25, 2.75, 3.25, 3.75, 4.25, 4.75};
     Double_t deta_fwd_LHCb[12] = {0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25};
 
-    Double_t ds_dy_fwd_ALICE[2];
-    Double_t stat_ds_dy_fwd_ALICE[2];
-    Double_t syst_ds_dy_fwd_ALICE[2];
+    Double_t ds_dy_fwd_ALICE_LowMass_LowPt_noLF_HF[2];
+    Double_t stat_ds_dy_fwd_ALICE_LowMass_LowPt_noLF_HF[2];
+    Double_t syst_ds_dy_fwd_ALICE_LowMass_LowPt_noLF_HF[2];
+
+    Double_t ds_dy_fwd_ALICE_LowMass_LowPt_withLF_HF[2];
+    Double_t stat_ds_dy_fwd_ALICE_LowMass_LowPt_withLF_HF[2];
+    Double_t syst_ds_dy_fwd_ALICE_LowMass_LowPt_withLF_HF[2];
+
+    Double_t ds_dy_fwd_ALICE_FullMass_withLF_HF[2];
+    Double_t stat_ds_dy_fwd_ALICE_FullMass_withLF_HF[2];
+    Double_t syst_ds_dy_fwd_ALICE_FullMass_withLF_HF[2];
 
     // bb_cs_PYTHIA_fwd->GetAttLine(0)->SetLineColor(kRed);
     // bb_cs_PYTHIA_fwd->GetAttLine(0)->SetLineWidth(1);
@@ -167,12 +170,26 @@ void cross_section_result()
 
     if (info.Generator.Contains("pythia"))
     {
-        ds_dy_fwd_ALICE[0] = info.PYTHIA_ds_dy_fwd[HF_Selector];
-        ds_dy_fwd_ALICE[1] = info.PYTHIA_ds_dy_fwd[HF_Selector];
-        stat_ds_dy_fwd_ALICE[0] = info.PYTHIA_stat_ds_dy_fwd[HF_Selector];
-        stat_ds_dy_fwd_ALICE[1] = info.PYTHIA_stat_ds_dy_fwd[HF_Selector];
-        syst_ds_dy_fwd_ALICE[0] = info.PYTHIA_syst_ds_dy_fwd[HF_Selector];
-        syst_ds_dy_fwd_ALICE[1] = info.PYTHIA_syst_ds_dy_fwd[HF_Selector];
+        ds_dy_fwd_ALICE_LowMass_LowPt_noLF_HF[0] = info.PYTHIA_ds_dy_fwd_LowMass_LowPt_noLF_HF[HF_Selector];
+        ds_dy_fwd_ALICE_LowMass_LowPt_noLF_HF[1] = info.PYTHIA_ds_dy_fwd_LowMass_LowPt_noLF_HF[HF_Selector];
+        stat_ds_dy_fwd_ALICE_LowMass_LowPt_noLF_HF[0] = ds_dy_fwd_ALICE_LowMass_LowPt_noLF_HF[0] * info.PYTHIA_stat_ds_dy_fwd_LowMass_LowPt_noLF_HF[HF_Selector] / 100.;
+        stat_ds_dy_fwd_ALICE_LowMass_LowPt_noLF_HF[1] = ds_dy_fwd_ALICE_LowMass_LowPt_noLF_HF[1] * info.PYTHIA_stat_ds_dy_fwd_LowMass_LowPt_noLF_HF[HF_Selector] / 100.;
+        syst_ds_dy_fwd_ALICE_LowMass_LowPt_noLF_HF[0] = ds_dy_fwd_ALICE_LowMass_LowPt_noLF_HF[0] * info.PYTHIA_syst_ds_dy_fwd_LowMass_LowPt_noLF_HF[HF_Selector] / 100.;
+        syst_ds_dy_fwd_ALICE_LowMass_LowPt_noLF_HF[1] = ds_dy_fwd_ALICE_LowMass_LowPt_noLF_HF[1] * info.PYTHIA_syst_ds_dy_fwd_LowMass_LowPt_noLF_HF[HF_Selector] / 100.;
+
+        ds_dy_fwd_ALICE_LowMass_LowPt_withLF_HF[0] = info.PYTHIA_ds_dy_fwd_LowMass_LowPt_withLF_HF[HF_Selector];
+        ds_dy_fwd_ALICE_LowMass_LowPt_withLF_HF[1] = info.PYTHIA_ds_dy_fwd_LowMass_LowPt_withLF_HF[HF_Selector];
+        stat_ds_dy_fwd_ALICE_LowMass_LowPt_withLF_HF[0] = ds_dy_fwd_ALICE_LowMass_LowPt_withLF_HF[0] * info.PYTHIA_stat_ds_dy_fwd_LowMass_LowPt_withLF_HF[HF_Selector] / 100.;
+        stat_ds_dy_fwd_ALICE_LowMass_LowPt_withLF_HF[1] = ds_dy_fwd_ALICE_LowMass_LowPt_withLF_HF[1] * info.PYTHIA_stat_ds_dy_fwd_LowMass_LowPt_withLF_HF[HF_Selector] / 100.;
+        syst_ds_dy_fwd_ALICE_LowMass_LowPt_withLF_HF[0] = ds_dy_fwd_ALICE_LowMass_LowPt_withLF_HF[0] * info.PYTHIA_syst_ds_dy_fwd_LowMass_LowPt_withLF_HF[HF_Selector] / 100.;
+        syst_ds_dy_fwd_ALICE_LowMass_LowPt_withLF_HF[1] = ds_dy_fwd_ALICE_LowMass_LowPt_withLF_HF[1] * info.PYTHIA_syst_ds_dy_fwd_LowMass_LowPt_withLF_HF[HF_Selector] / 100.;
+
+        ds_dy_fwd_ALICE_FullMass_withLF_HF[0] = info.PYTHIA_ds_dy_fwd_FullMass_withLF_HF[HF_Selector];
+        ds_dy_fwd_ALICE_FullMass_withLF_HF[1] = info.PYTHIA_ds_dy_fwd_FullMass_withLF_HF[HF_Selector];
+        stat_ds_dy_fwd_ALICE_FullMass_withLF_HF[0] = ds_dy_fwd_ALICE_FullMass_withLF_HF[0] * info.PYTHIA_stat_ds_dy_fwd_FullMass_withLF_HF[HF_Selector] / 100.;
+        stat_ds_dy_fwd_ALICE_FullMass_withLF_HF[1] = ds_dy_fwd_ALICE_FullMass_withLF_HF[1] * info.PYTHIA_stat_ds_dy_fwd_FullMass_withLF_HF[HF_Selector] / 100.;
+        syst_ds_dy_fwd_ALICE_FullMass_withLF_HF[0] = ds_dy_fwd_ALICE_FullMass_withLF_HF[0] * info.PYTHIA_syst_ds_dy_fwd_FullMass_withLF_HF[HF_Selector] / 100.;
+        syst_ds_dy_fwd_ALICE_FullMass_withLF_HF[1] = ds_dy_fwd_ALICE_FullMass_withLF_HF[1] * info.PYTHIA_syst_ds_dy_fwd_FullMass_withLF_HF[HF_Selector] / 100.;
 
         ds_dy_ALICE_ELECTRON[0] = info.PYTHIA_ds_dy_ALICE_ELECTRON[HF_Selector];
         stat_ds_dy_ALICE_ELECTRON[0] = info.PYTHIA_stat_ds_dy_ALICE_ELECTRON[HF_Selector];
@@ -180,30 +197,70 @@ void cross_section_result()
     }
     else if (info.Generator.Contains("powheg"))
     {
-        ds_dy_fwd_ALICE[0] = info.POWHEG_ds_dy_fwd[HF_Selector];
-        ds_dy_fwd_ALICE[1] = info.POWHEG_ds_dy_fwd[HF_Selector];
-        stat_ds_dy_fwd_ALICE[0] = info.POWHEG_stat_ds_dy_fwd[HF_Selector];
-        stat_ds_dy_fwd_ALICE[1] = info.POWHEG_stat_ds_dy_fwd[HF_Selector];
-        syst_ds_dy_fwd_ALICE[0] = info.POWHEG_syst_ds_dy_fwd[HF_Selector];
-        syst_ds_dy_fwd_ALICE[1] = info.POWHEG_syst_ds_dy_fwd[HF_Selector];
+        ds_dy_fwd_ALICE_LowMass_LowPt_noLF_HF[0] = info.POWHEG_ds_dy_fwd_LowMass_LowPt_noLF_HF[HF_Selector];
+        ds_dy_fwd_ALICE_LowMass_LowPt_noLF_HF[1] = info.POWHEG_ds_dy_fwd_LowMass_LowPt_noLF_HF[HF_Selector];
+        stat_ds_dy_fwd_ALICE_LowMass_LowPt_noLF_HF[0] = ds_dy_fwd_ALICE_LowMass_LowPt_noLF_HF[0] * info.POWHEG_stat_ds_dy_fwd_LowMass_LowPt_noLF_HF[HF_Selector] / 100.;
+        stat_ds_dy_fwd_ALICE_LowMass_LowPt_noLF_HF[1] = ds_dy_fwd_ALICE_LowMass_LowPt_noLF_HF[1] * info.POWHEG_stat_ds_dy_fwd_LowMass_LowPt_noLF_HF[HF_Selector] / 100.;
+        syst_ds_dy_fwd_ALICE_LowMass_LowPt_noLF_HF[0] = ds_dy_fwd_ALICE_LowMass_LowPt_noLF_HF[0] * info.POWHEG_syst_ds_dy_fwd_LowMass_LowPt_noLF_HF[HF_Selector] / 100.;
+        syst_ds_dy_fwd_ALICE_LowMass_LowPt_noLF_HF[1] = ds_dy_fwd_ALICE_LowMass_LowPt_noLF_HF[1] * info.POWHEG_syst_ds_dy_fwd_LowMass_LowPt_noLF_HF[HF_Selector] / 100.;
+
+        ds_dy_fwd_ALICE_LowMass_LowPt_withLF_HF[0] = info.POWHEG_ds_dy_fwd_LowMass_LowPt_withLF_HF[HF_Selector];
+        ds_dy_fwd_ALICE_LowMass_LowPt_withLF_HF[1] = info.POWHEG_ds_dy_fwd_LowMass_LowPt_withLF_HF[HF_Selector];
+        stat_ds_dy_fwd_ALICE_LowMass_LowPt_withLF_HF[0] = ds_dy_fwd_ALICE_LowMass_LowPt_withLF_HF[0] * info.POWHEG_stat_ds_dy_fwd_LowMass_LowPt_withLF_HF[HF_Selector] / 100.;
+        stat_ds_dy_fwd_ALICE_LowMass_LowPt_withLF_HF[1] = ds_dy_fwd_ALICE_LowMass_LowPt_withLF_HF[1] * info.POWHEG_stat_ds_dy_fwd_LowMass_LowPt_withLF_HF[HF_Selector] / 100.;
+        syst_ds_dy_fwd_ALICE_LowMass_LowPt_withLF_HF[0] = ds_dy_fwd_ALICE_LowMass_LowPt_withLF_HF[0] * info.POWHEG_syst_ds_dy_fwd_LowMass_LowPt_withLF_HF[HF_Selector] / 100.;
+        syst_ds_dy_fwd_ALICE_LowMass_LowPt_withLF_HF[1] = ds_dy_fwd_ALICE_LowMass_LowPt_withLF_HF[1] * info.POWHEG_syst_ds_dy_fwd_LowMass_LowPt_withLF_HF[HF_Selector] / 100.;
+
+        ds_dy_fwd_ALICE_FullMass_withLF_HF[0] = info.POWHEG_ds_dy_fwd_FullMass_withLF_HF[HF_Selector];
+        ds_dy_fwd_ALICE_FullMass_withLF_HF[1] = info.POWHEG_ds_dy_fwd_FullMass_withLF_HF[HF_Selector];
+        stat_ds_dy_fwd_ALICE_FullMass_withLF_HF[0] = ds_dy_fwd_ALICE_FullMass_withLF_HF[0] * info.POWHEG_stat_ds_dy_fwd_FullMass_withLF_HF[HF_Selector] / 100.;
+        stat_ds_dy_fwd_ALICE_FullMass_withLF_HF[1] = ds_dy_fwd_ALICE_FullMass_withLF_HF[1] * info.POWHEG_stat_ds_dy_fwd_FullMass_withLF_HF[HF_Selector] / 100.;
+        syst_ds_dy_fwd_ALICE_FullMass_withLF_HF[0] = ds_dy_fwd_ALICE_FullMass_withLF_HF[0] * info.POWHEG_syst_ds_dy_fwd_FullMass_withLF_HF[HF_Selector] / 100.;
+        syst_ds_dy_fwd_ALICE_FullMass_withLF_HF[1] = ds_dy_fwd_ALICE_FullMass_withLF_HF[1] * info.POWHEG_syst_ds_dy_fwd_FullMass_withLF_HF[HF_Selector] / 100.;
 
         ds_dy_ALICE_ELECTRON[0] = info.POWHEG_ds_dy_ALICE_ELECTRON[HF_Selector];
         stat_ds_dy_ALICE_ELECTRON[0] = info.POWHEG_stat_ds_dy_ALICE_ELECTRON[HF_Selector];
         syst_ds_dy_ALICE_ELECTRON[0] = info.POWHEG_syst_ds_dy_ALICE_ELECTRON[HF_Selector];
     }
 
-    TGraphMultiErrors *cs_fwd_ALICE = new TGraphMultiErrors("cs_fwd_ALICE", "TGraphMultiErrors Example", 2, y_fwd_ALICE, ds_dy_fwd_ALICE, dy_fwd_ALICE, dy_fwd_ALICE, stat_ds_dy_fwd_ALICE, stat_ds_dy_fwd_ALICE);
-    cs_fwd_ALICE->AddYError(2, syst_ds_dy_fwd_ALICE, syst_ds_dy_fwd_ALICE);
-    cs_fwd_ALICE->SetMarkerStyle(20);
-    cs_fwd_ALICE->SetMarkerColor(kRed);
-    cs_fwd_ALICE->SetLineColor(kRed);
-    cs_fwd_ALICE->SetLineWidth(2);
-    cs_fwd_ALICE->SetMarkerSize(2);
-    cs_fwd_ALICE->GetAttLine(0)->SetLineColor(kRed);
-    cs_fwd_ALICE->GetAttLine(0)->SetLineWidth(2);
-    cs_fwd_ALICE->GetAttLine(1)->SetLineColor(kRed);
-    cs_fwd_ALICE->GetAttLine(1)->SetLineWidth(2);
-    cs_fwd_ALICE->GetAttFill(1)->SetFillStyle(0);
+    TGraphMultiErrors *cs_fwd_ALICE_LowMass_LowPt_noLH_HF = new TGraphMultiErrors("cs_fwd_ALICE_LowMass_LowPt_noLH_HF", "TGraphMultiErrors Example", 2, y_fwd_ALICE, ds_dy_fwd_ALICE_LowMass_LowPt_noLF_HF, dy_fwd_ALICE, dy_fwd_ALICE, stat_ds_dy_fwd_ALICE_LowMass_LowPt_noLF_HF, stat_ds_dy_fwd_ALICE_LowMass_LowPt_noLF_HF);
+    cs_fwd_ALICE_LowMass_LowPt_noLH_HF->AddYError(2, syst_ds_dy_fwd_ALICE_LowMass_LowPt_noLF_HF, syst_ds_dy_fwd_ALICE_LowMass_LowPt_noLF_HF);
+    cs_fwd_ALICE_LowMass_LowPt_noLH_HF->SetMarkerStyle(24);
+    cs_fwd_ALICE_LowMass_LowPt_noLH_HF->SetMarkerColor(kRed);
+    cs_fwd_ALICE_LowMass_LowPt_noLH_HF->SetLineColor(kRed);
+    cs_fwd_ALICE_LowMass_LowPt_noLH_HF->SetLineWidth(2);
+    cs_fwd_ALICE_LowMass_LowPt_noLH_HF->SetMarkerSize(2);
+    cs_fwd_ALICE_LowMass_LowPt_noLH_HF->GetAttLine(0)->SetLineColor(kRed);
+    cs_fwd_ALICE_LowMass_LowPt_noLH_HF->GetAttLine(0)->SetLineWidth(2);
+    cs_fwd_ALICE_LowMass_LowPt_noLH_HF->GetAttLine(1)->SetLineColor(kRed);
+    cs_fwd_ALICE_LowMass_LowPt_noLH_HF->GetAttLine(1)->SetLineWidth(2);
+    cs_fwd_ALICE_LowMass_LowPt_noLH_HF->GetAttFill(1)->SetFillStyle(0);
+
+    TGraphMultiErrors *cs_fwd_ALICE_LowMass_LowPt_withLH_HF = new TGraphMultiErrors("cs_fwd_ALICE_LowMass_LowPt_withLH_HF", "TGraphMultiErrors Example", 2, y_fwd_ALICE, ds_dy_fwd_ALICE_LowMass_LowPt_withLF_HF, dy_fwd_ALICE, dy_fwd_ALICE, stat_ds_dy_fwd_ALICE_LowMass_LowPt_withLF_HF, stat_ds_dy_fwd_ALICE_LowMass_LowPt_withLF_HF);
+    cs_fwd_ALICE_LowMass_LowPt_withLH_HF->AddYError(2, syst_ds_dy_fwd_ALICE_LowMass_LowPt_withLF_HF, syst_ds_dy_fwd_ALICE_LowMass_LowPt_withLF_HF);
+    cs_fwd_ALICE_LowMass_LowPt_withLH_HF->SetMarkerStyle(28);
+    cs_fwd_ALICE_LowMass_LowPt_withLH_HF->SetMarkerColor(kRed);
+    cs_fwd_ALICE_LowMass_LowPt_withLH_HF->SetLineColor(kRed);
+    cs_fwd_ALICE_LowMass_LowPt_withLH_HF->SetLineWidth(2);
+    cs_fwd_ALICE_LowMass_LowPt_withLH_HF->SetMarkerSize(2);
+    cs_fwd_ALICE_LowMass_LowPt_withLH_HF->GetAttLine(0)->SetLineColor(kRed);
+    cs_fwd_ALICE_LowMass_LowPt_withLH_HF->GetAttLine(0)->SetLineWidth(2);
+    cs_fwd_ALICE_LowMass_LowPt_withLH_HF->GetAttLine(1)->SetLineColor(kRed);
+    cs_fwd_ALICE_LowMass_LowPt_withLH_HF->GetAttLine(1)->SetLineWidth(2);
+    cs_fwd_ALICE_LowMass_LowPt_withLH_HF->GetAttFill(1)->SetFillStyle(0);
+
+    TGraphMultiErrors *cs_fwd_ALICE_FullMass_withLH_HF = new TGraphMultiErrors("cs_fwd_ALICE_FullMass_withLH_HF", "TGraphMultiErrors Example", 2, y_fwd_ALICE, ds_dy_fwd_ALICE_FullMass_withLF_HF, dy_fwd_ALICE, dy_fwd_ALICE, stat_ds_dy_fwd_ALICE_FullMass_withLF_HF, stat_ds_dy_fwd_ALICE_FullMass_withLF_HF);
+    cs_fwd_ALICE_FullMass_withLH_HF->AddYError(2, syst_ds_dy_fwd_ALICE_FullMass_withLF_HF, syst_ds_dy_fwd_ALICE_FullMass_withLF_HF);
+    cs_fwd_ALICE_FullMass_withLH_HF->SetMarkerStyle(46);
+    cs_fwd_ALICE_FullMass_withLH_HF->SetMarkerColor(kRed);
+    cs_fwd_ALICE_FullMass_withLH_HF->SetLineColor(kRed);
+    cs_fwd_ALICE_FullMass_withLH_HF->SetLineWidth(2);
+    cs_fwd_ALICE_FullMass_withLH_HF->SetMarkerSize(2);
+    cs_fwd_ALICE_FullMass_withLH_HF->GetAttLine(0)->SetLineColor(kRed);
+    cs_fwd_ALICE_FullMass_withLH_HF->GetAttLine(0)->SetLineWidth(2);
+    cs_fwd_ALICE_FullMass_withLH_HF->GetAttLine(1)->SetLineColor(kRed);
+    cs_fwd_ALICE_FullMass_withLH_HF->GetAttLine(1)->SetLineWidth(2);
+    cs_fwd_ALICE_FullMass_withLH_HF->GetAttFill(1)->SetFillStyle(0);
 
     TGraphMultiErrors *cs_ALICE_ELECTRON = new TGraphMultiErrors("cs_ALICE_ELECTRON", "TGraphMultiErrors Example", 1, y_mid, ds_dy_ALICE_ELECTRON, dy_mid, dy_mid, stat_ds_dy_ALICE_ELECTRON, stat_ds_dy_ALICE_ELECTRON);
     cs_ALICE_ELECTRON->AddYError(1, syst_ds_dy_ALICE_ELECTRON, syst_ds_dy_ALICE_ELECTRON);
@@ -220,7 +277,7 @@ void cross_section_result()
 
     TGraphMultiErrors *cs_ALICE_HF = new TGraphMultiErrors("cs_ALICE_HF", "TGraphMultiErrors Example", 1, y_mid, ds_dy_ALICE_HF, dy_mid, dy_mid, stat_ds_dy_ALICE_HF, stat_ds_dy_ALICE_HF);
     cs_ALICE_HF->AddYError(1, syst_ds_dy_ALICE_ELECTRON, syst_ds_dy_ALICE_ELECTRON);
-    cs_ALICE_HF->SetMarkerStyle(91);
+    cs_ALICE_HF->SetMarkerStyle(34);
     cs_ALICE_HF->SetMarkerColor(kAzure + 2);
     cs_ALICE_HF->SetLineColor(kAzure + 2);
     cs_ALICE_HF->SetLineWidth(2);
@@ -233,7 +290,7 @@ void cross_section_result()
 
     TGraphMultiErrors *cs_LHCb_CHARM = new TGraphMultiErrors("cs_LHCb_CHARM", "TGraphMultiErrors Example", 2, y_fwd_LHCb, ds_dy_LHCb_CHARM, dy_fwd_LHCb, dy_fwd_LHCb, stat_ds_dy_LHCb_CHARM, stat_ds_dy_LHCb_CHARM);
     cs_LHCb_CHARM->AddYError(2, syst_ds_dy_LHCb_CHARM, syst_ds_dy_LHCb_CHARM);
-    cs_LHCb_CHARM->SetMarkerStyle(95);
+    cs_LHCb_CHARM->SetMarkerStyle(47);
     cs_LHCb_CHARM->SetMarkerColor(kGreen + 2);
     cs_LHCb_CHARM->SetLineColor(kGreen + 2);
     cs_LHCb_CHARM->SetLineWidth(2);
@@ -246,7 +303,7 @@ void cross_section_result()
 
     TGraphMultiErrors *cs_LHCb_BEAUTY = new TGraphMultiErrors("cs_LHCb_BEAUTY", "TGraphMultiErrors Example", 12, eta_fwd_LHCb, ds_deta_LHCb_BEAUTY, deta_fwd_LHCb, deta_fwd_LHCb, stat_ds_deta_LHCb_BEAUTY, stat_ds_deta_LHCb_BEAUTY);
     cs_LHCb_BEAUTY->AddYError(12, syst_ds_deta_LHCb_BEAUTY, syst_ds_deta_LHCb_BEAUTY);
-    cs_LHCb_BEAUTY->SetMarkerStyle(21);
+    cs_LHCb_BEAUTY->SetMarkerStyle(47);
     cs_LHCb_BEAUTY->SetMarkerColor(kGreen + 2);
     cs_LHCb_BEAUTY->SetLineColor(kGreen + 2);
     cs_LHCb_BEAUTY->SetLineWidth(1);
@@ -368,7 +425,19 @@ void cross_section_result()
     bb_bar_cs_NNPDF->Add(FONLL_bb_cs_NNPDF_scale_error);
     bb_bar_cs_NNPDF->Add(FONLL_bb_cs_NNPDF_mass_error);
     bb_bar_cs_NNPDF->Add(FONLL_bb_cs_NNPDF_pdf_error);
-    bb_bar_cs_NNPDF->Add(cs_fwd_ALICE, "APS; Z ; 5 s=0.5");
+    if (info.Res_selector.Contains("OnlyPrel"))
+        bb_bar_cs_NNPDF->Add(cs_fwd_ALICE_LowMass_LowPt_noLH_HF, "APS; Z ; 5 s=0.5");
+    else if (info.Res_selector.Contains("OnlyNew"))
+    {
+        bb_bar_cs_NNPDF->Add(cs_fwd_ALICE_LowMass_LowPt_withLH_HF, "APS; Z ; 5 s=0.5");
+        bb_bar_cs_NNPDF->Add(cs_fwd_ALICE_FullMass_withLH_HF, "APS; Z ; 5 s=0.5");
+    }
+    else
+    {
+        bb_bar_cs_NNPDF->Add(cs_fwd_ALICE_LowMass_LowPt_noLH_HF, "APS; Z ; 5 s=0.5");
+        bb_bar_cs_NNPDF->Add(cs_fwd_ALICE_LowMass_LowPt_withLH_HF, "APS; Z ; 5 s=0.5");
+        bb_bar_cs_NNPDF->Add(cs_fwd_ALICE_FullMass_withLH_HF, "APS; Z ; 5 s=0.5");
+    }
     bb_bar_cs_NNPDF->Add(cs_ALICE_ELECTRON, "APS; Z ; 5 s=0.5");
     bb_bar_cs_NNPDF->Add(cs_ALICE_HF, "APS; Z ; 5 s=0.5");
     if (info.HF.Contains("Charm"))
@@ -378,13 +447,13 @@ void cross_section_result()
 
     if (info.HF.Contains("Beauty"))
     {
-        bb_bar_cs_NNPDF->GetYaxis()->SetRangeUser(0.08, 8e+2);
-        bb_bar_cs_NNPDF->GetYaxis()->SetTitle("d#sigma_{b#bar{b}} / d#it{y} (#mub)");
+        bb_bar_cs_NNPDF->GetYaxis()->SetRangeUser(6.5e-1, 8e+2);
+        bb_bar_cs_NNPDF->GetYaxis()->SetTitle("d#sigma_{b#bar{b}} / d#it{y} or d#sigma_{b#bar{b}} / d#it{eta} (#mub)");
     }
     else if (info.HF.Contains("Charm"))
     {
-        bb_bar_cs_NNPDF->GetYaxis()->SetRangeUser(7.2e-2, 1.2e+5);
-        bb_bar_cs_NNPDF->GetYaxis()->SetTitle("d#sigma_{c#bar{c}} / d#it{y} or d#sigma_{c#bar{c}} / d#it{eta}(#mub)");
+        bb_bar_cs_NNPDF->GetYaxis()->SetRangeUser(12.2e-0, 1.25e+4);
+        bb_bar_cs_NNPDF->GetYaxis()->SetTitle("d#sigma_{c#bar{c}} / d#it{y} (#mub)");
     }
 
     bb_bar_cs_NNPDF->GetXaxis()->SetTitle("#it{y}");
@@ -405,7 +474,7 @@ void cross_section_result()
     }
     else
     {
-        Legend_bb_cs_NNPDF_FONLL = new TLegend(0.175, 0.18, 0.475, 0.325, " ", "brNDC");
+        Legend_bb_cs_NNPDF_FONLL = new TLegend(0.725, 0.18, 0.875, 0.325, " ", "brNDC");
         Legend_bb_cs_NNPDF_FONLL->AddEntry(FONLL_bb_cs_NNPDF_minmaxerror, "FONLL", "F");
     }
 
@@ -418,16 +487,40 @@ void cross_section_result()
     Legend_bb_cs_NNPDF_FONLL->SetTextSize(0.04);
     Legend_bb_cs_NNPDF_FONLL->Draw("SAME");
 
-    TLegend *Legend_bb_cs_NNPDF_Meas = new TLegend(0.475, 0.18, 0.725, 0.575, " ", "brNDC");
+    TLegend *Legend_bb_cs_NNPDF_Meas = new TLegend(0.135, 0.175, 0.8, 0.475, " ", "brNDC");
     if (info.Generator.Contains("pythia"))
     {
-        Legend_bb_cs_NNPDF_Meas->AddEntry(cs_fwd_ALICE, "(#it{m}_{#mu^{#plus}#mu^{#minus}}, #it{p}_{T, #mu^{#plus}#mu^{#minus}}) PYTHIA8 fit", "EP");
+        if (info.Res_selector.Contains("OnlyPrel"))
+            Legend_bb_cs_NNPDF_Meas->AddEntry(cs_fwd_ALICE_LowMass_LowPt_noLH_HF, "#splitline{(#it{m}_{#mu^{#plus}#mu^{#minus}}, #it{p}_{T, #mu^{#plus}#mu^{#minus}}) PYTHIA8 fit no LF-HF}{4 < #it{m_{#mu#mu}} < 9 GeV/#it{c}^{2}, #it{p}_{T} < 10 GeV/#it{c}}", "EP");
+        else if (info.Res_selector.Contains("OnlyNew"))
+        {
+            Legend_bb_cs_NNPDF_Meas->AddEntry(cs_fwd_ALICE_LowMass_LowPt_withLH_HF, "#splitline{(#it{m}_{#mu^{#plus}#mu^{#minus}}, #it{p}_{T, #mu^{#plus}#mu^{#minus}}) PYTHIA8 fit with LF-HF}{4 < #it{m_{#mu#mu}} < 9 GeV/#it{c}^{2}, #it{p}_{T} < 10 GeV/#it{c}}", "EP");
+            Legend_bb_cs_NNPDF_Meas->AddEntry(cs_fwd_ALICE_FullMass_withLH_HF, "#splitline{(#it{m}_{#mu^{#plus}#mu^{#minus}}, #it{p}_{T, #mu^{#plus}#mu^{#minus}}) PYTHIA8 fit with LF-HF}{4 < #it{m_{#mu#mu}} < 30 GeV/#it{c}^{2}, #it{p}_{T} < 30 GeV/#it{c}}", "EP");
+        }
+        else
+        {
+            Legend_bb_cs_NNPDF_Meas->AddEntry(cs_fwd_ALICE_LowMass_LowPt_noLH_HF, "#splitline{(#it{m}_{#mu^{#plus}#mu^{#minus}}, #it{p}_{T, #mu^{#plus}#mu^{#minus}}) PYTHIA8 fit no LF-HF}{4 < #it{m_{#mu#mu}} < 9 GeV/#it{c}^{2}, #it{p}_{T} < 10 GeV/#it{c}}", "EP");
+            Legend_bb_cs_NNPDF_Meas->AddEntry(cs_fwd_ALICE_LowMass_LowPt_withLH_HF, "#splitline{(#it{m}_{#mu^{#plus}#mu^{#minus}}, #it{p}_{T, #mu^{#plus}#mu^{#minus}}) PYTHIA8 fit with LF-HF}{4 < #it{m_{#mu#mu}} < 9 GeV/#it{c}^{2}, #it{p}_{T} < 10 GeV/#it{c}}", "EP");
+            Legend_bb_cs_NNPDF_Meas->AddEntry(cs_fwd_ALICE_FullMass_withLH_HF, "#splitline{(#it{m}_{#mu^{#plus}#mu^{#minus}}, #it{p}_{T, #mu^{#plus}#mu^{#minus}}) PYTHIA8 fit with LF-HF}{4 < #it{m_{#mu#mu}} < 30 GeV/#it{c}^{2}, #it{p}_{T} < 30 GeV/#it{c}}", "EP");
+        }
         Legend_bb_cs_NNPDF_Meas->AddEntry(cs_ALICE_ELECTRON, "#splitline{(#it{m}_{e^{#plus}e^{#minus}}, #it{p}_{T, e^{#plus}e^{#minus}}) PYTHIA6 fit}{Phys. Lett. B788 (2019) 505}", "EP");
     }
     else if (info.Generator.Contains("powheg"))
     {
+        if (info.Res_selector.Contains("OnlyPrel"))
+            Legend_bb_cs_NNPDF_Meas->AddEntry(cs_fwd_ALICE_LowMass_LowPt_noLH_HF, "#splitline{(#it{m}_{#mu^{#plus}#mu^{#minus}}, #it{p}_{T, #mu^{#plus}#mu^{#minus}}) POWHEG fit}{4 < #it{m_{#mu#mu} no LF-HF} < 9 GeV/#it{c}^{2}, #it{p}_{T} < 10 GeV/#it{c}}", "EP");
+        else if (info.Res_selector.Contains("OnlyNew"))
+        {
+            Legend_bb_cs_NNPDF_Meas->AddEntry(cs_fwd_ALICE_LowMass_LowPt_withLH_HF, "#splitline{(#it{m}_{#mu^{#plus}#mu^{#minus}}, #it{p}_{T, #mu^{#plus}#mu^{#minus}}) POWHEG fit}{4 < #it{m_{#mu#mu} with LF-HF} < 9 GeV/#it{c}^{2}, #it{p}_{T} < 10 GeV/#it{c}}", "EP");
+            Legend_bb_cs_NNPDF_Meas->AddEntry(cs_fwd_ALICE_FullMass_withLH_HF, "#splitline{(#it{m}_{#mu^{#plus}#mu^{#minus}}, #it{p}_{T, #mu^{#plus}#mu^{#minus}}) POWHEG fit}{4 < #it{m_{#mu#mu} with LF-HF} < 30 GeV/#it{c}^{2}, #it{p}_{T} < 30 GeV/#it{c}}", "EP");
+        }
+        else
+        {
+            Legend_bb_cs_NNPDF_Meas->AddEntry(cs_fwd_ALICE_LowMass_LowPt_noLH_HF, "#splitline{(#it{m}_{#mu^{#plus}#mu^{#minus}}, #it{p}_{T, #mu^{#plus}#mu^{#minus}}) POWHEG fit}{4 < #it{m_{#mu#mu} no LF-HF} < 9 GeV/#it{c}^{2}, #it{p}_{T} < 10 GeV/#it{c}}", "EP");
+            Legend_bb_cs_NNPDF_Meas->AddEntry(cs_fwd_ALICE_LowMass_LowPt_withLH_HF, "#splitline{(#it{m}_{#mu^{#plus}#mu^{#minus}}, #it{p}_{T, #mu^{#plus}#mu^{#minus}}) POWHEG fit}{4 < #it{m_{#mu#mu} with LF-HF} < 9 GeV/#it{c}^{2}, #it{p}_{T} < 10 GeV/#it{c}}", "EP");
+            Legend_bb_cs_NNPDF_Meas->AddEntry(cs_fwd_ALICE_FullMass_withLH_HF, "#splitline{(#it{m}_{#mu^{#plus}#mu^{#minus}}, #it{p}_{T, #mu^{#plus}#mu^{#minus}}) POWHEG fit}{4 < #it{m_{#mu#mu} with LF-HF} < 30 GeV/#it{c}^{2}, #it{p}_{T} < 30 GeV/#it{c}}", "EP");
+        }
 
-        Legend_bb_cs_NNPDF_Meas->AddEntry(cs_fwd_ALICE, "(#it{m}_{#mu^{#plus}#mu^{#minus}}, #it{p}_{T, #mu^{#plus}#mu^{#minus}}) POWHEG fit", "EP");
         Legend_bb_cs_NNPDF_Meas->AddEntry(cs_ALICE_ELECTRON, "#splitline{(#it{m}_{e^{#plus}e^{#minus}}, #it{p}_{T, e^{#plus}e^{#minus}}) POWHEG fit}{Phys. Lett. B788 (2019) 505}", "EP");
     }
     Legend_bb_cs_NNPDF_Meas->AddEntry(cs_ALICE_HF, "ALICE HF |#it{y}|<0.5", "EP");
@@ -441,7 +534,8 @@ void cross_section_result()
     Legend_bb_cs_NNPDF_Meas->SetLineStyle(0);
     Legend_bb_cs_NNPDF_Meas->SetLineColor(0);
     Legend_bb_cs_NNPDF_Meas->SetTextFont(42);
-    Legend_bb_cs_NNPDF_Meas->SetTextSize(0.035);
+    Legend_bb_cs_NNPDF_Meas->SetTextSize(0.02);
+    Legend_bb_cs_NNPDF_Meas->SetNColumns(2);
     Legend_bb_cs_NNPDF_Meas->Draw("SAME");
 
     TLatex letexTitle;
@@ -453,5 +547,5 @@ void cross_section_result()
     letexTitle.DrawLatex(0.2, 0.74, "FONLL CTEQ6");
     canvas->SetName(Form("cs_%s_%s", info.HF.Data(), info.Generator.Data()));
     canvas->SetTitle(Form("cs_%s_%s", info.HF.Data(), info.Generator.Data()));
-    // canvas->SaveAs(Form("cs_%s_%s.pdf", info.HF.Data(), info.Generator.Data()));
+    canvas->SaveAs(Form("results/fit_result/cs_%s_%s_%s.pdf", info.HF.Data(), info.Generator.Data(),info.Res_selector.Data()));
 }
