@@ -8,9 +8,11 @@ void save_mc_output(
     // TString RunMode = "pythia8_purifykineoff_test",
     // TString RunMode = "SoftQCD_inel_LFoff_Def",
     // TString RunMode = "Merged_LHC22c1",
-    // TString RunMode = "powheg_beauty_nocut_test",
+    // TString RunMode = "powheg_sim_full_y_beauty",
     TString RunMode = "LHC23i2",
-    // TString RunMode = "SoftQCD_inel_Def",
+    // TString RunMode = "SoftQCD_Def",
+    // TString dir_fileIn = "/home/michele_pennisi/cernbox/HF_dimuons/pythia_stand/new_pythia_sim",
+    // TString dir_fileIn = "/home/michele_pennisi/cernbox/HF_dimuons/mc_analysis/analysis_grid/grid_sim/powheg_sim_full_y_beauty_Version_5_skimmed_fwd_withHF_Q_local",
     // TString dir_fileIn = "/home/michele_pennisi/cernbox/HF_dimuons/mc_analysis/analysis_grid/grid_sim/powheg_beauty_nocut_Version_5_AliAOD_withHF_Q",
     TString dir_fileIn = "/home/michele_pennisi/cernbox/HF_dimuons/mc_analysis/analysis_grid/grid_sim/LHC23i2_Version_5_AliAOD_skimmed_fwd_fullstat",
     // TString dir_fileIn = "/home/michele_pennisi/cernbox/HF_dimuons/mc_analysis/analysis_grid/grid_sim/LHC18p_DY_Version_5",
@@ -24,17 +26,20 @@ void save_mc_output(
     // TString dir_fileIn = "/home/michele_pennisi/cernbox/HF_dimuons/mc_analysis/analysis_grid/grid_sim/LHC18p_DY_100k_Version2_AOD",
     // TString dir_fileOut = "/home/michele_pennisi/cernbox/HF_dimuons/mc_analysis/analysis_grid/grid_sim/LHC18p_DY_Version_5",
     // TString dir_fileOut = "/home/michele_pennisi/cernbox/HF_dimuons/mc_analysis/analysis_grid/grid_sim/powheg_beauty_nocut_Version_5_AliAOD_withHF_Q",
-    TString dir_fileOut = "/home/michele_pennisi/cernbox/HF_dimuons/mc_analysis/analysis_grid/grid_sim/LHC23i2_Version_5_AliAOD_skimmed_fwd_fullstat",
+    // TString dir_fileOut = "/home/michele_pennisi/cernbox/HF_dimuons/mc_analysis/analysis_grid/grid_sim/powheg_sim_full_y_beauty_Version_5_skimmed_fwd_withHF_Q_local",
     // TString dir_fileOut = "/home/michele_pennisi/cernbox/HF_dimuons/mc_analysis/analysis_grid/grid_sim/LHC22c1/294009/output",
     // TString dir_fileOut = "/home/michele_pennisi/cernbox/HF_dimuons/mc_analysis/analysis_grid/grid_sim/powheg_beauty_nocut_Version_5_AliAOD",
     // TString dir_fileOut = "/home/michele_pennisi/cernbox/HF_dimuons/mc_analysis/analysis_grid/grid_sim/pythia8_purifykineoff_test",
     // TString dir_fileOut = "/home/michele_pennisi/cernbox/HF_dimuons/pythia_stand/new_pythia_sim",
     // TString dir_fileOut = "/home/michele_pennisi/cernbox/HF_dimuons/pythia_stand/sim",
+    TString dir_fileOut = "/home/michele_pennisi/cernbox/HF_dimuons/mc_analysis/read_output/test",
     // Int_t RunNumber = 100000,
     Int_t RunNumber = 294009,
+    // TString Generator = "Pythia",
     TString Generator = "Powheg_Geant",
-    // TString Generator = "Powheg",
     TString prefix_filename = "MCDimuHFTree"
+    // TString prefix_filename = "MCDimuHFTree"
+
     // TString prefix_filename = "pythia_sim_74_DefaultBR"
 )
 {
@@ -58,6 +63,7 @@ void save_mc_output(
 
     Double_t *Pt_Dimu_Rec = new Double_t;
     Double_t *M_Dimu_Rec = new Double_t;
+    Int_t *Event = new Int_t;
 
     Int_t *HF_PDG = new Int_t;
     Int_t *LF_PDG = new Int_t;
@@ -74,6 +80,9 @@ void save_mc_output(
     Int_t *HF_PDG_PythiaOnly = new Int_t;
     Int_t *LF_PDG_PythiaOnly = new Int_t;
 
+    Int_t *HF_origin = new Int_t;
+    Int_t *LF_origin = new Int_t;
+
     TTree *Tree_DiMuon_Rec[n_DiMuon_origin];
     TTree *Tree_DiMuon_Rec_PowhegOnly[n_DiMuon_origin];
     TTree *Tree_DiMuon_Rec_PythiaOnly[n_DiMuon_origin];
@@ -83,10 +92,17 @@ void save_mc_output(
         Tree_DiMuon_Rec[i_DiMuon_origin] = new TTree(Form("DiMuon_Rec_%s", DiMuon_origin[i_DiMuon_origin].Data()), Form("Reconstructed Dimuons from %s", DiMuon_origin[i_DiMuon_origin].Data()));
         Tree_DiMuon_Rec[i_DiMuon_origin]->Branch("m", M_Dimu_Rec, "m/D");
         Tree_DiMuon_Rec[i_DiMuon_origin]->Branch("pt", Pt_Dimu_Rec, "pt/D");
+        Tree_DiMuon_Rec[i_DiMuon_origin]->Branch("event", Event, "event/I");
         if (DiMuon_origin[i_DiMuon_origin].Contains("HF_Mixed"))
         {
             Tree_DiMuon_Rec[i_DiMuon_origin]->Branch("HF_PDG", HF_PDG, "HF_PDG/I");
             Tree_DiMuon_Rec[i_DiMuon_origin]->Branch("LF_PDG", LF_PDG, "LF_PDG/I");
+
+            if (Generator.Contains("Powheg"))
+            {
+                Tree_DiMuon_Rec[i_DiMuon_origin]->Branch("HF_origin", HF_origin, "HF_origin/I");
+                Tree_DiMuon_Rec[i_DiMuon_origin]->Branch("LF_origin", LF_origin, "LF_origin/I");
+            }
         }
 
         if (Generator.Contains("Powheg"))
@@ -114,9 +130,8 @@ void save_mc_output(
     printf("Saving in dir: %s \nFile: %s\n", dir_fileOut.Data(), file_out.Data());
 
     TChain *input_tree = Importing_Tree(dir_fileIn, filename, Generator);
-    input_tree->ls();
 
-    Int_t total_entries = 0.1 * input_tree->GetEntries();
+    Int_t total_entries = input_tree->GetEntries();
 
     if (total_entries == 0)
         return;
@@ -1222,6 +1237,7 @@ void save_mc_output(
                     }
                     *Pt_Dimu_Rec = Pt_DiMu;
                     *M_Dimu_Rec = M_DiMu;
+                    *Event = i_Event;
                     if (DiMuon_origin[i_DiMuon_origin].EqualTo("HF_Mixed"))
                     {
                         cout << DiMuon_origin[i_DiMuon_origin].Data() << endl;
@@ -1233,14 +1249,26 @@ void save_mc_output(
                     else if (DiMuon_origin[i_DiMuon_origin].EqualTo("LF_HF_Mixed"))
                     {
                         if (TMath::Abs(PDG_Mu0) > 400)
+                        {
                             *HF_PDG = PDG_Mu0;
+                            *HF_origin = IsFromPowheg_Mu0;
+                        }
                         else
+                        {
                             *LF_PDG = PDG_Mu0;
+                            *LF_origin = IsFromPowheg_Mu0;
+                        }
 
                         if (TMath::Abs(PDG_Mu1) > 400)
+                        {
                             *HF_PDG = PDG_Mu1;
+                            *HF_origin = IsFromPowheg_Mu1;
+                        }
                         else
+                        {
                             *LF_PDG = PDG_Mu1;
+                            *LF_origin = IsFromPowheg_Mu1;
+                        }
                     }
 
                     Tree_DiMuon_Rec[i_DiMuon_origin]->Fill();
