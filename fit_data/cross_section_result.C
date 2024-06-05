@@ -10,25 +10,25 @@ struct opt
     Double_t PYTHIA_stat_ds_dy_fwd_LowMass_LowPt_noLF_HF[2] = {1.43, 4.5};
     Double_t PYTHIA_syst_ds_dy_fwd_LowMass_LowPt_noLF_HF[2] = {14.89, 48.36};
 
-    Double_t PYTHIA_ds_dy_fwd_LowMass_LowPt_withLF_HF[2] = {1335.77, 19.78};
+    Double_t PYTHIA_ds_dy_fwd_LowMass_LowPt_withLF_HF[2] = {1398, 23.51};
     Double_t PYTHIA_stat_ds_dy_fwd_LowMass_LowPt_withLF_HF[2] = {1.721, 5.32};
-    Double_t PYTHIA_syst_ds_dy_fwd_LowMass_LowPt_withLF_HF[2] = {15.17, 47.87};
+    Double_t PYTHIA_syst_ds_dy_fwd_LowMass_LowPt_withLF_HF[2] = {15.1261, 45.4533};
 
-    Double_t PYTHIA_ds_dy_fwd_FullMass_withLF_HF[2] = {1177.83, 25.38};
+    Double_t PYTHIA_ds_dy_fwd_FullMass_withLF_HF[2] = {1235, 28.86};
     Double_t PYTHIA_stat_ds_dy_fwd_FullMass_withLF_HF[2] = {1.63, 3.322};
-    Double_t PYTHIA_syst_ds_dy_fwd_FullMass_withLF_HF[2] = {14.02, 28.98};
+    Double_t PYTHIA_syst_ds_dy_fwd_FullMass_withLF_HF[2] = {16.9552, 40.3918};
 
     Double_t POWHEG_ds_dy_fwd_LowMass_LowPt_noLF_HF[2] = {2009.21, 17.68};
     Double_t POWHEG_stat_ds_dy_fwd_LowMass_LowPt_noLF_HF[2] = {2.36, 4.5};
     Double_t POWHEG_syst_ds_dy_fwd_LowMass_LowPt_noLF_HF[2] = {8.44, 16.22};
 
-    Double_t POWHEG_ds_dy_fwd_LowMass_LowPt_withLF_HF[2] = {1532.3, 18.996};
+    Double_t POWHEG_ds_dy_fwd_LowMass_LowPt_withLF_HF[2] = {1439, 20.45};
     Double_t POWHEG_stat_ds_dy_fwd_LowMass_LowPt_withLF_HF[2] = {3.24, 4.16};
-    Double_t POWHEG_syst_ds_dy_fwd_LowMass_LowPt_withLF_HF[2] = {7.82, 10.06};
+    Double_t POWHEG_syst_ds_dy_fwd_LowMass_LowPt_withLF_HF[2] = {15.1261, 12.7286};
 
-    Double_t POWHEG_ds_dy_fwd_FullMass_withLF_HF[2] = {1533.14, 16.13};
+    Double_t POWHEG_ds_dy_fwd_FullMass_withLF_HF[2] = {1511, 17.49};
     Double_t POWHEG_stat_ds_dy_fwd_FullMass_withLF_HF[2] = {2.98, 4.68};
-    Double_t POWHEG_syst_ds_dy_fwd_FullMass_withLF_HF[2] = {5.57, 8.73};
+    Double_t POWHEG_syst_ds_dy_fwd_FullMass_withLF_HF[2] = {13.3936, 15.0018};
 
     //----ELECTRONS measurament----//
 
@@ -57,10 +57,198 @@ struct opt
     Double_t syst_ds_deta_Beauty_LHCb[12] = {4.8, 6.0, 5.8, 5.4, 4.4, 3.0, 4.8, 6.0, 5.8, 5.4, 4.4, 3.0};
 
     Bool_t Fullerror = kFALSE;
-    TString Res_selector = "OnlyPrel";
+    // TString Res_selector = "OnlyPrel";
     // TString Res_selector = "OnlyNew";
+    TString Res_selector = "FullMass";
+    // TString Res_selector = "mean";
 };
 
+void calculate_error()
+{
+
+    // Double_t PYTHIA_LowMass_LowPt_Sg_extr_Beauty = 43.27;
+    // Double_t PYTHIA_LowMass_LowPt_Bkg_extr_Beauty = 12.13;
+    // Double_t PYTHIA_LowMass_LowPt_HF_fr_Beauty = 5.4;
+    // Double_t PYTHIA_LowMass_LowPt_trig_resp_Beauty = 0.06;
+    // Double_t PYTHIA_LowMass_LowPt_f_norm_Beauty = 2.9;
+    // Double_t PYTHIA_LowMass_LowPt_MCH_eff_Beauty = 2;
+    // Double_t PYTHIA_LowMass_LowPt_MTR_eff_Beauty = 2;
+    // Double_t PYTHIA_LowMass_LowPt_Match_eff_Beauty = 1;
+
+    // Double_t PYTHIA_LowMass_LowPt_syst_Beauty = TMath::Sqrt(
+    //     TMath::Power(PYTHIA_LowMass_LowPt_Sg_extr_Beauty, 2) +
+    //     TMath::Power(PYTHIA_LowMass_LowPt_Bkg_extr_Beauty, 2) +
+    //     TMath::Power(PYTHIA_LowMass_LowPt_HF_fr_Beauty, 2) +
+    //     TMath::Power(PYTHIA_LowMass_LowPt_trig_resp_Beauty, 2) +
+    //     TMath::Power(PYTHIA_LowMass_LowPt_f_norm_Beauty, 2) +
+    //     TMath::Power(PYTHIA_LowMass_LowPt_MCH_eff_Beauty, 2) +
+    //     TMath::Power(PYTHIA_LowMass_LowPt_MTR_eff_Beauty, 2) +
+    //     TMath::Power(PYTHIA_LowMass_LowPt_Match_eff_Beauty, 2));
+
+    // cout << "PYTHIA_LowMass_LowPt_syst_BEAUTY: " << PYTHIA_LowMass_LowPt_syst_Beauty << endl;
+
+    // Double_t Powheg_LowMass_LowPt_Sg_extr_Beauty = 8.02;
+    // Double_t Powheg_LowMass_LowPt_Bkg_extr_Beauty = 7.15;
+    // Double_t Powheg_LowMass_LowPt_HF_fr_Beauty = 5.4;
+    // Double_t Powheg_LowMass_LowPt_trig_resp_Beauty = 0.06;
+    // Double_t Powheg_LowMass_LowPt_f_norm_Beauty = 2.9;
+    // Double_t Powheg_LowMass_LowPt_MCH_eff_Beauty = 2;
+    // Double_t Powheg_LowMass_LowPt_MTR_eff_Beauty = 2;
+    // Double_t Powheg_LowMass_LowPt_Match_eff_Beauty = 1;
+
+    // Double_t Powheg_LowMass_LowPt_syst_Beauty = TMath::Sqrt(
+    //     TMath::Power(Powheg_LowMass_LowPt_Sg_extr_Beauty, 2) +
+    //     TMath::Power(Powheg_LowMass_LowPt_Bkg_extr_Beauty, 2) +
+    //     TMath::Power(Powheg_LowMass_LowPt_HF_fr_Beauty, 2) +
+    //     TMath::Power(Powheg_LowMass_LowPt_trig_resp_Beauty, 2) +
+    //     TMath::Power(Powheg_LowMass_LowPt_f_norm_Beauty, 2) +
+    //     TMath::Power(Powheg_LowMass_LowPt_MCH_eff_Beauty, 2) +
+    //     TMath::Power(Powheg_LowMass_LowPt_MTR_eff_Beauty, 2) +
+    //     TMath::Power(Powheg_LowMass_LowPt_Match_eff_Beauty, 2));
+
+    // cout << "Powheg_LowMass_LowPt_syst_BEAUTY: " << Powheg_LowMass_LowPt_syst_Beauty << endl;
+
+    // Double_t PYTHIA_LowMass_LowPt_Sg_extr_Charm = 13.72;
+    // Double_t PYTHIA_LowMass_LowPt_Bkg_extr_Charm = 4.76;
+    // Double_t PYTHIA_LowMass_LowPt_HF_fr_Charm = 0.7;
+    // Double_t PYTHIA_LowMass_LowPt_trig_resp_Charm = 0.06;
+    // Double_t PYTHIA_LowMass_LowPt_f_norm_Charm = 2.9;
+    // Double_t PYTHIA_LowMass_LowPt_MCH_eff_Charm = 2;
+    // Double_t PYTHIA_LowMass_LowPt_MTR_eff_Charm = 2;
+    // Double_t PYTHIA_LowMass_LowPt_Match_eff_Charm = 1;
+
+    // Double_t PYTHIA_LowMass_LowPt_syst_Charm = TMath::Sqrt(
+    //     TMath::Power(PYTHIA_LowMass_LowPt_Sg_extr_Charm, 2) +
+    //     TMath::Power(PYTHIA_LowMass_LowPt_Bkg_extr_Charm, 2) +
+    //     TMath::Power(PYTHIA_LowMass_LowPt_HF_fr_Charm, 2) +
+    //     TMath::Power(PYTHIA_LowMass_LowPt_trig_resp_Charm, 2) +
+    //     TMath::Power(PYTHIA_LowMass_LowPt_f_norm_Charm, 2) +
+    //     TMath::Power(PYTHIA_LowMass_LowPt_MCH_eff_Charm, 2) +
+    //     TMath::Power(PYTHIA_LowMass_LowPt_MTR_eff_Charm, 2) +
+    //     TMath::Power(PYTHIA_LowMass_LowPt_Match_eff_Charm, 2));
+
+    // cout << "PYTHIA_LowMass_LowPt_syst_CHARM: " << PYTHIA_LowMass_LowPt_syst_Charm << endl;
+
+    // Double_t Powheg_LowMass_LowPt_Sg_extr_Charm = 6.23;
+    // Double_t Powheg_LowMass_LowPt_Bkg_extr_Charm = 6.54;
+    // Double_t Powheg_LowMass_LowPt_HF_fr_Charm = 0.7;
+    // Double_t Powheg_LowMass_LowPt_trig_resp_Charm = 0.06;
+    // Double_t Powheg_LowMass_LowPt_f_norm_Charm = 2.9;
+    // Double_t Powheg_LowMass_LowPt_MCH_eff_Charm = 2;
+    // Double_t Powheg_LowMass_LowPt_MTR_eff_Charm = 2;
+    // Double_t Powheg_LowMass_LowPt_Match_eff_Charm = 1;
+
+    // Double_t Powheg_LowMass_LowPt_syst_Charm = TMath::Sqrt(
+    //     TMath::Power(Powheg_LowMass_LowPt_Sg_extr_Charm, 2) +
+    //     TMath::Power(Powheg_LowMass_LowPt_Bkg_extr_Charm, 2) +
+    //     TMath::Power(Powheg_LowMass_LowPt_HF_fr_Charm, 2) +
+    //     TMath::Power(Powheg_LowMass_LowPt_trig_resp_Charm, 2) +
+    //     TMath::Power(Powheg_LowMass_LowPt_f_norm_Charm, 2) +
+    //     TMath::Power(Powheg_LowMass_LowPt_MCH_eff_Charm, 2) +
+    //     TMath::Power(Powheg_LowMass_LowPt_MTR_eff_Charm, 2) +
+    //     TMath::Power(Powheg_LowMass_LowPt_Match_eff_Charm, 2));
+
+    // cout << "Powheg_LowMass_LowPt_syst_CHARM: " << Powheg_LowMass_LowPt_syst_Charm << endl;
+    opt info;
+    Double_t PYTHIA_FullMass_Sg_extr_Beauty = 25.72;
+    Double_t PYTHIA_FullMass_Bkg_extr_Beauty = 8.55;
+    Double_t PYTHIA_FullMass_HF_fr_Beauty = 5.4;
+    Double_t PYTHIA_FullMass_Mass_range_Beauty = 100*TMath::Abs(2.069e+04-1.567e+04)/2.069e+04;
+    cout<<PYTHIA_FullMass_Mass_range_Beauty<<endl;
+    Double_t PYTHIA_FullMass_trig_resp_Beauty = 0.06;
+    Double_t PYTHIA_FullMass_f_norm_Beauty = 2.9;
+    Double_t PYTHIA_FullMass_MCH_eff_Beauty = 2;
+    Double_t PYTHIA_FullMass_MTR_eff_Beauty = 2;
+    Double_t PYTHIA_FullMass_Match_eff_Beauty = 1;
+
+    Double_t PYTHIA_FullMass_syst_Beauty = TMath::Sqrt(
+        TMath::Power(PYTHIA_FullMass_Sg_extr_Beauty, 2) +
+        TMath::Power(PYTHIA_FullMass_Bkg_extr_Beauty, 2) +
+        TMath::Power(PYTHIA_FullMass_HF_fr_Beauty, 2) +
+        TMath::Power(PYTHIA_FullMass_syst_Beauty, 2) +
+        TMath::Power(PYTHIA_FullMass_trig_resp_Beauty, 2) +
+        TMath::Power(PYTHIA_FullMass_f_norm_Beauty, 2) +
+        TMath::Power(PYTHIA_FullMass_MCH_eff_Beauty, 2) +
+        TMath::Power(PYTHIA_FullMass_MTR_eff_Beauty, 2) +
+        TMath::Power(PYTHIA_FullMass_Match_eff_Beauty, 2));
+
+    cout << "PYTHIA_FullMass_syst_BEAUTY: " << PYTHIA_FullMass_syst_Beauty << endl;
+
+    Double_t Powheg_FullMass_Sg_extr_Beauty = 5.73;
+    Double_t Powheg_FullMass_Bkg_extr_Beauty = 8.45;
+    Double_t Powheg_FullMass_HF_fr_Beauty = 5.4;
+    Double_t POWHEG_FullMass_Mass_range_Beauty = 100*TMath::Abs(2.472e+04-2.685e+04)/2.472e+04;
+    cout<<POWHEG_FullMass_Mass_range_Beauty<<endl;
+
+    Double_t Powheg_FullMass_trig_resp_Beauty = 0.06;
+    Double_t Powheg_FullMass_f_norm_Beauty = 2.9;
+    Double_t Powheg_FullMass_MCH_eff_Beauty = 2;
+    Double_t Powheg_FullMass_MTR_eff_Beauty = 2;
+    Double_t Powheg_FullMass_Match_eff_Beauty = 1;
+
+    Double_t Powheg_FullMass_syst_Beauty = TMath::Sqrt(
+        TMath::Power(Powheg_FullMass_Sg_extr_Beauty, 2) +
+        TMath::Power(Powheg_FullMass_Bkg_extr_Beauty, 2) +
+        TMath::Power(Powheg_FullMass_HF_fr_Beauty, 2) +
+        TMath::Power(POWHEG_FullMass_Mass_range_Beauty, 2) +
+        TMath::Power(Powheg_FullMass_trig_resp_Beauty, 2) +
+        TMath::Power(Powheg_FullMass_f_norm_Beauty, 2) +
+        TMath::Power(Powheg_FullMass_MCH_eff_Beauty, 2) +
+        TMath::Power(Powheg_FullMass_MTR_eff_Beauty, 2) +
+        TMath::Power(Powheg_FullMass_Match_eff_Beauty, 2));
+
+    cout << "Powheg_FullMass_syst_BEAUTY: " << Powheg_FullMass_syst_Beauty << endl;
+
+    Double_t PYTHIA_FullMass_Sg_extr_Charm = 12.27;
+    Double_t PYTHIA_FullMass_Bkg_extr_Charm = 4.77;
+    Double_t PYTHIA_FullMass_HF_fr_Charm = 0.7;
+    Double_t PYTHIA_FullMass_Mass_range_Charm = 100*TMath::Abs(3.771e+04- 4.141e+04)/3.771e+04;
+    cout<<PYTHIA_FullMass_Mass_range_Charm<<endl;
+
+    Double_t PYTHIA_FullMass_trig_resp_Charm = 0.06;
+    Double_t PYTHIA_FullMass_f_norm_Charm = 2.9;
+    Double_t PYTHIA_FullMass_MCH_eff_Charm = 2;
+    Double_t PYTHIA_FullMass_MTR_eff_Charm = 2;
+    Double_t PYTHIA_FullMass_Match_eff_Charm = 1;
+
+    Double_t PYTHIA_FullMass_syst_Charm = TMath::Sqrt(
+        TMath::Power(PYTHIA_FullMass_Sg_extr_Charm, 2) +
+        TMath::Power(PYTHIA_FullMass_Bkg_extr_Charm, 2) +
+        TMath::Power(PYTHIA_FullMass_HF_fr_Charm, 2) +
+        TMath::Power(PYTHIA_FullMass_Mass_range_Charm, 2) +
+        TMath::Power(PYTHIA_FullMass_trig_resp_Charm, 2) +
+        TMath::Power(PYTHIA_FullMass_f_norm_Charm, 2) +
+        TMath::Power(PYTHIA_FullMass_MCH_eff_Charm, 2) +
+        TMath::Power(PYTHIA_FullMass_MTR_eff_Charm, 2) +
+        TMath::Power(PYTHIA_FullMass_Match_eff_Charm, 2));
+
+    cout << "PYTHIA_FullMass_syst_CHARM: " << PYTHIA_FullMass_syst_Charm << endl;
+
+    Double_t Powheg_FullMass_Sg_extr_Charm = 3.65;
+    Double_t Powheg_FullMass_Bkg_extr_Charm = 6.34;
+    Double_t Powheg_FullMass_HF_fr_Charm = 0.7;
+    Double_t POWHEG_FullMass_Mass_range_Charm = 100*TMath::Abs(3.378e+04-3.027e+04)/3.378e+04;
+    cout<<POWHEG_FullMass_Mass_range_Charm<<endl;
+
+    Double_t Powheg_FullMass_trig_resp_Charm = 0.06;
+    Double_t Powheg_FullMass_f_norm_Charm = 2.9;
+    Double_t Powheg_FullMass_MCH_eff_Charm = 2;
+    Double_t Powheg_FullMass_MTR_eff_Charm = 2;
+    Double_t Powheg_FullMass_Match_eff_Charm = 1;
+
+    Double_t Powheg_FullMass_syst_Charm = TMath::Sqrt(
+        TMath::Power(Powheg_FullMass_Sg_extr_Charm, 2) +
+        TMath::Power(Powheg_FullMass_Bkg_extr_Charm, 2) +
+        TMath::Power(Powheg_FullMass_HF_fr_Charm, 2) +
+        TMath::Power(POWHEG_FullMass_Mass_range_Charm, 2) +
+        TMath::Power(Powheg_FullMass_trig_resp_Charm, 2) +
+        TMath::Power(Powheg_FullMass_f_norm_Charm, 2) +
+        TMath::Power(Powheg_FullMass_MCH_eff_Charm, 2) +
+        TMath::Power(Powheg_FullMass_MTR_eff_Charm, 2) +
+        TMath::Power(Powheg_FullMass_Match_eff_Charm, 2));
+
+    cout << "Powheg_FullMass_syst_CHARM: " << Powheg_FullMass_syst_Charm << endl;
+}
 void cross_section_result()
 {
     opt info;
@@ -116,6 +304,10 @@ void cross_section_result()
     Double_t ds_dy_fwd_ALICE_FullMass_withLF_HF[2];
     Double_t stat_ds_dy_fwd_ALICE_FullMass_withLF_HF[2];
     Double_t syst_ds_dy_fwd_ALICE_FullMass_withLF_HF[2];
+
+    Double_t ds_dy_fwd_ALICE_Mean_withLF_HF[2];
+    Double_t stat_ds_dy_fwd_ALICE_Mean_withLF_HF[2];
+    Double_t syst_ds_dy_fwd_ALICE_Mean_withLF_HF[2];
 
     // bb_cs_PYTHIA_fwd->GetAttLine(0)->SetLineColor(kRed);
     // bb_cs_PYTHIA_fwd->GetAttLine(0)->SetLineWidth(1);
@@ -222,6 +414,26 @@ void cross_section_result()
         stat_ds_dy_ALICE_ELECTRON[0] = info.POWHEG_stat_ds_dy_ALICE_ELECTRON[HF_Selector];
         syst_ds_dy_ALICE_ELECTRON[0] = info.POWHEG_syst_ds_dy_ALICE_ELECTRON[HF_Selector];
     }
+    cout<<info.HF.Data()<<endl;
+    cout << "Full MASS cs: " << ds_dy_fwd_ALICE_FullMass_withLF_HF[0] << endl;
+    cout << "Full MASS stat: " << stat_ds_dy_fwd_ALICE_FullMass_withLF_HF[0] << endl;
+    cout << "Full MASS syst: " << syst_ds_dy_fwd_ALICE_FullMass_withLF_HF[0] << endl;
+
+    cout << "LowMass_LowPt_cs: " << ds_dy_fwd_ALICE_LowMass_LowPt_withLF_HF[0] << endl;
+    cout << "LowMass_LowPt_stat: " << stat_ds_dy_fwd_ALICE_LowMass_LowPt_withLF_HF[0] << endl;
+    cout << "LowMass_LowPt_syst: " << syst_ds_dy_fwd_ALICE_LowMass_LowPt_withLF_HF[0] << endl;
+
+    ds_dy_fwd_ALICE_Mean_withLF_HF[0] = (ds_dy_fwd_ALICE_FullMass_withLF_HF[0] + ds_dy_fwd_ALICE_LowMass_LowPt_withLF_HF[0]) / 2.;
+    cout << "Mean cs: " << ds_dy_fwd_ALICE_Mean_withLF_HF[0] << endl;
+    ds_dy_fwd_ALICE_Mean_withLF_HF[1] = (ds_dy_fwd_ALICE_FullMass_withLF_HF[1] + ds_dy_fwd_ALICE_LowMass_LowPt_withLF_HF[1]) / 2.;
+
+    stat_ds_dy_fwd_ALICE_Mean_withLF_HF[0] = TMath::Sqrt(TMath::Power(stat_ds_dy_fwd_ALICE_FullMass_withLF_HF[0], 2) + TMath::Power(stat_ds_dy_fwd_ALICE_LowMass_LowPt_withLF_HF[0], 2));
+    cout << "Mean stat: " << stat_ds_dy_fwd_ALICE_Mean_withLF_HF[0] << endl;
+    stat_ds_dy_fwd_ALICE_Mean_withLF_HF[1] = TMath::Sqrt(TMath::Power(stat_ds_dy_fwd_ALICE_FullMass_withLF_HF[1], 2) + TMath::Power(stat_ds_dy_fwd_ALICE_LowMass_LowPt_withLF_HF[1], 2));
+
+    syst_ds_dy_fwd_ALICE_Mean_withLF_HF[0] = TMath::Sqrt(TMath::Power(syst_ds_dy_fwd_ALICE_FullMass_withLF_HF[0], 2) + TMath::Power(syst_ds_dy_fwd_ALICE_LowMass_LowPt_withLF_HF[0], 2));
+    cout << "Mean syst: " << syst_ds_dy_fwd_ALICE_Mean_withLF_HF[0] << endl;
+    syst_ds_dy_fwd_ALICE_Mean_withLF_HF[1] = TMath::Sqrt(TMath::Power(syst_ds_dy_fwd_ALICE_FullMass_withLF_HF[1], 2) + TMath::Power(syst_ds_dy_fwd_ALICE_LowMass_LowPt_withLF_HF[1], 2));
 
     TGraphMultiErrors *cs_fwd_ALICE_LowMass_LowPt_noLH_HF = new TGraphMultiErrors("cs_fwd_ALICE_LowMass_LowPt_noLH_HF", "TGraphMultiErrors Example", 2, y_fwd_ALICE, ds_dy_fwd_ALICE_LowMass_LowPt_noLF_HF, dy_fwd_ALICE, dy_fwd_ALICE, stat_ds_dy_fwd_ALICE_LowMass_LowPt_noLF_HF, stat_ds_dy_fwd_ALICE_LowMass_LowPt_noLF_HF);
     cs_fwd_ALICE_LowMass_LowPt_noLH_HF->AddYError(2, syst_ds_dy_fwd_ALICE_LowMass_LowPt_noLF_HF, syst_ds_dy_fwd_ALICE_LowMass_LowPt_noLF_HF);
@@ -261,6 +473,19 @@ void cross_section_result()
     cs_fwd_ALICE_FullMass_withLH_HF->GetAttLine(1)->SetLineColor(kRed);
     cs_fwd_ALICE_FullMass_withLH_HF->GetAttLine(1)->SetLineWidth(2);
     cs_fwd_ALICE_FullMass_withLH_HF->GetAttFill(1)->SetFillStyle(0);
+
+    TGraphMultiErrors *cs_fwd_ALICE_Mean_withLH_HF = new TGraphMultiErrors("cs_fwd_ALICE_Mean_withLH_HF", "TGraphMultiErrors Example", 2, y_fwd_ALICE, ds_dy_fwd_ALICE_Mean_withLF_HF, dy_fwd_ALICE, dy_fwd_ALICE, stat_ds_dy_fwd_ALICE_Mean_withLF_HF, stat_ds_dy_fwd_ALICE_Mean_withLF_HF);
+    cs_fwd_ALICE_Mean_withLH_HF->AddYError(2, syst_ds_dy_fwd_ALICE_Mean_withLF_HF, syst_ds_dy_fwd_ALICE_Mean_withLF_HF);
+    cs_fwd_ALICE_Mean_withLH_HF->SetMarkerStyle(46);
+    cs_fwd_ALICE_Mean_withLH_HF->SetMarkerColor(kRed);
+    cs_fwd_ALICE_Mean_withLH_HF->SetLineColor(kRed);
+    cs_fwd_ALICE_Mean_withLH_HF->SetLineWidth(2);
+    cs_fwd_ALICE_Mean_withLH_HF->SetMarkerSize(2);
+    cs_fwd_ALICE_Mean_withLH_HF->GetAttLine(0)->SetLineColor(kRed);
+    cs_fwd_ALICE_Mean_withLH_HF->GetAttLine(0)->SetLineWidth(2);
+    cs_fwd_ALICE_Mean_withLH_HF->GetAttLine(1)->SetLineColor(kRed);
+    cs_fwd_ALICE_Mean_withLH_HF->GetAttLine(1)->SetLineWidth(2);
+    cs_fwd_ALICE_Mean_withLH_HF->GetAttFill(1)->SetFillStyle(0);
 
     TGraphMultiErrors *cs_ALICE_ELECTRON = new TGraphMultiErrors("cs_ALICE_ELECTRON", "TGraphMultiErrors Example", 1, y_mid, ds_dy_ALICE_ELECTRON, dy_mid, dy_mid, stat_ds_dy_ALICE_ELECTRON, stat_ds_dy_ALICE_ELECTRON);
     cs_ALICE_ELECTRON->AddYError(1, syst_ds_dy_ALICE_ELECTRON, syst_ds_dy_ALICE_ELECTRON);
@@ -432,23 +657,31 @@ void cross_section_result()
         bb_bar_cs_NNPDF->Add(cs_fwd_ALICE_LowMass_LowPt_withLH_HF, "APS; Z ; 5 s=0.5");
         bb_bar_cs_NNPDF->Add(cs_fwd_ALICE_FullMass_withLH_HF, "APS; Z ; 5 s=0.5");
     }
-    else
+    else if (info.Res_selector.Contains("FullMass"))
+    {
+        bb_bar_cs_NNPDF->Add(cs_fwd_ALICE_FullMass_withLH_HF, "APS; Z ; 5 s=0.5");
+    }
+    else if (info.Res_selector.Contains("All"))
     {
         bb_bar_cs_NNPDF->Add(cs_fwd_ALICE_LowMass_LowPt_noLH_HF, "APS; Z ; 5 s=0.5");
         bb_bar_cs_NNPDF->Add(cs_fwd_ALICE_LowMass_LowPt_withLH_HF, "APS; Z ; 5 s=0.5");
         bb_bar_cs_NNPDF->Add(cs_fwd_ALICE_FullMass_withLH_HF, "APS; Z ; 5 s=0.5");
     }
+    else if (info.Res_selector.Contains("mean"))
+    {
+        bb_bar_cs_NNPDF->Add(cs_fwd_ALICE_Mean_withLH_HF, "APS; Z ; 5 s=0.5");
+    }
     bb_bar_cs_NNPDF->Add(cs_ALICE_ELECTRON, "APS; Z ; 5 s=0.5");
     bb_bar_cs_NNPDF->Add(cs_ALICE_HF, "APS; Z ; 5 s=0.5");
-    if (info.HF.Contains("Charm"))
-        bb_bar_cs_NNPDF->Add(cs_LHCb_CHARM, "APS; Z ; 5 s=0.5");
-    else if (info.HF.Contains("Beauty"))
-        bb_bar_cs_NNPDF->Add(cs_LHCb_BEAUTY, "APS; Z ; 5 s=0.5");
+    // if (info.HF.Contains("Charm"))
+    //     bb_bar_cs_NNPDF->Add(cs_LHCb_CHARM, "APS; Z ; 5 s=0.5");
+    // else if (info.HF.Contains("Beauty"))
+    //     bb_bar_cs_NNPDF->Add(cs_LHCb_BEAUTY, "APS; Z ; 5 s=0.5");
 
     if (info.HF.Contains("Beauty"))
     {
         bb_bar_cs_NNPDF->GetYaxis()->SetRangeUser(6.5e-1, 8e+2);
-        bb_bar_cs_NNPDF->GetYaxis()->SetTitle("d#sigma_{b#bar{b}} / d#it{y} or d#sigma_{b#bar{b}} / d#it{eta} (#mub)");
+        bb_bar_cs_NNPDF->GetYaxis()->SetTitle("d#sigma_{b#bar{b}} / d#it{y} (#mub)");
     }
     else if (info.HF.Contains("Charm"))
     {
@@ -474,7 +707,7 @@ void cross_section_result()
     }
     else
     {
-        Legend_bb_cs_NNPDF_FONLL = new TLegend(0.725, 0.18, 0.875, 0.325, " ", "brNDC");
+        Legend_bb_cs_NNPDF_FONLL = new TLegend(0.725, 0.72, 0.875, 0.87, " ", "brNDC");
         Legend_bb_cs_NNPDF_FONLL->AddEntry(FONLL_bb_cs_NNPDF_minmaxerror, "FONLL", "F");
     }
 
@@ -497,11 +730,19 @@ void cross_section_result()
             Legend_bb_cs_NNPDF_Meas->AddEntry(cs_fwd_ALICE_LowMass_LowPt_withLH_HF, "#splitline{(#it{m}_{#mu^{#plus}#mu^{#minus}}, #it{p}_{T, #mu^{#plus}#mu^{#minus}}) PYTHIA8 fit with LF-HF}{4 < #it{m_{#mu#mu}} < 9 GeV/#it{c}^{2}, #it{p}_{T} < 10 GeV/#it{c}}", "EP");
             Legend_bb_cs_NNPDF_Meas->AddEntry(cs_fwd_ALICE_FullMass_withLH_HF, "#splitline{(#it{m}_{#mu^{#plus}#mu^{#minus}}, #it{p}_{T, #mu^{#plus}#mu^{#minus}}) PYTHIA8 fit with LF-HF}{4 < #it{m_{#mu#mu}} < 30 GeV/#it{c}^{2}, #it{p}_{T} < 30 GeV/#it{c}}", "EP");
         }
-        else
+        else if (info.Res_selector.Contains("FullMass"))
+        {
+            Legend_bb_cs_NNPDF_Meas->AddEntry(cs_fwd_ALICE_FullMass_withLH_HF, "#splitline{(#it{m}_{#mu^{#plus}#mu^{#minus}}, #it{p}_{T, #mu^{#plus}#mu^{#minus}}) PYTHIA8 fit with LF-HF}{4 < #it{m_{#mu#mu}} < 30 GeV/#it{c}^{2}, #it{p}_{T} < 30 GeV/#it{c}}", "EP");
+        }
+        else if (info.Res_selector.Contains("All"))
         {
             Legend_bb_cs_NNPDF_Meas->AddEntry(cs_fwd_ALICE_LowMass_LowPt_noLH_HF, "#splitline{(#it{m}_{#mu^{#plus}#mu^{#minus}}, #it{p}_{T, #mu^{#plus}#mu^{#minus}}) PYTHIA8 fit no LF-HF}{4 < #it{m_{#mu#mu}} < 9 GeV/#it{c}^{2}, #it{p}_{T} < 10 GeV/#it{c}}", "EP");
             Legend_bb_cs_NNPDF_Meas->AddEntry(cs_fwd_ALICE_LowMass_LowPt_withLH_HF, "#splitline{(#it{m}_{#mu^{#plus}#mu^{#minus}}, #it{p}_{T, #mu^{#plus}#mu^{#minus}}) PYTHIA8 fit with LF-HF}{4 < #it{m_{#mu#mu}} < 9 GeV/#it{c}^{2}, #it{p}_{T} < 10 GeV/#it{c}}", "EP");
             Legend_bb_cs_NNPDF_Meas->AddEntry(cs_fwd_ALICE_FullMass_withLH_HF, "#splitline{(#it{m}_{#mu^{#plus}#mu^{#minus}}, #it{p}_{T, #mu^{#plus}#mu^{#minus}}) PYTHIA8 fit with LF-HF}{4 < #it{m_{#mu#mu}} < 30 GeV/#it{c}^{2}, #it{p}_{T} < 30 GeV/#it{c}}", "EP");
+        }
+        else if (info.Res_selector.Contains("mean"))
+        {
+            Legend_bb_cs_NNPDF_Meas->AddEntry(cs_fwd_ALICE_FullMass_withLH_HF, "(#it{m}_{#mu^{#plus}#mu^{#minus}}, #it{p}_{T, #mu^{#plus}#mu^{#minus}}) PYTHIA8", "EP");
         }
         Legend_bb_cs_NNPDF_Meas->AddEntry(cs_ALICE_ELECTRON, "#splitline{(#it{m}_{e^{#plus}e^{#minus}}, #it{p}_{T, e^{#plus}e^{#minus}}) PYTHIA6 fit}{Phys. Lett. B788 (2019) 505}", "EP");
     }
@@ -514,27 +755,35 @@ void cross_section_result()
             Legend_bb_cs_NNPDF_Meas->AddEntry(cs_fwd_ALICE_LowMass_LowPt_withLH_HF, "#splitline{(#it{m}_{#mu^{#plus}#mu^{#minus}}, #it{p}_{T, #mu^{#plus}#mu^{#minus}}) POWHEG fit}{4 < #it{m_{#mu#mu} with LF-HF} < 9 GeV/#it{c}^{2}, #it{p}_{T} < 10 GeV/#it{c}}", "EP");
             Legend_bb_cs_NNPDF_Meas->AddEntry(cs_fwd_ALICE_FullMass_withLH_HF, "#splitline{(#it{m}_{#mu^{#plus}#mu^{#minus}}, #it{p}_{T, #mu^{#plus}#mu^{#minus}}) POWHEG fit}{4 < #it{m_{#mu#mu} with LF-HF} < 30 GeV/#it{c}^{2}, #it{p}_{T} < 30 GeV/#it{c}}", "EP");
         }
-        else
+        else if (info.Res_selector.Contains("FullMass"))
+        {
+            Legend_bb_cs_NNPDF_Meas->AddEntry(cs_fwd_ALICE_FullMass_withLH_HF, "#splitline{(#it{m}_{#mu^{#plus}#mu^{#minus}}, #it{p}_{T, #mu^{#plus}#mu^{#minus}}) POWHEG fit}{4 < #it{m_{#mu#mu}} < 30 GeV/#it{c}^{2}, #it{p}_{T} < 30 GeV/#it{c}}", "EP");
+        }
+        else if (info.Res_selector.Contains("All"))
         {
             Legend_bb_cs_NNPDF_Meas->AddEntry(cs_fwd_ALICE_LowMass_LowPt_noLH_HF, "#splitline{(#it{m}_{#mu^{#plus}#mu^{#minus}}, #it{p}_{T, #mu^{#plus}#mu^{#minus}}) POWHEG fit}{4 < #it{m_{#mu#mu} no LF-HF} < 9 GeV/#it{c}^{2}, #it{p}_{T} < 10 GeV/#it{c}}", "EP");
             Legend_bb_cs_NNPDF_Meas->AddEntry(cs_fwd_ALICE_LowMass_LowPt_withLH_HF, "#splitline{(#it{m}_{#mu^{#plus}#mu^{#minus}}, #it{p}_{T, #mu^{#plus}#mu^{#minus}}) POWHEG fit}{4 < #it{m_{#mu#mu} with LF-HF} < 9 GeV/#it{c}^{2}, #it{p}_{T} < 10 GeV/#it{c}}", "EP");
             Legend_bb_cs_NNPDF_Meas->AddEntry(cs_fwd_ALICE_FullMass_withLH_HF, "#splitline{(#it{m}_{#mu^{#plus}#mu^{#minus}}, #it{p}_{T, #mu^{#plus}#mu^{#minus}}) POWHEG fit}{4 < #it{m_{#mu#mu} with LF-HF} < 30 GeV/#it{c}^{2}, #it{p}_{T} < 30 GeV/#it{c}}", "EP");
         }
+        else if (info.Res_selector.Contains("mean"))
+        {
+            Legend_bb_cs_NNPDF_Meas->AddEntry(cs_fwd_ALICE_FullMass_withLH_HF, "(#it{m}_{#mu^{#plus}#mu^{#minus}}, #it{p}_{T, #mu^{#plus}#mu^{#minus}}) POWHEG fit", "EP");
+        }
 
         Legend_bb_cs_NNPDF_Meas->AddEntry(cs_ALICE_ELECTRON, "#splitline{(#it{m}_{e^{#plus}e^{#minus}}, #it{p}_{T, e^{#plus}e^{#minus}}) POWHEG fit}{Phys. Lett. B788 (2019) 505}", "EP");
     }
-    Legend_bb_cs_NNPDF_Meas->AddEntry(cs_ALICE_HF, "ALICE HF |#it{y}|<0.5", "EP");
-    if (info.HF.Contains("Charm"))
-        Legend_bb_cs_NNPDF_Meas->AddEntry(cs_LHCb_CHARM, "LHCb (est. from D^{0},D^{#plus},D^{#plus}_{s})", "EP");
-    else if (info.HF.Contains("Beauty"))
-        Legend_bb_cs_NNPDF_Meas->AddEntry(cs_LHCb_BEAUTY, "LHCb from B decays", "EP");
+    Legend_bb_cs_NNPDF_Meas->AddEntry(cs_ALICE_HF, "ALICE HF", "EP");
+    // if (info.HF.Contains("Charm"))
+    //     Legend_bb_cs_NNPDF_Meas->AddEntry(cs_LHCb_CHARM, "LHCb (est. from D^{0},D^{#plus},D^{#plus}_{s})", "EP");
+    // else if (info.HF.Contains("Beauty"))
+    //     Legend_bb_cs_NNPDF_Meas->AddEntry(cs_LHCb_BEAUTY, "LHCb from B decays", "EP");
     Legend_bb_cs_NNPDF_Meas->SetBorderSize(0);
     Legend_bb_cs_NNPDF_Meas->SetFillColor(10);
     Legend_bb_cs_NNPDF_Meas->SetFillStyle(1);
     Legend_bb_cs_NNPDF_Meas->SetLineStyle(0);
     Legend_bb_cs_NNPDF_Meas->SetLineColor(0);
     Legend_bb_cs_NNPDF_Meas->SetTextFont(42);
-    Legend_bb_cs_NNPDF_Meas->SetTextSize(0.02);
+    Legend_bb_cs_NNPDF_Meas->SetTextSize(0.0275);
     Legend_bb_cs_NNPDF_Meas->SetNColumns(2);
     Legend_bb_cs_NNPDF_Meas->Draw("SAME");
 
@@ -542,10 +791,10 @@ void cross_section_result()
     letexTitle.SetTextSize(0.055);
     letexTitle.SetNDC();
     letexTitle.SetTextFont(42);
-    letexTitle.DrawLatex(0.2, 0.82, "ALICE Preliminary, pp#sqrt{#it{s}} = 13 TeV");
+    letexTitle.DrawLatex(0.2, 0.82, "ALICE, pp #sqrt{#it{s}} = 13 TeV");
     letexTitle.SetTextSize(0.0375);
     letexTitle.DrawLatex(0.2, 0.74, "FONLL CTEQ6");
     canvas->SetName(Form("cs_%s_%s", info.HF.Data(), info.Generator.Data()));
     canvas->SetTitle(Form("cs_%s_%s", info.HF.Data(), info.Generator.Data()));
-    canvas->SaveAs(Form("results/fit_result/cs_%s_%s_%s.pdf", info.HF.Data(), info.Generator.Data(),info.Res_selector.Data()));
+    canvas->SaveAs(Form("results/fit_result/cs_%s_%s_%s.pdf", info.HF.Data(), info.Generator.Data(), info.Res_selector.Data()));
 }
