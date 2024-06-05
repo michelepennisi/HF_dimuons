@@ -13,16 +13,16 @@ struct opt
     TString path_to_file = TString::Format("%s", getenv("universal_PATH"));
     Int_t Mass_Binning = 20;
     Int_t Low_Mass = 4;
-    Int_t High_Mass = 9;
+    Int_t High_Mass = 30;
     Double_t LowM_cut = 8.;
     Double_t HighM_cut = 11.;
     Int_t Pt_Binning = 20;
     Int_t Low_Pt = 0;
-    Int_t High_Pt = 10;
+    Int_t High_Pt = 30;
 
     Double_t HF_Mixed_fraction = 3.0;
     Double_t LF_HF_Mixed_fraction = 14.9;
-    Double_t LF_fraction = 2.0;
+    Double_t LF_fraction = 2.9;
     // Double_t LF_HF_Mixed_fraction = 0.;
 
     TString Generator = "POWHEG";
@@ -30,10 +30,11 @@ struct opt
     TString stat_Data = "LHC18p";
     // TString DY = "withDY";
     TString LF_HF = "withLF_HF_Mixed_Bkg";
+    // TString LF_HF = "noLF_HF_LHC23i2";
     // TString LF_HF = "withLF_HF_LHC23i1";
     // TString LF_HF = "withLF_HF_LHC23i2";
+    TString DY = "withDY";
     TString LF = "noLF";
-    TString DY = "noDY";
     // TString LF_HF = "noLF_HF_LHC23i1";
     Bool_t Plot_Likehood = kFALSE;
     TString systematic = "";
@@ -75,6 +76,7 @@ TCanvas *printRooPlot_ratio(RooPlot *frame, Bool_t norm, RooFitResult *r, Int_t 
 TCanvas *printMC_ratio_BINNED(TString name, TString Title, TH1 *data, TF1 *pdf, Color_t color);
 Double_t Lowy = 0.0025;
 
+void HF_mixing_POWHEG();
 void Mixing_background();
 void unbinned_fit_data_sample_singleregion();
 void shape_comparison();
@@ -83,10 +85,10 @@ void syst_plot();
 
 void fit_data()
 {
-    unbinned_fit_data_sample_singleregion();
-    plotting_fit();
+    // unbinned_fit_data_sample_singleregion();
+    // plotting_fit();
     // Mixing_background();
-
+    HF_mixing_POWHEG();
     // syst_plot();
 }
 
@@ -268,8 +270,8 @@ void cross_section()
     fIn_data->Close();
     Double_t NEv_MB_Data = (2384.73 * fhNEv->GetBinContent(3));
 
-    TFile *fIn = fIn = new TFile(Form("%s/HF_dimuons/fit_data/results/fit_result/Result_Fit_Data_%s_MC_%s_%s_%s_%s.root", info.path_to_file.Data(), info.stat_Data.Data(), info.Generator.Data(), info.LF_HF.Data(),info.LF.Data(),info.DY.Data()), "READ");
-    cout << Form("%s/HF_dimuons/fit_data/results/fit_result/Result_Fit_Data_%s_MC_%s_%s_%s_%s.root", info.path_to_file.Data(), info.stat_Data.Data(), info.Generator.Data(), info.LF_HF.Data(),info.LF.Data(),info.DY.Data()) << endl;
+    TFile *fIn = fIn = new TFile(Form("%s/HF_dimuons/fit_data/results/fit_result/Result_Fit_Data_%s_MC_%s_%s_%s_%s.root", info.path_to_file.Data(), info.stat_Data.Data(), info.Generator.Data(), info.LF_HF.Data(), info.LF.Data(), info.DY.Data()), "READ");
+    cout << Form("%s/HF_dimuons/fit_data/results/fit_result/Result_Fit_Data_%s_MC_%s_%s_%s_%s.root", info.path_to_file.Data(), info.stat_Data.Data(), info.Generator.Data(), info.LF_HF.Data(), info.LF.Data(), info.DY.Data()) << endl;
     fIn->ls();
 
     TH1D *r = (TH1D *)fIn->Get(Form("dir_M_%d_%d_Pt_%d_%d_Mcut_%0.1f_%0.1f/hist_fit_result_%s_%s", info.Low_Mass, info.High_Mass, info.Low_Pt, info.High_Pt, info.LowM_cut, info.HighM_cut, info.DY.Data(), info.LF_HF.Data()));
@@ -278,7 +280,6 @@ void cross_section()
     fIn->Close();
     const Int_t n_obs = 3;
     TString NameDiMu_Sel[n_obs] = {"Charm", "Beauty", "DY"};
-    
 
     // TString NameMC_file_x_CS_calc[3] = {"/home/michele_pennisi/cernbox/HF_dimuons/mc_analysis/analysis_grid/grid_sim/powheg_charm_nocut_Version_5_AliAOD_withHF_Q/powheg_charm_nocut_Version_5_AliAOD_withHF_Q_MC_output_Hist_294154.root", "/home/michele_pennisi/cernbox/HF_dimuons/mc_analysis/analysis_grid/grid_sim/powheg_beauty_nocut_Version_5_AliAOD_withHF_Q/powheg_beauty_nocut_Version_5_AliAOD_withHF_Q_MC_output_Hist_294154.root", "~/cernbox/HF_dimuons/fit_data/ingredient_cs_powheg/DY_cs.root"};
     // TString NameMC_Hist_x_CS_calc[3] = {"HF_quarks/Powheg/h_NCharm_event_PowhegOnly", "HF_quarks/Powheg/h_NBeauty_event_PowhegOnly", "h_NDY_event"};
@@ -291,7 +292,7 @@ void cross_section()
     Double_t Powheg_CS[n_obs];
 
     // DY quantities are the same for PYTHIA or POWHEG fits
-    NameMC_file[2] = TString::Format("%s/mc_analysis_output/LHC18p_DY/Version_2_AliAOD/LHC18p_DY_MC_output_Tree_merged.root", info.path_to_file.Data());
+    NameMC_file[2] = TString::Format("%s/output_HF_dimuons/mc_analysis_output/LHC18p_DY/Version_2_AliAOD/LHC18p_DY_MC_output_Tree_merged.root", info.path_to_file.Data());
     NameMC_file_x_CS_calc[2] = TString::Format("%s/HF_dimuons/fit_data/ingredient_cs_powheg/DY_cs.root", info.path_to_file.Data());
     NameMC_Hist_x_CS_calc[2] = "h_NDY_event";
     NameMC_Hist_x_CS_calc_fwd[2] = "h_NDY_event_fwd";
@@ -309,8 +310,8 @@ void cross_section()
         NameMC_file[0].Form("%s/output_HF_dimuons/mc_analysis_output/LHC23i1/Version_5_AliAOD_skimmed_fwd_fullstat/LHC23i1_MC_output_Tree_merged.root", info.path_to_file.Data());
         NameMC_file[1].Form("%s/output_HF_dimuons/mc_analysis_output/LHC23i2/Version_5_AliAOD_skimmed_fwd_fullstat/LHC23i2_MC_output_Tree_merged.root", info.path_to_file.Data());
 
-        NameMC_file_x_CS_calc[0].Form("%s/HF_dimuons/mc_analysis/analysis_grid/grid_sim/powheg_charm_nocut_Version_5_AliAOD_withHF_Q/powheg_charm_nocut_Version_5_AliAOD_withHF_Q_MC_output_Hist_294154.root",info.path_to_file.Data());
-        NameMC_file_x_CS_calc[1].Form("%s/HF_dimuons/mc_analysis/analysis_grid/grid_sim/powheg_beauty_nocut_Version_5_AliAOD_withHF_Q/powheg_beauty_nocut_Version_5_AliAOD_withHF_Q_MC_output_Hist_294154.root",info.path_to_file.Data());
+        NameMC_file_x_CS_calc[0].Form("%s/HF_dimuons/mc_analysis/analysis_grid/grid_sim/powheg_charm_nocut_Version_5_AliAOD_withHF_Q/powheg_charm_nocut_Version_5_AliAOD_withHF_Q_MC_output_Hist_294154.root", info.path_to_file.Data());
+        NameMC_file_x_CS_calc[1].Form("%s/HF_dimuons/mc_analysis/analysis_grid/grid_sim/powheg_beauty_nocut_Version_5_AliAOD_withHF_Q/powheg_beauty_nocut_Version_5_AliAOD_withHF_Q_MC_output_Hist_294154.root", info.path_to_file.Data());
 
         NameMC_Hist_x_CS_calc[0] = "HF_quarks/Powheg/h_NCharm_event_PowhegOnly";
         NameMC_Hist_x_CS_calc[1] = "HF_quarks/Powheg/h_NBeauty_event_PowhegOnly";
@@ -326,14 +327,14 @@ void cross_section()
         fNorm_MC[0] = {216.};
         fNorm_MC[1] = {216.};
 
-        NameMC_file[0].Form("%s/output_HF_dimuons/mc_analysis_output/LHC22b3/Version_5_AliAOD_skimmed_fwd_fullstat/LHC22b3_MC_output_Tree_merged.root",info.path_to_file.Data());
-        NameMC_file[1].Form("%s/output_HF_dimuons/mc_analysis_output/LHC22b3/Version_5_AliAOD_skimmed_fwd_fullstat/LHC22b3_MC_output_Tree_merged.root",info.path_to_file.Data());
+        NameMC_file[0].Form("%s/output_HF_dimuons/mc_analysis_output/LHC22b3/Version_5_AliAOD_skimmed_fwd_fullstat/LHC22b3_MC_output_Tree_merged.root", info.path_to_file.Data());
+        NameMC_file[1].Form("%s/output_HF_dimuons/mc_analysis_output/LHC22b3/Version_5_AliAOD_skimmed_fwd_fullstat/LHC22b3_MC_output_Tree_merged.root", info.path_to_file.Data());
 
         // NameMC_file_x_CS_calc[0] = "/home/michele_pennisi/cernbox/HF_dimuons/pythia_stand/test/Hist_monash_sim_fixed_100Mev.root";
         // NameMC_file_x_CS_calc[1] = "/home/michele_pennisi/cernbox/HF_dimuons/pythia_stand/test/Hist_monash_sim_fixed_100Mev.root";
 
-        NameMC_file_x_CS_calc[0].Form("%s/HF_dimuons/mc_analysis/read_output/cs_Generator_SoftQCD_Def_pythia_sim_12345_DefaultBR_1000000.root",info.path_to_file.Data());
-        NameMC_file_x_CS_calc[1].Form("%s/HF_dimuons/mc_analysis/read_output/cs_Generator_SoftQCD_Def_pythia_sim_12345_DefaultBR_1000000.root",info.path_to_file.Data());
+        NameMC_file_x_CS_calc[0].Form("%s/HF_dimuons/mc_analysis/read_output/cs_Generator_SoftQCD_Def_pythia_sim_12345_DefaultBR_1000000.root", info.path_to_file.Data());
+        NameMC_file_x_CS_calc[1].Form("%s/HF_dimuons/mc_analysis/read_output/cs_Generator_SoftQCD_Def_pythia_sim_12345_DefaultBR_1000000.root", info.path_to_file.Data());
 
         // NameMC_file_x_CS_calc[0] = "/home/michele_pennisi/cernbox/HF_dimuons/pythia_stand/new_pythia_sim/SoftQCD_inel_LFoff_Def_pythia_sim_74_DefaultBR_output_Hist_100000.root";
         // NameMC_file_x_CS_calc[1] = "/home/michele_pennisi/cernbox/HF_dimuons/pythia_stand/new_pythia_sim/SoftQCD_inel_LFoff_Def_pythia_sim_74_DefaultBR_output_Hist_100000.root";
@@ -364,7 +365,7 @@ void cross_section()
     output_fit.Form("Pt Range : [%d,%d] \n", info.Low_Pt, info.High_Pt);
     out << output_fit.Data();
 
-    for (Int_t i = 0; i < n_obs-1; i++)
+    for (Int_t i = 0; i < n_obs; i++)
     {
         cout << "Result for " << NameDiMu_Sel[i].Data() << endl;
         cout << "===== MonteCarlo =====" << endl;
@@ -447,7 +448,7 @@ void cross_section()
         if (info.Generator.Contains("POWHEG"))
             CS = ((Powheg_CS[i] * N_Pair_fwd / N_Pair) / (2 * 1.5));
         else
-            CS = ((Powheg_CS[i] * N_Pair_fwd / 1e+6) / (1.5));
+            CS = ((Powheg_CS[i] * N_Pair_fwd / 1e+6) / (1.5)); // PYTHIA sim equals to 1e+6 events
 
         Double_t Ratio = NDimu_MC_Data / NDimu_MC_MB;
         printf("N_Pair_fwd %0.1f\n", N_Pair_fwd);
@@ -467,7 +468,7 @@ void cross_section()
         {
             cout << "===== MPI corr =====" << endl;
             out << "===== MPI corr =====" << endl;
-            TFile *fIn_Pythia = new TFile(Form("%s/HF_dimuons/mc_analysis/read_output/cs_Generator_SoftQCD_Def_pythia_sim_12345_DefaultBR_1000000.root",info.path_to_file.Data()), "READ");
+            TFile *fIn_Pythia = new TFile(Form("%s/HF_dimuons/mc_analysis/read_output/cs_Generator_SoftQCD_Def_pythia_sim_12345_DefaultBR_1000000.root", info.path_to_file.Data()), "READ");
             Double_t n_HF_total_PYTHIA = 0.0;
             for (Int_t i_bin = 1; i_bin <= ((TH1F *)fIn_Pythia->Get(Form("h_N%s_event", NameDiMu_Sel[i].Data())))->GetNbinsX(); i_bin++)
             {
@@ -570,6 +571,312 @@ void syst_plot()
     //     cout << info.Name_DimuSel[i_Dimu].Data() << ": " << fit_Low2Up[i_Dimu] << endl;
     //     cout << info.Name_DimuSel[i_Dimu].Data() << ": " << fit_Up2Low[i_Dimu] << endl;
     // }
+}
+
+void MPI_question(TString HF = "Beauty")
+{
+    opt info;
+    Int_t N_bins_Pt_hist = 999;
+    Int_t N_bins_Mass_hist = 999;
+
+    if (info.Low_Mass == 4 && info.High_Mass == 30)
+    {
+        N_bins_Pt_hist = 60;
+        N_bins_Mass_hist = 52;
+    }
+    else
+    {
+        N_bins_Pt_hist = 60;
+        N_bins_Mass_hist = 30;
+    }
+
+    TFile *fIn_LHC23i1_Tree = new TFile(Form("%s/output_HF_dimuons/mc_analysis_output/LHC23i1/Version_5_AliAOD_skimmed_fwd_fullstat/LHC23i1_MC_output_Tree_merged.root", info.path_to_file.Data()), "READ");
+    TTree *fTree_POWHEGOnly = (TTree *)fIn_LHC23i1_Tree->Get(Form("DiMuon_Rec_PowhegOnly_%s", HF.Data()));
+    TH1F *Hist_Pt_POWHEGOnly = new TH1F(Form("Hist_Pt_%s_POWHEGOnly", HF.Data()), Form("Hist_Pt_%s_POWHEGOnly; #it{p}_{T} (GeV/#it{c});", HF.Data()), N_bins_Pt_hist, info.Low_Pt, info.High_Pt);
+
+    TTree *fTree_PYTHIAOnly = (TTree *)fIn_LHC23i1_Tree->Get(Form("DiMuon_Rec_PythiaOnly_%s", HF.Data()));
+    TH1F *Hist_Pt_PYTHIAOnly = new TH1F(Form("Hist_Pt_%s_PYTHIAOnly", HF.Data()), Form("Hist_Pt_%s_PYTHIAOnly; #it{p}_{T} (GeV/#it{c});", HF.Data()), N_bins_Pt_hist, info.Low_Pt, info.High_Pt);
+
+    TTree *fTree_All = (TTree *)fIn_LHC23i1_Tree->Get(Form("DiMuon_Rec_%s", HF.Data()));
+    TH1F *Hist_Pt_All = new TH1F(Form("Hist_Pt_%s_All", HF.Data()), Form("Hist_Pt_%s_All; #it{p}_{T} (GeV/#it{c});", HF.Data()), N_bins_Pt_hist, info.Low_Pt, info.High_Pt);
+
+    fTree_POWHEGOnly->Draw(Form("pt>>Hist_Pt_%s_POWHEGOnly", HF.Data()), Form("((m>%d && m<%0.1f) || (m>%0.1f && m<%d) ) && (pt > %d && pt <%d)", info.Low_Mass, info.LowM_cut, info.HighM_cut, info.High_Mass, info.Low_Pt, info.High_Pt), "goff");
+    fTree_PYTHIAOnly->Draw(Form("pt>>Hist_Pt_%s_PYTHIAOnly", HF.Data()), Form("((m>%d && m<%0.1f) || (m>%0.1f && m<%d) ) && (pt > %d && pt <%d)", info.Low_Mass, info.LowM_cut, info.HighM_cut, info.High_Mass, info.Low_Pt, info.High_Pt), "goff");
+    fTree_All->Draw(Form("pt>>Hist_Pt_%s_All", HF.Data()), Form("((m>%d && m<%0.1f) || (m>%0.1f && m<%d) ) && (pt > %d && pt <%d)", info.Low_Mass, info.LowM_cut, info.HighM_cut, info.High_Mass, info.Low_Pt, info.High_Pt), "goff");
+
+    hist1D_graphic_opt(Hist_Pt_POWHEGOnly, kTRUE, 1, 20, kMagenta + 2, 1. / Hist_Pt_POWHEGOnly->GetEntries());
+    hist1D_graphic_opt(Hist_Pt_PYTHIAOnly, kTRUE, 1, 20, kRed + 2, 1. / Hist_Pt_PYTHIAOnly->GetEntries());
+    hist1D_graphic_opt(Hist_Pt_All, kTRUE, 1, 20, kAzure + 2, 1. / Hist_Pt_All->GetEntries());
+
+    // hist1D_graphic_opt(Hist_Pt_POWHEGOnly, kTRUE, 1, 20, kMagenta + 2, 1.);
+    // hist1D_graphic_opt(Hist_Pt_PYTHIAOnly, kTRUE, 1, 20, kRed + 2, 1.);
+    // hist1D_graphic_opt(Hist_Pt_All, kTRUE, 1, 20, kAzure + 2, 1.);
+
+    Hist_Pt_POWHEGOnly->Draw("PESAME");
+    Hist_Pt_PYTHIAOnly->Draw("PESAME");
+    Hist_Pt_All->Draw("PESAME");
+
+    gPad->BuildLegend();
+}
+
+void HF_mixing_POWHEG()
+{
+
+    TVirtualFitter::SetDefaultFitter("Minuit2");
+    opt info;
+    Int_t N_bins_Pt_hist = 999;
+    Int_t N_bins_Mass_hist = 999;
+
+    if (info.Low_Mass == 4 && info.High_Mass == 30)
+    {
+        N_bins_Pt_hist = 60;
+        N_bins_Mass_hist = 52;
+    }
+    else
+    {
+        N_bins_Pt_hist = 60;
+        N_bins_Mass_hist = 30;
+    }
+
+    TFile *fIn_LHC23i1_Tree = new TFile(Form("%s/output_HF_dimuons/mc_analysis_output/LHC23i1/Version_5_AliAOD_skimmed_fwd_fullstat/LHC23i1_MC_output_Tree_merged.root", info.path_to_file.Data()), "READ");
+
+    TTree *fTree_LHC23i1 = (TTree *)fIn_LHC23i1_Tree->Get("DiMuon_Rec_PowhegOnly_HF_Mixed");
+    TH1F *Hist_Pt_HF_LHC23i1 = new TH1F("Hist_Pt_HF_LHC23i1", "Hist_Pt_HF_LHC23i1; #it{p}_{T} (GeV/#it{c});", N_bins_Pt_hist, info.Low_Pt, info.High_Pt);
+    TH1F *Hist_Mass_HF_LHC23i1 = new TH1F("Hist_Mass_HF_LHC23i1", "Hist_Mass_HF_LHC23i1 ;#it{m}_{#mu#mu} (GeV/#it{c}^{2});", N_bins_Mass_hist, info.Low_Mass, info.High_Mass);
+
+    if (info.Low_Mass == 4 && info.High_Mass == 30)
+    {
+        fTree_LHC23i1->Draw("pt>>Hist_Pt_HF_LHC23i1", Form("((m>%d && m<%0.1f) || (m>%0.1f && m<%d) ) && (pt > %d && pt <%d)", info.Low_Mass, info.LowM_cut, info.HighM_cut, info.High_Mass, info.Low_Pt, info.High_Pt), "goff");
+        fTree_LHC23i1->Draw("m>>Hist_Mass_HF_LHC23i1", Form("((m>%d && m<%0.1f) || (m>%0.1f && m<%d) ) && (pt > %d && pt <%d)", info.Low_Mass, info.LowM_cut, info.HighM_cut, info.High_Mass, info.Low_Pt, info.High_Pt), "goff");
+    }
+    else
+    {
+        fTree_LHC23i1->Draw("pt>>Hist_Pt_HF_LHC23i1", Form("((m>%d && m<%d)) && (pt > %d && pt <%d)", info.Low_Mass, info.High_Mass, info.Low_Pt, info.High_Pt), "goff");
+        fTree_LHC23i1->Draw("m>>Hist_Mass_HF_LHC23i1", Form("((m>%d && m<%d)) && (pt > %d && pt <%d)", info.Low_Mass, info.High_Mass, info.Low_Pt, info.High_Pt), "goff");
+    }
+
+    Hist_Pt_HF_LHC23i1->Draw();
+
+    TF1 *Pt_HF_LHC23i1_BINNED = new TF1("Pt_HF_LHC23i1_BINNED", FuncPt, info.Low_Pt, info.High_Pt, 4);
+    Pt_HF_LHC23i1_BINNED->SetParameter(0, 1.9703e+01);
+    Pt_HF_LHC23i1_BINNED->SetParameter(1, 1.4663e+00);
+    Pt_HF_LHC23i1_BINNED->SetParameter(2, 1.6398e+01);
+    Pt_HF_LHC23i1_BINNED->SetParameter(3, 2e+2);
+
+    Hist_Pt_HF_LHC23i1->Fit(Pt_HF_LHC23i1_BINNED, "LR0I");
+    TCanvas *c_PT_test_LHC23i1 = new TCanvas("c_PT_test_LHC23i1", "c_PT_test_LHC23i1", 1200, 1200);
+    TH1F *Error_PT_LHC23i1 = (TH1F *)Hist_Pt_HF_LHC23i1->Clone("Error_PT_LHC23i1");
+    Error_PT_LHC23i1->SetTitle("Error_PT_LHC23i1");
+    (TVirtualFitter::GetFitter())->GetConfidenceIntervals(Error_PT_LHC23i1, 0.95);
+    Error_PT_LHC23i1->SetFillColor(kRed - 10);
+    Error_PT_LHC23i1->Draw("e3");
+    Hist_Pt_HF_LHC23i1->Draw("PEsame");
+    Pt_HF_LHC23i1_BINNED->Draw("same");
+
+    gPad->BuildLegend();
+
+    TF1 *Mass_HF_LHC23i1_BINNED = new TF1("Mass_HF_LHC23i1_BINNED", FuncMass, info.Low_Mass, info.High_Mass, 4);
+    Mass_HF_LHC23i1_BINNED->SetParameter(0, 1.9703e+01);
+    Mass_HF_LHC23i1_BINNED->SetParameter(1, 1.4663e+00);
+    Mass_HF_LHC23i1_BINNED->SetParameter(2, 1.6398e+01);
+    Mass_HF_LHC23i1_BINNED->SetParLimits(3, 0, 5e+6);
+
+    Hist_Mass_HF_LHC23i1->Fit(Mass_HF_LHC23i1_BINNED, "LR0I");
+    TCanvas *c_Mass_test_LHC23i1 = new TCanvas("c_Mass_test_LHC23i1", "c_Mass_test_LHC23i1", 1200, 1200);
+    TH1F *Error_Mass_LHC23i1 = (TH1F *)Hist_Mass_HF_LHC23i1->Clone("Error_Mass_LHC23i1");
+    Error_Mass_LHC23i1->SetTitle("Error_Mass_LHC23i1");
+    (TVirtualFitter::GetFitter())->GetConfidenceIntervals(Error_Mass_LHC23i1, 0.95);
+    Error_Mass_LHC23i1->SetFillColor(kRed - 10);
+    Error_Mass_LHC23i1->Draw("e3");
+    Hist_Mass_HF_LHC23i1->Draw("PEsame");
+    Mass_HF_LHC23i1_BINNED->Draw("same");
+
+    gPad->BuildLegend();
+
+    // LHC23i2
+
+    TFile *fIn_LHC23i2_Tree = new TFile(Form("%s/output_HF_dimuons/mc_analysis_output/LHC23i2/Version_5_AliAOD_skimmed_fwd_fullstat/LHC23i2_MC_output_Tree_merged.root", info.path_to_file.Data()), "READ");
+
+    TTree *fTree_LHC23i2 = (TTree *)fIn_LHC23i2_Tree->Get("DiMuon_Rec_PowhegOnly_HF_Mixed");
+    TH1F *Hist_Pt_HF_LHC23i2 = new TH1F("Hist_Pt_HF_LHC23i2", "Hist_Pt_HF_LHC23i2; #it{p}_{T} (GeV/#it{c});", N_bins_Pt_hist, info.Low_Pt, info.High_Pt);
+    TH1F *Hist_Mass_HF_LHC23i2 = new TH1F("Hist_Mass_HF_LHC23i2", "Hist_Mass_HF_LHC23i2 ;#it{m}_{#mu#mu} (GeV/#it{c}^{2});", N_bins_Mass_hist, info.Low_Mass, info.High_Mass);
+
+    if (info.Low_Mass == 4 && info.High_Mass == 30)
+    {
+        fTree_LHC23i2->Draw("pt>>Hist_Pt_HF_LHC23i2", Form("((m>%d && m<%0.1f) || (m>%0.1f && m<%d) ) && (pt > %d && pt <%d)", info.Low_Mass, info.LowM_cut, info.HighM_cut, info.High_Mass, info.Low_Pt, info.High_Pt), "goff");
+        fTree_LHC23i2->Draw("m>>Hist_Mass_HF_LHC23i2", Form("((m>%d && m<%0.1f) || (m>%0.1f && m<%d) ) && (pt > %d && pt <%d)", info.Low_Mass, info.LowM_cut, info.HighM_cut, info.High_Mass, info.Low_Pt, info.High_Pt), "goff");
+    }
+    else
+    {
+        fTree_LHC23i2->Draw("pt>>Hist_Pt_HF_LHC23i2", Form("((m>%d && m<%d)) && (pt > %d && pt <%d)", info.Low_Mass, info.High_Mass, info.Low_Pt, info.High_Pt), "goff");
+        fTree_LHC23i2->Draw("m>>Hist_Mass_HF_LHC23i2", Form("((m>%d && m<%d)) && (pt > %d && pt <%d)", info.Low_Mass, info.High_Mass, info.Low_Pt, info.High_Pt), "goff");
+    }
+
+    Hist_Pt_HF_LHC23i2->Draw();
+
+    TF1 *Pt_HF_LHC23i2_BINNED = new TF1("Pt_HF_LHC23i2_BINNED", FuncPt, info.Low_Pt, info.High_Pt, 4);
+    Pt_HF_LHC23i2_BINNED->SetParameter(0, 1.9703e+01);
+    Pt_HF_LHC23i2_BINNED->SetParameter(1, 1.4663e+00);
+    Pt_HF_LHC23i2_BINNED->SetParameter(2, 1.6398e+01);
+    Pt_HF_LHC23i2_BINNED->SetParameter(3, 2e+2);
+
+    Hist_Pt_HF_LHC23i2->Fit(Pt_HF_LHC23i2_BINNED, "LR0I");
+    TCanvas *c_PT_test_LHC23i2 = new TCanvas("c_PT_test_LHC23i2", "c_PT_test_LHC23i2", 1200, 1200);
+    TH1F *Error_PT_LHC23i2 = (TH1F *)Hist_Pt_HF_LHC23i2->Clone("Error_PT_LHC23i2");
+    Error_PT_LHC23i2->SetTitle("Error_PT_LHC23i2");
+    (TVirtualFitter::GetFitter())->GetConfidenceIntervals(Error_PT_LHC23i2, 0.95);
+    Error_PT_LHC23i2->SetFillColor(kRed - 10);
+    Error_PT_LHC23i2->Draw("e3");
+    Hist_Pt_HF_LHC23i2->Draw("PEsame");
+    Pt_HF_LHC23i2_BINNED->Draw("same");
+
+    gPad->BuildLegend();
+
+    TF1 *Mass_HF_LHC23i2_BINNED = new TF1("Mass_HF_LHC23i2_BINNED", FuncMass, info.Low_Mass, info.High_Mass, 4);
+    Mass_HF_LHC23i2_BINNED->SetParameter(0, 1.9703e+01);
+    Mass_HF_LHC23i2_BINNED->SetParameter(1, 1.4663e+00);
+    Mass_HF_LHC23i2_BINNED->SetParameter(2, 1.6398e+01);
+    Mass_HF_LHC23i2_BINNED->SetParLimits(3, 0, 5e+7);
+
+    Hist_Mass_HF_LHC23i2->Fit(Mass_HF_LHC23i2_BINNED, "LR0I");
+    TCanvas *c_Mass_test_LHC23i2 = new TCanvas("c_Mass_test_LHC23i2", "c_Mass_test_LHC23i2", 1200, 1200);
+    TH1F *Error_Mass_LHC23i2 = (TH1F *)Hist_Mass_HF_LHC23i2->Clone("Error_Mass_LHC23i2");
+    Error_Mass_LHC23i2->SetTitle("Error_Mass_LHC23i2");
+    (TVirtualFitter::GetFitter())->GetConfidenceIntervals(Error_Mass_LHC23i2, 0.95);
+    Error_Mass_LHC23i2->SetFillColor(kRed - 10);
+    Error_Mass_LHC23i2->Draw("e3");
+    Hist_Mass_HF_LHC23i2->Draw("PEsame");
+    Mass_HF_LHC23i2_BINNED->Draw("same");
+
+    gPad->BuildLegend();
+
+    Int_t N_bins_Pt_shape = 999;
+    Int_t N_bins_Mass_shape = 999;
+
+    if (info.Low_Mass == 4 && info.High_Mass == 30)
+    {
+        N_bins_Pt_shape = 150;
+        N_bins_Mass_shape = 104;
+    }
+    else
+    {
+        N_bins_Pt_shape = 100;
+        N_bins_Mass_shape = 50;
+    }
+
+    TH1F *Shape_Pt_HF_LHC23i1 = new TH1F("Shape_Pt_HF_LHC23i1", "Shape_Pt_HF_LHC23i1", N_bins_Pt_shape, info.Low_Pt, info.High_Pt);
+    TH1F *Shape_Pt_HF_LHC23i2 = new TH1F("Shape_Pt_HF_LHC23i2", "Shape_Pt_HF_LHC23i2", N_bins_Pt_shape, info.Low_Pt, info.High_Pt);
+    TH1F *Shape_Pt_HF_mid = new TH1F("Shape_Pt_HF_mid", "Shape_Pt_HF_mid", N_bins_Pt_shape, info.Low_Pt, info.High_Pt);
+
+    TH1F *Shape_Mass_HF_LHC23i1 = new TH1F("Shape_Mass_HF_LHC23i1", "Shape_Mass_HF_LHC23i1", N_bins_Mass_shape, info.Low_Mass, info.High_Mass);
+    TH1F *Shape_Mass_HF_LHC23i2 = new TH1F("Shape_Mass_HF_LHC23i2", "Shape_Mass_HF_LHC23i2", N_bins_Mass_shape, info.Low_Mass, info.High_Mass);
+    TH1F *Shape_Mass_HF_mid = new TH1F("Shape_Mass_HF_mid", "Shape_Mass_HF_mid", N_bins_Mass_shape, info.Low_Mass, info.High_Mass);
+
+    for (Int_t i_pt_bin = 0; i_pt_bin < Shape_Pt_HF_LHC23i1->GetNbinsX(); i_pt_bin++)
+    {
+        Shape_Pt_HF_LHC23i1->SetBinContent(i_pt_bin + 1, Pt_HF_LHC23i1_BINNED->Eval(Shape_Pt_HF_LHC23i1->GetBinCenter(i_pt_bin + 1)));
+        Shape_Pt_HF_LHC23i1->SetBinError(i_pt_bin + 1, Error_PT_LHC23i1->GetBinError(i_pt_bin + 1));
+        Shape_Pt_HF_LHC23i2->SetBinContent(i_pt_bin + 1, Pt_HF_LHC23i2_BINNED->Eval(Shape_Pt_HF_LHC23i2->GetBinCenter(i_pt_bin + 1)));
+        Shape_Pt_HF_LHC23i2->SetBinError(i_pt_bin + 1, Error_PT_LHC23i2->GetBinError(i_pt_bin + 1));
+    }
+    Shape_Pt_HF_LHC23i1->Scale(1. / Shape_Pt_HF_LHC23i1->Integral(), "width");
+    Shape_Pt_HF_LHC23i2->Scale(1. / Shape_Pt_HF_LHC23i2->Integral(), "width");
+
+    for (Int_t i_pt_bin = 0; i_pt_bin < Shape_Pt_HF_LHC23i1->GetNbinsX(); i_pt_bin++)
+    {
+        Shape_Pt_HF_mid->SetBinContent(i_pt_bin + 1, (Shape_Pt_HF_LHC23i1->GetBinContent(i_pt_bin + 1) + Shape_Pt_HF_LHC23i2->GetBinContent(i_pt_bin + 1)) / 2);
+        Shape_Pt_HF_mid->SetBinError(i_pt_bin + 1, TMath::Sqrt(0.5 * TMath::Power(Shape_Pt_HF_LHC23i1->GetBinError(i_pt_bin + 1), 2) + 0.5 * TMath::Power(Shape_Pt_HF_LHC23i2->GetBinError(i_pt_bin + 1), 2)));
+        // cout << "error LHC23i1: " << Shape_Pt_HF_LHC23i1->GetBinError(i_pt_bin + 1) << endl;
+        // cout << "error LHC23i2: " << Shape_Pt_HF_LHC23i2->GetBinError(i_pt_bin + 1) << endl;
+
+        // cout << "error mid: " << Shape_Pt_HF_mid->GetBinError(i_pt_bin + 1) << endl;
+    }
+
+    for (Int_t i_mass_bin = 0; i_mass_bin < Shape_Mass_HF_LHC23i1->GetNbinsX(); i_mass_bin++)
+    {
+        Shape_Mass_HF_LHC23i1->SetBinContent(i_mass_bin + 1, Mass_HF_LHC23i1_BINNED->Eval(Shape_Mass_HF_LHC23i1->GetBinCenter(i_mass_bin + 1)));
+        Shape_Mass_HF_LHC23i1->SetBinError(i_mass_bin + 1, Error_Mass_LHC23i1->GetBinError(i_mass_bin + 1));
+        Shape_Mass_HF_LHC23i2->SetBinContent(i_mass_bin + 1, Mass_HF_LHC23i2_BINNED->Eval(Shape_Mass_HF_LHC23i2->GetBinCenter(i_mass_bin + 1)));
+        Shape_Mass_HF_LHC23i2->SetBinError(i_mass_bin + 1, Error_Mass_LHC23i2->GetBinError(i_mass_bin + 1));
+    }
+
+    Shape_Mass_HF_LHC23i1->Scale(1. / Shape_Mass_HF_LHC23i1->Integral(), "width");
+    Shape_Mass_HF_LHC23i2->Scale(1. / Shape_Mass_HF_LHC23i2->Integral(), "width");
+
+    for (Int_t i_mass_bin = 0; i_mass_bin < Shape_Mass_HF_LHC23i1->GetNbinsX(); i_mass_bin++)
+    {
+        Shape_Mass_HF_mid->SetBinContent(i_mass_bin + 1, (Shape_Mass_HF_LHC23i1->GetBinContent(i_mass_bin + 1) + Shape_Mass_HF_LHC23i2->GetBinContent(i_mass_bin + 1)) / 2);
+        Shape_Mass_HF_mid->SetBinError(i_mass_bin + 1, TMath::Sqrt(0.5 * TMath::Power(Shape_Mass_HF_LHC23i1->GetBinError(i_mass_bin + 1), 2) + 0.5 * TMath::Power(Shape_Mass_HF_LHC23i2->GetBinError(i_mass_bin + 1), 2)));
+        // cout << "error LHC23i1: " << Shape_Mass_LF_HF_LHC23i1->GetBinError(i_mass_bin + 1) << endl;
+        // cout << "error LHC23i2: " << Shape_Mass_LF_HF_LHC23i2->GetBinError(i_mass_bin + 1) << endl;
+        // cout << "error mid: " << Shape_Mass_LF_HF_mid->GetBinError(i_mass_bin + 1) << endl;
+    }
+    gStyle->SetOptTitle(0);
+    gStyle->SetOptStat(0);
+
+    gStyle->SetOptTitle(0);
+    gStyle->SetOptStat(0);
+    TCanvas *c_pt = canvas_noratio("c_pt");
+    gPad->SetLogy();
+    // Shape_Pt_LF_HF_mid->Scale(1. / Shape_Pt_LF_HF_mid->Integral(), "width");
+    Shape_Pt_HF_LHC23i1->SetTitle("from LHC23i1");
+    Shape_Pt_HF_LHC23i2->SetTitle("from LHC23i2");
+    Shape_Pt_HF_mid->SetTitle("Mixing");
+    Shape_Pt_HF_LHC23i1->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
+    Shape_Pt_HF_LHC23i1->GetYaxis()->SetTitle("d#it{N}/d#it{p}_{T} (GeV/#it{c})^{-1}");
+    hist1D_graphic_opt(Shape_Pt_HF_LHC23i1, kFALSE, 1, 24, kMagenta + 2, 1.);
+    hist1D_graphic_opt(Shape_Pt_HF_LHC23i2, kFALSE, 1, 24, kGreen + 2, 1.);
+    hist1D_graphic_opt(Shape_Pt_HF_mid, kFALSE, 1, 20, kRed - 2, 1.);
+    gPad->BuildLegend();
+
+    Shape_Pt_HF_LHC23i1->Draw("PE");
+    Shape_Pt_HF_LHC23i2->Draw("PE SAME");
+    Shape_Pt_HF_mid->DrawCopy("PE SAME");
+    gPad->BuildLegend();
+
+    // c_pt->SaveAs(Form("results/LF_HF_bkg/images/LF_HF_Pt_shapes_M_%d_%d_Pt_%d_%d.pdf", info.Low_Mass, info.High_Mass, info.Low_Pt, info.High_Pt));
+    TCanvas *c_pt_for_pres = canvas_noratio("c_pt_for_pres");
+    gPad->SetLogy();
+    Shape_Pt_HF_LHC23i1->DrawCopy("PE");
+    Shape_Pt_HF_LHC23i2->DrawCopy("PE SAME");
+    gPad->BuildLegend();
+    // c_pt_for_pres->SaveAs(Form("results/LF_HF_bkg/images/LF_HF_Pt_shapes_forPres_M_%d_%d_Pt_%d_%d.pdf", info.Low_Mass, info.High_Mass, info.Low_Pt, info.High_Pt));
+    hist1D_graphic_opt(Shape_Pt_HF_mid, kFALSE, 1, 24, kRed - 2, 1.);
+    TF1 *Pt_HF_MID = new TF1("Pt_HF_MID", FuncPt, info.Low_Pt, info.High_Pt, 4);
+    Pt_HF_MID->SetParameter(0, Pt_HF_LHC23i2_BINNED->GetParameter(0));
+    Pt_HF_MID->SetParameter(1, Pt_HF_LHC23i2_BINNED->GetParameter(1));
+    Pt_HF_MID->SetParameter(2, Pt_HF_LHC23i2_BINNED->GetParameter(2));
+    if (info.Low_Mass == 4 && info.High_Mass == 30)
+        Pt_HF_MID->SetParLimits(3, -10000, 10000);
+    else if (info.Low_Mass == 4 && info.High_Mass == 9)
+        Pt_HF_MID->SetParameter(3, 1500);
+
+    Shape_Pt_HF_mid->Fit(Pt_HF_MID, "R0");
+
+    // TCanvas *c_PT_mid = canvas_ratio("c_PT_mid");
+    // c_PT_mid->cd(1);
+    // Shape_Pt_HF_mid->Draw();
+    // Pt_HF_MID->Draw("same");
+
+    // TH1F *Shape_Pt_HF_mid_ratio = (TH1F *)Shape_Pt_HF_mid->Clone("ddjs");
+    // Shape_Pt_HF_mid_ratio->Divide(Pt_HF_MID);
+    // c_PT_mid->cd(2);
+    // Shape_Pt_HF_mid_ratio->Draw();
+    Shape_Pt_HF_mid->GetYaxis()->SetRangeUser(Shape_Pt_HF_mid->GetMinimum() * 0.2, Shape_Pt_HF_mid->GetMaximum() * 2e+2);
+    TString Title = TString::Format("%d < #it{m}_{#mu#mu} < %d (GeV/#it{c}^{2}), PYTHIA only", info.Low_Mass, info.High_Mass);
+    TCanvas *c_PT_mid = printMC_ratio_BINNED("c_PT_mid", Title, Shape_Pt_HF_mid, Pt_HF_MID, kBlack);
+    // c_PT_mid->SaveAs(Form("results/LF_HF_bkg/images/LF_HF_Pt_extr_M_%d_%d_Pt_%d_%d.pdf", info.Low_Mass, info.High_Mass, info.Low_Pt, info.High_Pt));
+
+    TCanvas *c_Pt_diff = canvas_noratio("c_Pt_diff");
+    c_Pt_diff->cd();
+    TH1F *Pt_Diff1 = (TH1F *)Shape_Pt_HF_LHC23i2->Clone("Pt_Diff1");
+    Pt_Diff1->Add(Shape_Pt_HF_mid, -1);
+    TH1F *Pt_Diff2 = (TH1F *)Shape_Pt_HF_LHC23i1->Clone("Pt_Diff2");
+    Pt_Diff2->Add(Shape_Pt_HF_mid, -1);
+    Pt_Diff1->GetYaxis()->SetRangeUser(-0.04, 0.04);
+    Pt_Diff1->Draw("P hist ");
+    Pt_Diff2->Draw("P hist same");
+    // c_Pt_diff->SaveAs(Form("results/LF_HF_bkg/images/LF_HF_Pt_test_diff_M_%d_%d_Pt_%d_%d.pdf", info.Low_Mass, info.High_Mass, info.Low_Pt, info.High_Pt));
 }
 
 void Mixing_background()
@@ -1321,10 +1628,10 @@ void unbinned_fit_data_sample_singleregion()
     }
 
     RooRealVar *normForC = new RooRealVar(Form("n_%s_output", info.Name_DimuSel[0].Data()), "number dimuon from c", 980000, 0, 2000000);
-    RooRealVar *normForB = new RooRealVar(Form("n_%s_output", info.Name_DimuSel[1].Data()), "number dimuon from b", 20000, 10000, 40000);
-    RooRealVar *normForMixed = new RooRealVar(Form("n_%s_output", info.Name_DimuSel[2].Data()), "number dimuon from b,c", (info.HF_Mixed_fraction / 100) * tree_data_cutted->GetEntries());
+    RooRealVar *normForB = new RooRealVar(Form("n_%s_output", info.Name_DimuSel[1].Data()), "number dimuon from b", 20000, 0, 2000000);
+    RooRealVar *normForMixed = new RooRealVar(Form("n_%s_output", info.Name_DimuSel[3].Data()), "number dimuon from b,c", (info.HF_Mixed_fraction / 100) * tree_data_cutted->GetEntries());
     normForMixed->setConstant(kTRUE);
-    RooRealVar *normForDY = new RooRealVar(Form("n_%s_output", info.Name_DimuSel[3].Data()), "number dimuon from DY", 380000, 0, 2000000);
+    RooRealVar *normForDY = new RooRealVar(Form("n_%s_output", info.Name_DimuSel[2].Data()), "number dimuon from DY", 380000, 0, 2000000);
     // RooRealVar *normForLF_HF_Mixed = new RooRealVar("n_LF_HF_mixed_output", "number dimuon from LF-HF mixed", 380000, 0, 2000000);
     RooRealVar *normForLF_HF_Mixed = new RooRealVar(Form("n_%s_output", info.Name_DimuSel[4].Data()), "number dimuon from LF-HF mixed", (info.LF_HF_Mixed_fraction / 100) * tree_data_cutted->GetEntries());
     normForLF_HF_Mixed->setConstant(kTRUE);
@@ -1358,8 +1665,10 @@ void unbinned_fit_data_sample_singleregion()
     }
     else if (info.DY.Contains("withDY") && info.LF_HF.Contains("withLF_HF"))
     {
-        m_model = new RooAddPdf("m_model", "n_charm_output*dimuMassFromC + n_beauty_output*dimuMassFromB + n_mixed_output*dimuMassFromMixed + n_DY_output*dimuMassFromDY + n_LF_HF_mixed_output*dimuMassFromDY", RooArgList(*pdfDimuMass[0], *pdfDimuMass[1], *pdfDimuMass[3], *pdfDimuMass[2], *pdfDimuMass[4], *pdfDimuMass[5]), RooArgList(*normForC, *normForB, *normForMixed, *normForDY, *normForLF_HF_Mixed, *normForLF));
-        pt_model = new RooAddPdf("pt_model", "n_charm_output*dimuPtFromC + n_beauty_output*dimuPtFromB + n_mixed_output*dimuPtFromMixed + n_DY_output*dimuPtFromDY + n_LF_HF_mixed_output*dimuPtFromDY", RooArgList(*pdfDimuPt[0], *pdfDimuPt[1], *pdfDimuPt[3], *pdfDimuPt[2], *pdfDimuPt[4], *pdfDimuPt[5]), RooArgList(*normForC, *normForB, *normForMixed, *normForDY, *normForLF_HF_Mixed, *normForLF));
+
+        // TString Name_DimuSel[n_DiMuSelection] = {"Charm", "Beauty", "DY", "HF_Mixed", "LF_HF_Mixed", "LF"};
+        m_model = new RooAddPdf("m_model", "n_charm_output*dimuMassFromC + n_beauty_output*dimuMassFromB + n_mixed_output*dimuMassFromMixed + n_DY_output*dimuMassFromDY + n_LF_HF_mixed_output*dimuMassFromDY", RooArgList(*pdfDimuMass[0], *pdfDimuMass[1], *pdfDimuMass[2], *pdfDimuMass[3], *pdfDimuMass[4], *pdfDimuMass[5]), RooArgList(*normForC, *normForB, *normForDY, *normForMixed, *normForLF_HF_Mixed, *normForLF));
+        pt_model = new RooAddPdf("pt_model", "n_charm_output*dimuPtFromC + n_beauty_output*dimuPtFromB + n_mixed_output*dimuPtFromMixed + n_DY_output*dimuPtFromDY + n_LF_HF_mixed_output*dimuPtFromDY", RooArgList(*pdfDimuPt[0], *pdfDimuPt[1], *pdfDimuPt[2], *pdfDimuPt[3], *pdfDimuPt[4], *pdfDimuPt[5]), RooArgList(*normForC, *normForB, *normForDY, *normForMixed, *normForLF_HF_Mixed, *normForLF));
     }
 
     RooSimultaneous simPdf("simPdf", "simultaneous pdf", sample);
@@ -1373,6 +1682,19 @@ void unbinned_fit_data_sample_singleregion()
         RooFitter = simPdf.fitTo(*unbinned_combData_set, Minimizer("Minuit2"), Save(), SumW2Error(true));
 
     TH1D *Fit_Result = new TH1D(Form("hist_fit_result_%s_%s", info.DY.Data(), info.LF_HF.Data()), "; coeff x Pt fit", n_DiMuSelection, 0, n_DiMuSelection);
+    cout << info.LF_HF.Data() << endl;
+    RooFitter->floatParsFinal().Print("s");
+    // auto integral_4_30 = pdfDimuMass[2]->createIntegral(*m, RooFit::NormSet(*m), RooFit::Range("low,high"));
+    // cout << "integral_4_30->getVal(): " << integral_4_30->getVal() << endl;
+    // m->setRange("stupid_range", 15, 30);
+    // auto integral = pdfDimuMass[2]->createIntegral(*m, RooFit::NormSet(*m), RooFit::Range("stupid_range"));
+    // cout << "integral->getVal(): " << integral->getVal() << endl;
+    // cout << "normForC->getVal(): " << normForC->getVal();
+    // cout << "normForB->getVal(): " << normForB->getVal();
+    // cout << "normForDY->getVal(): " << normForDY->getVal();
+    // cout << "normForMixed->getVal(): " << normForMixed->getVal();
+    // cout << "normForLF_HF_Mixed->getVal(): " << normForLF_HF_Mixed->getVal();
+    // cout << "normForLF->getVal(): " << normForLF->getVal();
 
     Fit_Result->SetBinContent(1, normForC->getVal());
     Fit_Result->SetBinContent(2, normForB->getVal());
@@ -1431,6 +1753,7 @@ void unbinned_fit_data_sample_singleregion()
     {
         if (info.Low_Mass == 4 && info.High_Mass == 30)
         {
+            // TString Name_DimuSel[n_DiMuSelection] = {"Charm", "Beauty", "DY", "HF_Mixed", "LF_HF_Mixed", "LF"};
             simPdf.plotOn(m_frame, Name(Form("pdfmass%s", info.Name_DimuSel[i_DiMu_Sel].Data())), Slice(sample, "mass"), Components(pdfDimuMass[i_DiMu_Sel]->GetName()), ProjWData(sample, *unbinned_combData_set), Range("low,high"), NormRange("low,high"), LineStyle(kDashed), LineColor(info.color[i_DiMu_Sel]), LineWidth(5));
             simPdf.plotOn(pt_frame, Name(Form("pdfpt%s", info.Name_DimuSel[i_DiMu_Sel].Data())), Slice(sample, "transversemomentum"), Components(pdfDimuPt[i_DiMu_Sel]->GetName()), ProjWData(sample, *unbinned_combData_set), Range("low,high"), NormRange("low,high"), LineStyle(kDashed), LineColor(info.color[i_DiMu_Sel]), LineWidth(5));
         }
@@ -1526,6 +1849,9 @@ void unbinned_fit_data_sample_singleregion()
     }
     if (info.DY.Contains("withDY"))
     {
+        output_fit.Form("LF fraction : %0.2f\n", normForLF->getVal());
+        out << output_fit.Data();
+
         output_fit.Form("DY fraction : %0.2f\n", normForDY->getVal());
         out << output_fit.Data();
     }
@@ -1763,7 +2089,10 @@ void plotting_fit()
     }
     cout << "Integral: " << tree_data_forM_norm->GetEntries() << endl;
     cout << "hDimuM_data->Intagral(): " << hDimuM_data->Integral() << endl;
-    hDimuM_data->Scale(1. / tree_data_forM_norm->GetEntries(), "width");
+    if (info.Low_Mass == 4 && info.High_Mass == 9)
+        hDimuM_data->Scale(1. / hDimuM_data->Integral(), "width");
+    else
+        hDimuM_data->Scale(1. / tree_data_forM_norm->GetEntries(), "width");
 
     TCanvas *M_Canvas = printRooPlot_ratio(m_frame, kFALSE, result, 0, "pdfmass", m_modelFunc, hDimuM_data, info.Low_Mass, info.High_Mass, normForMixed->getVal(), normForLF_HF_Mixed->getVal());
     M_Canvas->SetName("M_Canvas");
