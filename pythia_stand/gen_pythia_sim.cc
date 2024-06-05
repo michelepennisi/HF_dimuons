@@ -230,7 +230,7 @@ int main(int argc, char *argv[])
     // const char *path="/Volumes/REPOSITORY/Test/";
     TString path;
     if (nchunk == 999)
-        path.Form("/home/michele_pennisi/cernbox/HF_dimuons/pythia_stand/sim");
+        path.Form("sim");
     else
         path.Form("/alidata/mpennisi/pythia_stand_sim/%s/%i", selectedprocess[chooseprocess - 1], nchunk);
 
