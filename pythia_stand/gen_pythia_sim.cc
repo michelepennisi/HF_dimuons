@@ -29,6 +29,7 @@ using namespace Pythia8;
 Pythia pythia;
 
 bool isCharm(int i, int iEvent, bool verbose);
+Int_t *HF_Quark_mother(TLorentzVector, int, Bool_t);
 bool IsChargedPhysicalPrimary(Particle);
 bool IsPIDPhysicalPrimary(Particle);
 void ConfigHeavyFlavor();
@@ -47,7 +48,7 @@ int main(int argc, char *argv[])
     int seed = 12345;
     int mode = -1;  //-1==Monash  .  1 not allowed. Check JHEP08(2015)003
     int n_MPI = -1; //-1==we take everything --> >0--> register only larger nMPI events
-    int chooseprocess = 4;
+    int chooseprocess = 1;
     int choosechange = 0; // 1 = SoftQCD, 2 = ccbar, 3 = bbbar
     int BR = 0;           // 0 = original BR, 1 = force semileptonic decay of charm
     int nchunk = 999;
@@ -314,12 +315,14 @@ int main(int argc, char *argv[])
     static const Int_t fMuons_dim = 5000;
     static const Int_t fDimu_dim = 100000;
     Int_t fPDG_HFquark_gen[fMuons_dim];           // single gen c/cbar PDG mum
-    Int_t fPDG_HFquark_gen_daughter1[fMuons_dim]; // single gen c/cbar PDG mum
-    Int_t fPDG_HFquark_gen_daughter2[fMuons_dim]; // single gen c/cbar PDG mum
+    Int_t fPDG_HFquark_gen_daughter1[fMuons_dim]; // single gen c/cbar PDG daugther
+    Int_t fPDG_HFquark_gen_daughter2[fMuons_dim]; // single gen c/cbar PDG daugther
+    Int_t fIndex_HFquark_gen_mother1[fMuons_dim]; // single gen c/cbar PDG mum
+    Int_t fIndex_HFquark_gen_mother2[fMuons_dim]; // single gen c/cbar PDG mum
     Double_t fPt_HFquark_gen[fMuons_dim];         // single gen c/cbar or b/bbar HFquark pT
     Double_t fY_HFquark_gen[fMuons_dim];          // single gen c/cbar or b/bbar HFquark y
     Double_t fPx_HFquark_gen[fMuons_dim];         // single gen c/cbar or b/bbar HFquark px
-    Double_t fPy_HFquark_gen[fMuons_dim];          // single gen c/cbar or b/bbar HFquark py
+    Double_t fPy_HFquark_gen[fMuons_dim];         // single gen c/cbar or b/bbar HFquark py
     Double_t fPz_HFquark_gen[fMuons_dim];         // single gen c/cbar or b/bbar HFquark pz
     Double_t fE_HFquark_gen[fMuons_dim];          // single gen c/cbar or b/bbar HFquark E
 
@@ -370,6 +373,10 @@ int main(int argc, char *argv[])
         fPy_HFquark_gen[i] = 9999.;
         fPz_HFquark_gen[i] = 9999.;
         fE_HFquark_gen[i] = 9999.;
+        fPDG_HFquark_gen_daughter1[i] = 9999;
+        fPDG_HFquark_gen_daughter2[i] = 9999;
+        fIndex_HFquark_gen_mother1[i] = 9999;
+        fIndex_HFquark_gen_mother2[i] = 9999;
 
         fPDGmum_gen[i] = 9999.;
         fPDG_gen[i] = 9999.;
@@ -417,6 +424,8 @@ int main(int argc, char *argv[])
 
     fOutputTree->Branch("PDG_HFquark_gen_daughter1", fPDG_HFquark_gen_daughter1, "PDG_HFquark_gen_daughter1[N_HFquarks_gen]/I");
     fOutputTree->Branch("PDG_HFquark_gen_daughter2", fPDG_HFquark_gen_daughter2, "PDG_HFquark_gen_daughter2[N_HFquarks_gen]/I");
+    fOutputTree->Branch("Index_HFquark_gen_mother1", fIndex_HFquark_gen_mother1, "Index_HFquark_gen_mother1[N_HFquarks_gen]/I");
+    fOutputTree->Branch("Index_HFquark_gen_mother2", fIndex_HFquark_gen_mother2, "Index_HFquark_gen_mother2[N_HFquarks_gen]/I");
 
     fOutputTree->Branch("NDimu_gen", &fNDimu_gen, "NDimu_gen/I");
     fOutputTree->Branch("DimuMu_gen", fDimuMu_gen, "DimuMu_gen[NDimu_gen][2]/I");
@@ -502,9 +511,9 @@ int main(int argc, char *argv[])
     {
         if (iEvent % (Int_t)(nevents * 0.2) == 0)
         {
-            Printf("Evento: %d time: CPU %f (min) real %f", iEvent, t.CpuTime(), t.RealTime());
-            t.Start(kFALSE);
         }
+        Printf("Evento: %d time: CPU %f (min) real %f", iEvent, t.CpuTime(), t.RealTime());
+        t.Start(kFALSE);
         // useful variables
         Int_t *return_mom;
 
@@ -526,6 +535,7 @@ int main(int argc, char *argv[])
 
         // cout<<"==================================================="<<endl;
         // pythia.event.list();
+        Bool_t Be_printed = kTRUE;
         for (int i = 0; i < pythia.event.size(); i++)
         {
             TLorentzVector Particle(pythia.event[i].px(), pythia.event[i].py(), pythia.event[i].pz(), pythia.event[i].e());
@@ -579,6 +589,13 @@ int main(int argc, char *argv[])
 
             if (TMath::Abs(pythia.event[i].id()) == 4 || TMath::Abs(pythia.event[i].id()) == 5)
             {
+                if (Be_printed)
+                {
+                    pythia.event.list();
+                    Be_printed = kFALSE;
+                }
+
+                // printf("Array index %d || PDG %d || PT %f || Y %f || Mom1: Index %d PDG %d || Mom2 Index %d PDG %d || iTopCopy %d \n", i, pythia.event[i].id(), Particle.Pt(), Particle.Rapidity(), pythia.event[i].mother1(), pythia.event[pythia.event[i].mother1()].id(), pythia.event[i].mother2(), pythia.event[pythia.event[i].mother2()].id(), pythia.event[i].iTopCopy());
                 Int_t index_daughter1 = pythia.event[i].daughter1();
                 Int_t index_daughter2 = pythia.event[i].daughter2();
 
@@ -595,9 +612,11 @@ int main(int argc, char *argv[])
                 }
                 if (Good_HFQuark)
                 {
-
+                    Int_t *final_mothers = HF_Quark_mother(Particle, i, kTRUE);
                     fPDG_HFquark_gen_daughter1[nHFquark_gen] = pdg_daughter1;
                     fPDG_HFquark_gen_daughter2[nHFquark_gen] = pdg_daughter2;
+                    fIndex_HFquark_gen_mother1[nHFquark_gen] = final_mothers[0];
+                    fIndex_HFquark_gen_mother2[nHFquark_gen] = final_mothers[1];
 
                     fPDG_HFquark_gen[nHFquark_gen] = pythia.event[i].id();
                     fPt_HFquark_gen[nHFquark_gen] = Particle.Pt();
@@ -607,6 +626,7 @@ int main(int argc, char *argv[])
                     fPz_HFquark_gen[nHFquark_gen] = Particle.Pz();
                     fE_HFquark_gen[nHFquark_gen] = Particle.E();
                     nHFquark_gen++;
+                    delete final_mothers;
                 }
             }
 
@@ -737,6 +757,8 @@ int main(int argc, char *argv[])
                 }
             }
         }
+        if (nHFquark_gen > 0 && Be_printed)
+            cout << "nHFquark_gen: " << nHFquark_gen << endl;
         fN_HFquarks_gen = nHFquark_gen;
         fNMuons_gen = nmu_gen;
         fNHadron_gen = nHFHadron_gen;
@@ -985,6 +1007,83 @@ bool isCharm(int i, int iEvent, bool verbose)
     return isPrompt;
 }
 
+Int_t *HF_Quark_mother(TLorentzVector Particle, int i, Bool_t Verbose)
+{
+    Int_t *final_mother = new Int_t[2];
+    final_mother[0] = 999;
+    final_mother[1] = 999;
+    Int_t flavor_index = 999;
+    Bool_t progressing = kTRUE;
+
+    Int_t index_mother1 = pythia.event[i].mother1();
+    Int_t index_mother2 = pythia.event[i].mother2();
+
+    Int_t counter = 0;
+
+    while (progressing)
+    {
+        if (Verbose)
+            printf("INIZIO index_mother1 %d ||  index_mother2 %d\n", index_mother1, index_mother2);
+        if ((index_mother1 == index_mother2))
+        {
+            flavor_index = pythia.event[index_mother1].iTopCopy();
+            if (Verbose)
+                printf("flavor_index %d \n", flavor_index);
+        }
+        else
+        {
+            Int_t flavors[2] = {index_mother1, index_mother2};
+            if (Verbose)
+                printf("flavors[0] %d || flavors[1] %d \n", flavors[0], flavors[1]);
+
+            for (Int_t flav = 0; flav < 2; flav++)
+            {
+                Int_t pdg_flav = pythia.event[flavors[flav]].id();
+                if (Verbose)
+                    printf("flavors[i] %d || pdg_flav %d || index_mother1 %d|| index_mother2 %d\n", flavors[flav], pdg_flav, index_mother1, index_mother2);
+                Bool_t first_tempt = kTRUE;
+                if (pdg_flav == pythia.event[i].id())
+                {
+                    flavor_index = flavors[flav];
+                    progressing = kTRUE;
+                    break;
+                }
+                else
+                {
+                    progressing = kFALSE;
+                    final_mother[0] = flavors[0];
+                    final_mother[1] = flavors[1];
+                }
+            }
+        }
+        if (!progressing)
+            break;
+        if (Verbose)
+            printf("flavor index %d ||  pythia.event[flavor_index].id() %d\n", flavor_index, pythia.event[flavor_index].id());
+        Int_t pdg_mother = pythia.event[flavor_index].id();
+        if (pdg_mother == pythia.event[i].id())
+        {
+            progressing = kTRUE;
+            index_mother1 = pythia.event[flavor_index].mother1();
+            index_mother2 = pythia.event[flavor_index].mother2();
+        }
+        else
+        {
+            final_mother[0] = flavor_index;
+            final_mother[1] = 0;
+            progressing = kFALSE;
+            if (Verbose)
+                cout << "FINITO?" << endl;
+        }
+        if (Verbose)
+            printf("index_mother1 %d ||  index_mother2 %d\n", index_mother1, index_mother2);
+        counter++;
+    }
+    if (Verbose)
+        printf("SAVING quarks %d || PDG %d || PT %f || Y %f || FINAL Mom1: Index %d PDG %d || FINAL Mom2 Index %d PDG %d || PDG daughter1 %d PDG daughter2 %d\n", i, pythia.event[i].id(), Particle.Pt(), Particle.Rapidity(), final_mother[0], pythia.event[final_mother[0]].id(), final_mother[1], pythia.event[final_mother[1]].id(), pythia.event[pythia.event[i].daughter1()].id(), pythia.event[pythia.event[i].daughter2()].id());
+
+    return final_mother;
+}
 bool IsChargedPhysicalPrimary(Particle part)
 {
 
