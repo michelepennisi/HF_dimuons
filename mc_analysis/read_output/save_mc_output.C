@@ -1240,8 +1240,8 @@ void save_mc_output(
                     *Event = i_Event;
                     if (DiMuon_origin[i_DiMuon_origin].EqualTo("HF_Mixed"))
                     {
-                        cout << DiMuon_origin[i_DiMuon_origin].Data() << endl;
-                        printf("PDG_Mu0 %d || PDG_Mu1 %d\n", PDG_Mu0, PDG_Mu1);
+                        // cout << DiMuon_origin[i_DiMuon_origin].Data() << endl;
+                        // printf("PDG_Mu0 %d || PDG_Mu1 %d\n", PDG_Mu0, PDG_Mu1);
                         *HF_PDG = PDG_Mu0;
                         *HF_PDG = PDG_Mu1;
                         *LF_PDG = 999;
@@ -1281,8 +1281,8 @@ void save_mc_output(
                             *M_Dimu_Rec_PowhegOnly = M_DiMu;
                             if (DiMuon_origin[i_DiMuon_origin].EqualTo("HF_Mixed"))
                             {
-                                cout << DiMuon_origin[i_DiMuon_origin].Data() << endl;
-                                printf("PDG_Mu0 %d || PDG_Mu1 %d\n", PDG_Mu0, PDG_Mu1);
+                                // cout << DiMuon_origin[i_DiMuon_origin].Data() << endl;
+                                // printf("PDG_Mu0 %d || PDG_Mu1 %d\n", PDG_Mu0, PDG_Mu1);
                                 *HF_PDG_PowhegOnly = PDG_Mu0;
                                 *HF_PDG_PowhegOnly = PDG_Mu1;
                                 *LF_PDG_PowhegOnly = 999;
@@ -1307,8 +1307,8 @@ void save_mc_output(
                             *M_Dimu_Rec_PythiaOnly = M_DiMu;
                             if (DiMuon_origin[i_DiMuon_origin].EqualTo("HF_Mixed"))
                             {
-                                cout << DiMuon_origin[i_DiMuon_origin].Data() << endl;
-                                printf("PDG_Mu0 %d || PDG_Mu1 %d\n", PDG_Mu0, PDG_Mu1);
+                                // cout << DiMuon_origin[i_DiMuon_origin].Data() << endl;
+                                // printf("PDG_Mu0 %d || PDG_Mu1 %d\n", PDG_Mu0, PDG_Mu1);
                                 *HF_PDG_PythiaOnly = PDG_Mu0;
                                 *HF_PDG_PythiaOnly = PDG_Mu1;
                                 *LF_PDG_PythiaOnly = 999;
@@ -1736,7 +1736,7 @@ void save_mc_output(
 
         for (Int_t i_LF_Generator = 0; i_LF_Generator < n_LF_DiMuon_Generator; i_LF_Generator++)
         {
-            cout << DiMuon_fromLF_Generator[i_LF_Generator].Data() << endl;
+            // cout << DiMuon_fromLF_Generator[i_LF_Generator].Data() << endl;
             if (h_PtM_DiMuon_Rec_fromLF[i_LF_Generator]->GetEntries() > 0.0)
             {
 
@@ -1752,7 +1752,7 @@ void save_mc_output(
 
         for (Int_t i_LF_Generator = 0; i_LF_Generator < n_LF_DiMuon_Generator; i_LF_Generator++)
         {
-            cout << DiMuon_fromLF_Generator[i_LF_Generator].Data() << endl;
+            // cout << DiMuon_fromLF_Generator[i_LF_Generator].Data() << endl;
             if (h_PtM_DiMuon_Rec_fromLF_HF_Mixed[i_LF_Generator]->GetEntries() > 0.0)
             {
 
