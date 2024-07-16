@@ -1,0 +1,19 @@
+Universe   = vanilla
+
+getenv = True
+
+Executable = /afs/cern.ch/user/m/mpennisi/HF_dimuons/farm_script/launch_save_output.sh
+
+Arguments = $(period) $(run_number) $(generator)
+
+Log        = /afs/cern.ch/user/m/mpennisi/HF_dimuons/farm_script/Log/LHC23i1/$(period)_$(run_number)_$(generator).log
+Output     = /afs/cern.ch/user/m/mpennisi/HF_dimuons/farm_script/Out/LHC23i1/$(period)_$(run_number)_$(generator).out
+Error      = /afs/cern.ch/user/m/mpennisi/HF_dimuons/farm_script/Error/LHC23i1/$(period)_$(run_number)_$(generator).error
+
+#transfer_output_files   = *.root
+
++JobFlavour = testmatch
+
++BenchmarkJob = True
+
+Queue period, run_number, generator from /afs/cern.ch/work/m/mpennisi/private/HF_dimuons/farm_script/info_LHC23i1_Version_5_AliAOD_skimmed_fwd_fullstat.txt

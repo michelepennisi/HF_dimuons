@@ -1,0 +1,13 @@
+Universe   = vanilla
+
+getenv = True
+
+Executable = /home/mpennisi/HF_dimuons/farm_script/launch_save_output.sh
+
+Arguments = $(period) $(run_number) $(generator)
+
+Log        = /alidata/mpennisi/Log/save_output/$(period)_$(run_number)_$(generator).log
+Output     = /alidata/mpennisi/Out/save_output/$(period)_$(run_number)_$(generator).out
+Error      = /alidata/mpennisi/Error/save_output/$(period)_$(run_number)_$(generator).error
+
+Queue period, run_number, generator from /home/mpennisi/HF_dimuons/farm_script/info_LHC22c1_Version_5_AliAOD_skimmed_fwd_fullstat.txt
