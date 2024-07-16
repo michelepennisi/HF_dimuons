@@ -1,0 +1,25 @@
+Universe   = vanilla
+
+getenv = True
+
+# Executable: Specify the path to your Python interpreter
+Executable = /afs/cern.ch/work/m/mpennisi/private/powheg_std/code_wrapper.sh
+
+# Arguments: Specify the Python script and any arguments it requires
+arguments = $(events) $(low_mass) $(high_mass) $(ProcId)
+
+# Output and error files
+output = Out_Log/powheg_$(low_mass)_$(high_mass)_$(ProcId).out
+error = Error_Log/powheg_$(low_mass)_$(high_mass)_$(ProcId).err
+log = Log_Log/powheg_$(low_mass)_$(high_mass)_$(ProcId).log
+
+# File transfer settings
+transfer_input_files = base_powheg_DY.input
+
+#should_transfer_files = YES
+#when_to_transfer_output = ON_EXIT
+
++JobFlavour = espresso
+
+queue 100 events, low_mass, high_mass from /afs/cern.ch/work/m/mpennisi/private/powheg_std/powheg_sim_info.txt
+
